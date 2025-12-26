@@ -1,0 +1,6 @@
+import 'dart:ui';
+
+class AppColors {
+  static const List<Color> gradient = [Color(0xFFB98F04), Color(0xFFF5E7A1)];
+  static const Color scaffoldBackgroundColor = Color(0xFF121212);
+}
