@@ -15,7 +15,7 @@ class TextGradient extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Align(
-      alignment: AlignmentGeometry.centerRight,
+      // alignment: AlignmentGeometry.centerRight,
       child: ShaderMask(
         shaderCallback: (Rect bounds) {
           return const LinearGradient(

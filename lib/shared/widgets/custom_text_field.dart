@@ -60,6 +60,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             hintText: widget.hintText,
             hintStyle: TextStyle(
               color: isDarkMode ? Colors.white54 : Color(0xFFa4a4a4),
+              fontSize: 14,
             ),
             prefixIcon: widget.prefixIcon != null
                 ? Padding(

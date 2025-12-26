@@ -1,0 +1,170 @@
+import 'dart:async';
+
+import 'package:flutter/material.dart';
+import 'package:get/route_manager.dart';
+import 'package:ijs_vault/core/constants/app_assets.dart';
+import 'package:ijs_vault/core/constants/app_colors.dart';
+import 'package:ijs_vault/core/constants/app_sizes.dart';
+import 'package:ijs_vault/features/forgotpassword/presentation/screens/reset_password.dart';
+import 'package:ijs_vault/features/forgotpassword/presentation/widgets/otp_field.dart';
+import 'package:ijs_vault/shared/helpers/screen_helper.dart';
+import 'package:ijs_vault/shared/widgets/app_bar.dart';
+import 'package:ijs_vault/shared/widgets/custom_button.dart';
+import 'package:ijs_vault/shared/widgets/gradient_border_container.dart';
+import 'package:ijs_vault/shared/widgets/gradient_text_widget.dart';
+
+class VerifyCodeScreen extends StatefulWidget {
+  const VerifyCodeScreen({super.key});
+
+  @override
+  State<VerifyCodeScreen> createState() => _VerifyCodeScreenState();
+}
+
+class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
+  static const int _initialSeconds = 45;
+  int _secondsRemaining = _initialSeconds;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  void _startTimer() {
+    _timer?.cancel();
+    _secondsRemaining = _initialSeconds;
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_secondsRemaining == 0) {
+        timer.cancel();
+      } else {
+        setState(() {
+          _secondsRemaining--;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context).textTheme;
+    final h = ScreenHelper.height(context);
+
+    return Scaffold(
+      appBar: const CustomAppBar(),
+      resizeToAvoidBottomInset: false,
+      body: Padding(
+        padding: AppSizes.horizontalPadding,
+        child: Column(
+          spacing: 20,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            /// HEADER
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Image.asset(AppImages.verifycode, height: h * 0.2),
+                ),
+                const SizedBox(height: 50),
+                Text('Verify Code', style: theme.labelLarge),
+                RichText(
+                  text: TextSpan(
+                    style: theme.labelSmall,
+                    children: [
+                      const TextSpan(text: 'We have sent a code to '),
+                      TextSpan(
+                        text: 'johndoe@gmail.com',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          foreground: Paint()
+                            ..shader = const LinearGradient(
+                              colors: AppColors.gradient,
+                            ).createShader(const Rect.fromLTWH(0, 0, 200, 20)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 10),
+
+            /// OTP INPUT
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Enter Code',
+                  style: theme.labelMedium!.copyWith(fontSize: 14),
+                ),
+                const SizedBox(height: 8),
+                const OtpInput(),
+              ],
+            ),
+
+            /// VERIFY BUTTON
+            CustomButton(
+              onTap: () {
+                Get.to(() => const ResetPasswordScreen());
+              },
+              text: 'Verify',
+              isDisabled: true,
+            ),
+
+            // const SizedBox(height: 10),
+
+            /// RESEND TEXT
+            Center(
+              child: Text(
+                'Did not receive code?',
+                style: theme.labelLarge!.copyWith(fontSize: 14),
+              ),
+            ),
+
+            /// TIMER / RESEND BUTTON
+            if (_secondsRemaining > 0)
+              Center(
+                child: Text(
+                  'Send again in $_secondsRemaining seconds',
+                  style: theme.labelSmall,
+                ),
+              )
+            else
+              Center(
+                child: GestureDetector(
+                  onTap: () {
+                    _startTimer();
+                    // TODO: Call resend OTP API here
+                  },
+                  child: GradientBorderContainer(
+                    borderWidth: 1,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 10,
+                      horizontal: 20,
+                    ),
+                    borderRadius: 10000,
+                    child: const TextGradient(
+                      text: 'Resend Code',
+                      fontsize: 15,
+                    ),
+                  ),
+                ),
+              ),
+
+            SizedBox(height: MediaQuery.paddingOf(context).bottom + 5),
+          ],
+        ),
+      ),
+    );
+  }
+}

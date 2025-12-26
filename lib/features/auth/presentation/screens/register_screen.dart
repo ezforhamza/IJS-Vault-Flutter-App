@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/route_manager.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
+import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/features/auth/presentation/screens/login_screen.dart';
 import 'package:ijs_vault/features/auth/presentation/widgets/pfp_selection_widget.dart';
@@ -86,6 +87,7 @@ class RegisterScreen extends StatelessWidget {
               ),
               // Privacy Policy And Terms
               Row(
+                spacing: 10,
                 children: [
                   // Check Box
                   Container(
@@ -100,22 +102,45 @@ class RegisterScreen extends StatelessWidget {
                   ),
                   // Text
                   Expanded(
-                    child: Row(
-                      spacing: 5,
-                      children: [
-                        Text('I agree to the', style: theme.labelSmall),
-                        TextGradient(
-                          text: 'terms & conditions',
-                          fontsize: 13,
-                          fontWeight: FontWeight.w600,
-                        ), //
-                        Text('and', style: theme.labelSmall),
-                        TextGradient(
-                          text: 'privacy policy',
-                          fontsize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ],
+                    child: RichText(
+                      text: TextSpan(
+                        style: theme.labelSmall,
+                        children: [
+                          const TextSpan(text: 'I agree to the '),
+
+                          TextSpan(
+                            text: 'terms & conditions',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              foreground: Paint()
+                                ..shader =
+                                    const LinearGradient(
+                                      colors: AppColors.gradient,
+                                    ).createShader(
+                                      const Rect.fromLTWH(0, 0, 200, 20),
+                                    ),
+                            ),
+                          ),
+
+                          const TextSpan(text: ' and '),
+
+                          TextSpan(
+                            text: 'privacy policy',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              foreground: Paint()
+                                ..shader =
+                                    const LinearGradient(
+                                      colors: AppColors.gradient,
+                                    ).createShader(
+                                      const Rect.fromLTWH(0, 0, 200, 20),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

@@ -5,7 +5,7 @@ class AppTextStyles {
   static TextStyle medium12(Color color) => TextStyle(
     fontFamily: 'Poppins',
     fontSize: 14,
-    fontWeight: FontWeight.w500,
+    fontWeight: FontWeight.w400,
     height: 1.0, // 100%
     letterSpacing: 0,
     color: color,

@@ -4,6 +4,7 @@ import 'package:get/route_manager.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/features/auth/presentation/screens/register_screen.dart';
+import 'package:ijs_vault/features/forgotpassword/presentation/screens/forgotpassword_screen.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 import 'package:ijs_vault/shared/widgets/custom_button.dart';
 import 'package:ijs_vault/shared/widgets/custom_text_field.dart';
@@ -57,10 +58,20 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
             // Forgot Password
-            TextGradient(text: 'Forgot Password?'),
+            Row(
+              mainAxisAlignment: .end,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    Get.to(() => ForgotpasswordScreen());
+                  },
+                  child: TextGradient(text: 'Forgot Password?'),
+                ),
+              ],
+            ),
             // Button
             CustomButton(onTap: () {}, text: 'Sign in'),
-            SizedBox(height: 20),
+            SizedBox(height: 5),
 
             //Divider OR Sign IN With
             Row(
@@ -79,7 +90,7 @@ class LoginScreen extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 5),
             // Google Option
             Container(
               padding: EdgeInsets.symmetric(vertical: 15),
