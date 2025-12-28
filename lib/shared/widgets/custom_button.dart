@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
+import 'package:ijs_vault/core/constants/app_sizes.dart';
 
 class CustomButton extends StatelessWidget {
   const CustomButton({
@@ -17,7 +18,7 @@ class CustomButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 56,
+      height: 50,
       child: ElevatedButton(
         onPressed: onTap,
         style: ElevatedButton.styleFrom(
@@ -31,7 +32,7 @@ class CustomButton extends StatelessWidget {
           decoration: BoxDecoration(
             gradient: isDisabled
                 ? const LinearGradient(
-                    colors: [
+                    colors: <Color>[
                       AppColors.disabledbuttoncolor,
                       AppColors.disabledbuttoncolor,
                     ], // gradient background
@@ -39,7 +40,7 @@ class CustomButton extends StatelessWidget {
                 : const LinearGradient(
                     colors: AppColors.gradient, // gradient background
                   ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppSizes.borderRadius),
           ),
           child: Container(
             alignment: Alignment.center,

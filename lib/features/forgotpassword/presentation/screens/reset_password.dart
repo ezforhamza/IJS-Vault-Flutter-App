@@ -12,11 +12,11 @@ class ResetPasswordScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).textTheme;
-    final h = ScreenHelper.height(context);
+    final TextTheme theme = Theme.of(context).textTheme;
+    final double h = ScreenHelper.height(context);
 
     return Scaffold(
-      appBar: CustomAppBar(),
+      appBar: const CustomAppBar(),
       resizeToAvoidBottomInset: false,
       body: Padding(
         padding: AppSizes.horizontalPadding,
@@ -25,15 +25,15 @@ class ResetPasswordScreen extends StatelessWidget {
           // mainAxisAlignment: .start,
           crossAxisAlignment: .start,
           mainAxisSize: .max,
-          children: [
+          children: <Widget>[
             // SizedBox(height: MediaQuery.paddingOf(context).top + 30),
             Column(
               crossAxisAlignment: .start,
-              children: [
+              children: <Widget>[
                 Center(
                   child: Image.asset(AppImages.resetpassword, height: h * 0.2),
                 ),
-                SizedBox(height: 50),
+                const SizedBox(height: 50),
 
                 Text('Reset Password', style: theme.labelLarge),
                 Text(
@@ -42,7 +42,7 @@ class ResetPasswordScreen extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
 
             // Text Field
             CustomTextField(
@@ -51,7 +51,7 @@ class ResetPasswordScreen extends StatelessWidget {
               hintText: "Enter New Password",
               prefixIcon: SvgPicture.asset(
                 AppImages.email,
-                color: Color(0xFFB2B2B2),
+                color: const Color(0xFFB2B2B2),
               ),
             ),
             CustomTextField(
@@ -61,7 +61,7 @@ class ResetPasswordScreen extends StatelessWidget {
               hintText: "Enter Confirm Password",
               prefixIcon: SvgPicture.asset(
                 AppImages.email,
-                color: Color(0xFFB2B2B2),
+                color: const Color(0xFFB2B2B2),
               ),
             ),
 
@@ -75,7 +75,7 @@ class ResetPasswordScreen extends StatelessWidget {
               text: 'Reset',
               isDisabled: true,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             SizedBox(height: MediaQuery.paddingOf(context).bottom + 5),
           ],

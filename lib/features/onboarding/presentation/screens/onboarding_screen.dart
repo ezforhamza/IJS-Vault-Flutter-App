@@ -18,7 +18,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentPage = 0;
 
-  final List<OnboardingData> _onboardingPages = [
+  final List<OnboardingData> _onboardingPages = <OnboardingData>[
     OnboardingData(
       image: AppImages.onboarding1,
       title: AppStrings.onboarding1title,
@@ -45,7 +45,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       // Navigate to next screen (login/signup)
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
+        MaterialPageRoute(
+          builder: (BuildContext context) => const LoginScreen(),
+        ),
       );
     }
   }
@@ -53,20 +55,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _skipOnboarding() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
+      MaterialPageRoute(builder: (BuildContext context) => const LoginScreen()),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).textTheme;
-    final h = ScreenHelper.height(context);
-    final w = ScreenHelper.width(context);
-    final isLastPage = _currentPage == _onboardingPages.length - 1;
+    final TextTheme theme = Theme.of(context).textTheme;
+    final double h = ScreenHelper.height(context);
+    final double w = ScreenHelper.width(context);
+    final bool isLastPage = _currentPage == _onboardingPages.length - 1;
 
     return Scaffold(
       body: Column(
-        children: [
+        children: <Widget>[
           SizedBox(height: MediaQuery.of(context).padding.top + 10),
           // Skip Text
           Padding(
@@ -82,15 +84,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
 
           // Image
-          Spacer(),
+          const Spacer(),
           Padding(
             padding: AppSizes.horizontalPadding,
             child: AnimatedSwitcher(
-              duration: Duration(milliseconds: 300),
-              transitionBuilder: (child, animation) {
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (Widget child, Animation<double> animation) {
                 return FadeTransition(opacity: animation, child: child);
               },
               child: Image.asset(
@@ -100,7 +102,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               ),
             ),
           ),
-          Spacer(),
+          const Spacer(),
 
           // Onboarding Content
           OnboardingWidget(
@@ -134,14 +136,14 @@ class OnboardingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).textTheme;
-    final isLastPage = currentPage == onboardingPages.length - 1;
+    final TextTheme theme = Theme.of(context).textTheme;
+    final bool isLastPage = currentPage == onboardingPages.length - 1;
 
     return Stack(
-      children: [
+      children: <Widget>[
         Container(
           height: h * 0.4,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: AppColors.scaffoldBackgroundColor,
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(30),
@@ -152,7 +154,7 @@ class OnboardingWidget extends StatelessWidget {
         Container(
           height: h * 0.4,
           width: w,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(30),
               topRight: Radius.circular(30),
@@ -164,12 +166,12 @@ class OnboardingWidget extends StatelessWidget {
             ),
           ),
           child: Container(
-            margin: EdgeInsets.only(top: 1),
+            margin: const EdgeInsets.only(top: 1),
             decoration: BoxDecoration(
               color: Theme.of(context).brightness == Brightness.dark
                   ? AppColors.scaffoldBackgroundColor
                   : Colors.white,
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(32),
                 topRight: Radius.circular(32),
               ),
@@ -178,50 +180,54 @@ class OnboardingWidget extends StatelessWidget {
               padding: AppSizes.horizontalPadding,
               child: Column(
                 mainAxisSize: MainAxisSize.max,
-                children: [
-                  SizedBox(height: 30),
+                children: <Widget>[
+                  const SizedBox(height: 30),
 
                   // Page Indicators
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(
                       onboardingPages.length,
-                      (index) => AnimatedContainer(
-                        duration: Duration(milliseconds: 300),
-                        margin: EdgeInsets.symmetric(horizontal: 4),
+                      (int index) => AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
                         child: index == currentPage
-                            ? ActiveDot(size: 17)
+                            ? const ActiveDot(size: 17)
                             : CircleAvatar(
                                 backgroundColor:
                                     Theme.of(context).brightness ==
                                         Brightness.dark
-                                    ? Color(0xFF827c5d)
-                                    : Color(0xFFfaf3cf),
+                                    ? const Color(0xFF827c5d)
+                                    : const Color(0xFFfaf3cf),
                                 radius: 5,
                               ),
                       ),
                     ),
                   ),
 
-                  SizedBox(height: 30),
+                  const SizedBox(height: 30),
 
                   // Title and Subtitle
                   Expanded(
                     child: AnimatedSwitcher(
-                      duration: Duration(milliseconds: 300),
-                      transitionBuilder: (child, animation) {
-                        return FadeTransition(opacity: animation, child: child);
-                      },
+                      duration: const Duration(milliseconds: 300),
+                      transitionBuilder:
+                          (Widget child, Animation<double> animation) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            );
+                          },
                       child: Column(
                         key: ValueKey<int>(currentPage),
-                        children: [
+                        children: <Widget>[
                           // Title
                           Text(
                             onboardingPages[currentPage].title,
                             style: theme.labelLarge,
                             textAlign: TextAlign.center,
                           ),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
 
                           // Subtitle
                           Text(
@@ -242,7 +248,7 @@ class OnboardingWidget extends StatelessWidget {
                     text: isLastPage ? 'Get Started' : 'Next',
                   ),
 
-                  SizedBox(height: 30),
+                  const SizedBox(height: 30),
                 ],
               ),
             ),
@@ -254,13 +260,12 @@ class OnboardingWidget extends StatelessWidget {
 }
 
 class OnboardingData {
-  final String image;
-  final String title;
-  final String subtitle;
-
   OnboardingData({
     required this.image,
     required this.title,
     required this.subtitle,
   });
+  final String image;
+  final String title;
+  final String subtitle;
 }

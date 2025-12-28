@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:ijs_vault/core/themes/app_theme.dart';
-import 'package:ijs_vault/features/pin/presentation/screens/set_pin_screen.dart';
+import 'package:ijs_vault/features/bottomNavigationbar/presentation/screens/bottom_nav_bar_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
-      home: SetPinScreen(),
+      home: const HomeWithBottomNavScreen(),
     );
   }
 }

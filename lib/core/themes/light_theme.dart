@@ -18,9 +18,14 @@ class AppLightTheme {
       labelLarge: AppTextStyles.large20(Colors.black),
       labelMedium: AppTextStyles.medium14(Colors.black),
 
-      labelSmall: AppTextStyles.medium12(Color(0xFFB2B2B2)),
+      labelSmall: AppTextStyles.medium12(const Color(0xFFB2B2B2)),
       bodySmall: AppTextStyles.regular12(Colors.black),
       // bodyLarge:
+    ),
+    inputDecorationTheme: const InputDecorationTheme(
+      filled: true,
+      fillColor: Color(0xFFfdfbf5),
+      hintStyle: TextStyle(color: Color(0xFFa4a4a4), fontSize: 14),
     ),
   );
 }

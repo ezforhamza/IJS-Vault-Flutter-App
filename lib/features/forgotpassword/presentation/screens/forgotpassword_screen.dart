@@ -14,11 +14,11 @@ class ForgotpasswordScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).textTheme;
-    final h = ScreenHelper.height(context);
+    final TextTheme theme = Theme.of(context).textTheme;
+    final double h = ScreenHelper.height(context);
 
     return Scaffold(
-      appBar: CustomAppBar(),
+      appBar: const CustomAppBar(),
       resizeToAvoidBottomInset: false,
       body: Padding(
         padding: AppSizes.horizontalPadding,
@@ -27,15 +27,15 @@ class ForgotpasswordScreen extends StatelessWidget {
           // mainAxisAlignment: .start,
           crossAxisAlignment: .start,
           mainAxisSize: .max,
-          children: [
+          children: <Widget>[
             // SizedBox(height: MediaQuery.paddingOf(context).top + 30),
             Column(
               crossAxisAlignment: .start,
-              children: [
+              children: <Widget>[
                 Center(
                   child: Image.asset(AppImages.forgotpassword, height: h * 0.2),
                 ),
-                SizedBox(height: 50),
+                const SizedBox(height: 50),
 
                 Text('Forgot Password', style: theme.labelLarge),
                 Text(
@@ -44,7 +44,7 @@ class ForgotpasswordScreen extends StatelessWidget {
                 ),
               ],
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
 
             // Text Field
             CustomTextField(
@@ -52,7 +52,7 @@ class ForgotpasswordScreen extends StatelessWidget {
               hintText: "Enter Email Address",
               prefixIcon: SvgPicture.asset(
                 AppImages.email,
-                color: Color(0xFFB2B2B2),
+                color: const Color(0xFFB2B2B2),
               ),
             ),
 
@@ -61,12 +61,12 @@ class ForgotpasswordScreen extends StatelessWidget {
             // Button
             CustomButton(
               onTap: () {
-                Get.to(() => VerifyCodeScreen());
+                Get.to(() => const VerifyCodeScreen());
               },
               text: 'Send',
               isDisabled: true,
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             SizedBox(height: MediaQuery.paddingOf(context).bottom + 5),
           ],

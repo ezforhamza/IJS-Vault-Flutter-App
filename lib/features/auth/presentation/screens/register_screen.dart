@@ -6,6 +6,7 @@ import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/features/auth/presentation/screens/login_screen.dart';
 import 'package:ijs_vault/features/auth/presentation/widgets/pfp_selection_widget.dart';
+import 'package:ijs_vault/features/set%20pin/presentation/screens/set_pin_screen.dart';
 import 'package:ijs_vault/shared/widgets/custom_button.dart';
 import 'package:ijs_vault/shared/widgets/custom_text_field.dart';
 import 'package:ijs_vault/shared/widgets/gradient_text_widget.dart';
@@ -15,7 +16,7 @@ class RegisterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).textTheme;
+    final TextTheme theme = Theme.of(context).textTheme;
     return Scaffold(
       // resizeToAvoidBottomInset: false,
       body: Padding(
@@ -25,11 +26,11 @@ class RegisterScreen extends StatelessWidget {
             spacing: 20,
             mainAxisAlignment: .start,
             crossAxisAlignment: .start,
-            children: [
+            children: <Widget>[
               SizedBox(height: MediaQuery.paddingOf(context).top + 30),
               Column(
                 crossAxisAlignment: .start,
-                children: [
+                children: <Widget>[
                   Text('Create Account!', style: theme.labelLarge),
                   Text(
                     'Create your account and connect with the community.',
@@ -37,14 +38,14 @@ class RegisterScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              Center(child: PfpSelectionWidget()),
+              const Center(child: PfpSelectionWidget()),
               // Text Field
               CustomTextField(
                 title: 'Full Name',
                 hintText: "Enter Name",
                 prefixIcon: SvgPicture.asset(
                   AppImages.profile,
-                  color: Color(0xFFB2B2B2),
+                  color: const Color(0xFFB2B2B2),
                 ),
               ),
 
@@ -54,7 +55,7 @@ class RegisterScreen extends StatelessWidget {
                 hintText: "Enter Email Address",
                 prefixIcon: SvgPicture.asset(
                   AppImages.email,
-                  color: Color(0xFFB2B2B2),
+                  color: const Color(0xFFB2B2B2),
                 ),
               ),
               CustomTextField(
@@ -62,7 +63,7 @@ class RegisterScreen extends StatelessWidget {
                 hintText: "Enter Phone Number",
                 prefixIcon: SvgPicture.asset(
                   AppImages.phone,
-                  color: Color(0xFFB2B2B2),
+                  color: const Color(0xFFB2B2B2),
                 ),
               ),
               CustomTextField(
@@ -71,7 +72,7 @@ class RegisterScreen extends StatelessWidget {
                 isPassword: true,
                 prefixIcon: SvgPicture.asset(
                   AppImages.lock,
-                  color: Color(0xFFB2B2B2),
+                  color: const Color(0xFFB2B2B2),
                 ),
               ),
 
@@ -82,13 +83,13 @@ class RegisterScreen extends StatelessWidget {
                 isPassword: true,
                 prefixIcon: SvgPicture.asset(
                   AppImages.lock,
-                  color: Color(0xFFB2B2B2),
+                  color: const Color(0xFFB2B2B2),
                 ),
               ),
               // Privacy Policy And Terms
               Row(
                 spacing: 10,
-                children: [
+                children: <Widget>[
                   // Check Box
                   Container(
                     height: 25,
@@ -96,16 +97,16 @@ class RegisterScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(7),
                       // gradient: LinearGradient(colors: AppColors.gradient),
-                      border: Border.all(color: Color(0xFFa4a4a4)),
+                      border: Border.all(color: const Color(0xFFa4a4a4)),
                     ),
-                    child: Icon(Icons.check, color: Color(0xFFd1b243)),
+                    child: const Icon(Icons.check, color: Color(0xFFd1b243)),
                   ),
                   // Text
                   Expanded(
                     child: RichText(
                       text: TextSpan(
                         style: theme.labelSmall,
-                        children: [
+                        children: <InlineSpan>[
                           const TextSpan(text: 'I agree to the '),
 
                           TextSpan(
@@ -147,18 +148,23 @@ class RegisterScreen extends StatelessWidget {
               ),
 
               // Button
-              CustomButton(onTap: () {}, text: 'Create Account'),
+              CustomButton(
+                onTap: () {
+                  Get.to(() => const SetPinScreen());
+                },
+                text: 'Create Account',
+              ),
 
               Row(
                 mainAxisAlignment: .center,
-                children: [
+                children: <Widget>[
                   // FIrst
                   Text('Already have an account? ', style: theme.labelSmall),
                   GestureDetector(
                     onTap: () {
-                      Get.to(() => LoginScreen());
+                      Get.to(() => const LoginScreen());
                     },
-                    child: TextGradient(
+                    child: const TextGradient(
                       text: 'Sign in',
                       fontsize: 15,
                       fontWeight: FontWeight.w600,

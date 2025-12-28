@@ -35,7 +35,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     _timer?.cancel();
     _secondsRemaining = _initialSeconds;
 
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       if (_secondsRemaining == 0) {
         timer.cancel();
       } else {
@@ -54,8 +54,8 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context).textTheme;
-    final h = ScreenHelper.height(context);
+    final TextTheme theme = Theme.of(context).textTheme;
+    final double h = ScreenHelper.height(context);
 
     return Scaffold(
       appBar: const CustomAppBar(),
@@ -65,11 +65,11 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
         child: Column(
           spacing: 20,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          children: <Widget>[
             /// HEADER
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              children: <Widget>[
                 Center(
                   child: Image.asset(AppImages.verifycode, height: h * 0.2),
                 ),
@@ -78,7 +78,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                 RichText(
                   text: TextSpan(
                     style: theme.labelSmall,
-                    children: [
+                    children: <InlineSpan>[
                       const TextSpan(text: 'We have sent a code to '),
                       TextSpan(
                         text: 'johndoe@gmail.com',
@@ -102,7 +102,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
             /// OTP INPUT
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              children: <Widget>[
                 Text(
                   'Enter Code',
                   style: theme.labelMedium!.copyWith(fontSize: 14),
@@ -146,17 +146,11 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                     _startTimer();
                     // TODO: Call resend OTP API here
                   },
-                  child: GradientBorderContainer(
+                  child: const GradientBorderContainer(
                     borderWidth: 1,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 20,
-                    ),
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                     borderRadius: 10000,
-                    child: const TextGradient(
-                      text: 'Resend Code',
-                      fontsize: 15,
-                    ),
+                    child: TextGradient(text: 'Resend Code', fontsize: 15),
                   ),
                 ),
               ),

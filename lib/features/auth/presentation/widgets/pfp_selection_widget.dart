@@ -8,13 +8,13 @@ class PfpSelectionWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = ScreenHelper.isdarkMode(context);
+    final bool isDarkMode = ScreenHelper.isdarkMode(context);
 
     return SizedBox(
       height: 100,
       width: 100,
       child: Stack(
-        children: [
+        children: <Widget>[
           Center(
             child: ClipOval(
               child: Container(
@@ -22,7 +22,9 @@ class PfpSelectionWidget extends StatelessWidget {
                 width: 100,
 
                 decoration: BoxDecoration(
-                  color: isDarkMode ? Color(0xFF34353d) : Color(0xFFf7f7f7),
+                  color: isDarkMode
+                      ? const Color(0xFF34353d)
+                      : const Color(0xFFf7f7f7),
                 ),
               ),
             ),
@@ -39,10 +41,10 @@ class PfpSelectionWidget extends StatelessWidget {
             right: 0,
             child: Container(
               clipBehavior: Clip.hardEdge,
-              padding: EdgeInsets.all(5),
+              padding: const EdgeInsets.all(5),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(1000),
-                color: Color(0xFFdbdbdb),
+                color: const Color(0xFFdbdbdb),
                 border: Border.all(
                   color: isDarkMode ? Colors.black : Colors.white,
                   width: 3,

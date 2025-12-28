@@ -4,17 +4,23 @@ import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 
 class OtpInput extends StatefulWidget {
+  const OtpInput({
+    super.key,
+    this.length = 6,
+    this.onOtpChanged,
+    this.isOtpWrong = false,
+  });
   final int length;
-  const OtpInput({super.key, this.length = 6});
+  final ValueChanged<String>? onOtpChanged;
+  final bool isOtpWrong;
 
   @override
   State<OtpInput> createState() => _OtpInputState();
 }
 
 class _OtpInputState extends State<OtpInput> {
-  // final int length = 6;
-  final List<TextEditingController> controllers = [];
-  final List<FocusNode> focusNodes = [];
+  final List<TextEditingController> controllers = <TextEditingController>[];
+  final List<FocusNode> focusNodes = <FocusNode>[];
 
   @override
   void initState() {
@@ -27,44 +33,54 @@ class _OtpInputState extends State<OtpInput> {
 
   @override
   void dispose() {
-    for (var controller in controllers) controller.dispose();
-    for (var node in focusNodes) node.dispose();
+    for (final TextEditingController controller in controllers) {
+      controller.dispose();
+    }
+    for (final FocusNode node in focusNodes) {
+      node.dispose();
+    }
     super.dispose();
+  }
+
+  String _getOtp() {
+    return controllers.map((TextEditingController c) => c.text).join();
   }
 
   void _onChanged(String value, int index) {
     if (value.isNotEmpty && index < widget.length - 1) {
       focusNodes[index + 1].requestFocus();
     }
+
     if (value.isEmpty && index > 0) {
       focusNodes[index - 1].requestFocus();
     }
+
+    widget.onOtpChanged?.call(_getOtp());
+
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = ScreenHelper.isdarkMode(context);
+    final bool isDarkMode = ScreenHelper.isdarkMode(context);
 
     return LayoutBuilder(
-      builder: (context, constraints) {
-        const spacing = 10.0;
-        const maxBoxSize = 50.0;
-        final totalSpacing = spacing * (widget.length - 1);
+      builder: (BuildContext context, BoxConstraints constraints) {
+        const double spacing = 10.0;
+        const double maxBoxSize = 50.0;
+        final double totalSpacing = spacing * (widget.length - 1);
 
-        // Available width for boxes
-        final availableWidth = constraints.maxWidth - totalSpacing;
+        final double availableWidth = constraints.maxWidth - totalSpacing;
 
-        // Calculate box size but NEVER exceed maxBoxSize
-        final boxSize = (availableWidth / widget.length).clamp(
+        final double boxSize = (availableWidth / widget.length).clamp(
           40.0,
           maxBoxSize,
         );
 
         return Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(widget.length, (index) {
-            final isFilled = controllers[index].text.isNotEmpty;
+          children: List.generate(widget.length, (int index) {
+            final bool isFilled = controllers[index].text.isNotEmpty;
 
             return Padding(
               padding: EdgeInsets.only(
@@ -79,15 +95,19 @@ class _OtpInputState extends State<OtpInput> {
                   decoration: BoxDecoration(
                     color: isFilled
                         ? (isDarkMode
-                              ? const Color(0xFF20222b)
-                              : const Color(0xFFfefdf6))
+                              ? const Color(0xFF20222B)
+                              : const Color(0xFFFEFDF6))
                         : (isDarkMode
                               ? const Color(0xFF2C2C36)
-                              : const Color(0xFFfbf9f2)),
+                              : const Color(0xFFFBF9F2)),
                     borderRadius: BorderRadius.circular(8),
-                    border: isFilled
-                        ? GradientBoxBorder(
-                            gradient: const LinearGradient(
+
+                    /// 🔴 ERROR BORDER HAS HIGHEST PRIORITY
+                    border: widget.isOtpWrong
+                        ? Border.all(color: Colors.red, width: 1.5)
+                        : isFilled
+                        ? const GradientBoxBorder(
+                            gradient: LinearGradient(
                               colors: AppColors.gradient,
                             ),
                             width: 1,
@@ -102,15 +122,15 @@ class _OtpInputState extends State<OtpInput> {
                     keyboardType: TextInputType.number,
                     cursorColor: isDarkMode ? Colors.white : Colors.black,
                     style: TextStyle(
-                      fontSize: boxSize * 0.35, // scale text nicely
+                      fontSize: boxSize * 0.35,
                       fontWeight: FontWeight.w600,
-                      color: const Color(0xFFa4a4a4),
+                      color: const Color(0xFFA4A4A4),
                     ),
                     decoration: const InputDecoration(
                       counterText: '',
                       border: InputBorder.none,
                     ),
-                    onChanged: (value) => _onChanged(value, index),
+                    onChanged: (String value) => _onChanged(value, index),
                   ),
                 ),
               ),

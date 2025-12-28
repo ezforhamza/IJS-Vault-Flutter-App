@@ -3,12 +3,6 @@ import 'package:gradient_borders/gradient_borders.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 
 class GradientBorderContainer extends StatelessWidget {
-  final Widget child;
-  final double borderRadius;
-  final double borderWidth;
-  final EdgeInsetsGeometry padding;
-  final Color? backgroundColor;
-
   const GradientBorderContainer({
     super.key,
     required this.child,
@@ -17,6 +11,11 @@ class GradientBorderContainer extends StatelessWidget {
     this.padding = const EdgeInsets.all(12),
     this.backgroundColor,
   });
+  final Widget child;
+  final double borderRadius;
+  final double borderWidth;
+  final EdgeInsetsGeometry padding;
+  final Color? backgroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +25,7 @@ class GradientBorderContainer extends StatelessWidget {
         color: backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
         borderRadius: BorderRadius.circular(borderRadius),
         border: GradientBoxBorder(
-          gradient: LinearGradient(colors: AppColors.gradient),
+          gradient: const LinearGradient(colors: AppColors.gradient),
           width: borderWidth,
         ),
       ),

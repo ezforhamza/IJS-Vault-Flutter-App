@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
+import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 
 class CustomTextField extends StatefulWidget {
@@ -31,11 +32,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = ScreenHelper.isdarkMode(context);
+    final bool isDarkMode = ScreenHelper.isdarkMode(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+      children: <Widget>[
         Text(
           widget.title,
           style: Theme.of(
@@ -46,20 +47,23 @@ class _CustomTextFieldState extends State<CustomTextField> {
         TextFormField(
           controller: widget.controller,
           obscureText: widget.isPassword ? _obscureText : false,
-          validator: (value) {
-            final error = widget.validator?.call(value);
+          validator: (String? value) {
+            final String? error = widget.validator?.call(value);
             setState(() {
               _hasError = error != null;
             });
             return error;
           },
-          style: const TextStyle(color: Colors.white),
+          cursorColor: const Color(0xFFa4a4a4),
+          style: const TextStyle(color: Color(0xFFa4a4a4)),
           decoration: InputDecoration(
             filled: true,
-            fillColor: isDarkMode ? const Color(0xFF20222b) : Color(0xFFfdfbf5),
+            fillColor: isDarkMode
+                ? const Color(0xFF20222b)
+                : const Color(0xFFfdfbf5),
             hintText: widget.hintText,
             hintStyle: TextStyle(
-              color: isDarkMode ? Colors.white54 : Color(0xFFa4a4a4),
+              color: isDarkMode ? Colors.white54 : const Color(0xFFa4a4a4),
               fontSize: 14,
             ),
             prefixIcon: widget.prefixIcon != null
@@ -80,20 +84,20 @@ class _CustomTextFieldState extends State<CustomTextField> {
                 : null,
             // No border by default
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppSizes.borderRadius),
               borderSide: BorderSide.none,
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppSizes.borderRadius),
               borderSide: BorderSide.none,
             ),
             // Show red border only on validation error
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppSizes.borderRadius),
               borderSide: const BorderSide(color: Colors.red, width: 2),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppSizes.borderRadius),
               borderSide: const BorderSide(color: Colors.red, width: 2),
             ),
           ),
