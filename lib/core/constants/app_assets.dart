@@ -30,4 +30,7 @@ class AppImages {
   static const String selected4 = 'assets/svgs/selected4.svg';
   static const String unselected4 = 'assets/svgs/unselected4.svg';
   static const String bell = 'assets/svgs/bell.svg';
+  static const String add = 'assets/svgs/add.svg';
+  static const String cancel = 'assets/svgs/cancel.svg';
+  static const String uploadfile = 'assets/svgs/uploadfile.svg';
 }

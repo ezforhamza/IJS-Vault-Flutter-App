@@ -6,7 +6,7 @@ class AppTextStyles {
     fontFamily: 'Poppins',
     fontSize: 14,
     fontWeight: FontWeight.w400,
-    height: 1.0, // 100%
+    height: 1.5,
     letterSpacing: 0,
     color: color,
   );
@@ -14,7 +14,7 @@ class AppTextStyles {
     fontFamily: 'Poppins',
     fontSize: 22,
     fontWeight: FontWeight.w600,
-    height: 22 / 14, // exact line-height
+    height: 1.5,
     letterSpacing: 0,
     color: color,
   );
@@ -23,7 +23,7 @@ class AppTextStyles {
     fontFamily: 'Poppins',
     fontSize: 16,
     fontWeight: FontWeight.w500,
-    height: 22 / 14, // exact line-height
+    height: 1.5,
     letterSpacing: 0,
     color: color,
   );
@@ -33,7 +33,7 @@ class AppTextStyles {
     fontFamily: 'Poppins',
     fontSize: 14,
     fontWeight: FontWeight.w400,
-    height: 1.5, // 150%
+    height: 1.5,
     letterSpacing: 0,
     color: color,
   );

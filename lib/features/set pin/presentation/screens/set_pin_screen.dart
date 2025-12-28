@@ -45,7 +45,7 @@ class _VerifyCodeScreenState extends State<SetPinScreen> {
                 /// PIN INPUT
                 OtpInput(
                   length: 4,
-                  isOtpWrong: false,
+                  // isOtpWrong: false,
                   onOtpChanged: (String value) {
                     setState(() {
                       isOtpFIlled = value.length == 4;

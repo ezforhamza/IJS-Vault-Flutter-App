@@ -1,9 +1,15 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get_instance/get_instance.dart';
+import 'package:get/state_manager.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
+import 'package:ijs_vault/features/bottomNavigationbar/presentation/widgets/add_button_widget.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/screens/my_vault_screen.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 import 'package:ijs_vault/shared/widgets/gradient_text_widget.dart';
@@ -48,23 +54,58 @@ class _HomeWithBottomNavScreenState extends State<HomeWithBottomNavScreen> {
       label: 'Settings',
     ),
   ];
-
+  bool isAddButtonTapped = false;
   @override
   Widget build(BuildContext context) {
+    final MyVaultController vaultcontroller = Get.find<MyVaultController>();
+
     return Scaffold(
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        child: pages[currentIndex],
+      // floatingActionButton: currentIndex == 0
+      //     ?
+      //     : null,
+      body: Stack(
+        children: <Widget>[
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: pages[currentIndex],
+          ),
+          Positioned(
+            bottom: 5,
+            left: 0,
+            right: 0,
+            child: CustomBottomNavBar(
+              currentIndex: currentIndex,
+              items: navItems,
+              onTap: (int index) {
+                setState(() {
+                  currentIndex = index;
+                });
+              },
+            ),
+          ),
+          // if (isAddButtonTapped)
+          Obx(
+            () => vaultcontroller.isAddButtonTapped.value
+                ? Positioned.fill(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+                      child: Container(
+                        color: const Color(0xFF494b52).withOpacity(0.35),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+
+          if (currentIndex == 0)
+            Positioned(
+              bottom: 100 + MediaQuery.of(context).padding.bottom,
+              right: 20,
+              child: const AddButtonWidget(),
+            ),
+        ],
       ),
-      bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: currentIndex,
-        items: navItems,
-        onTap: (int index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
-      ),
+      // bottomNavigationBar:
     );
   }
 }
@@ -137,7 +178,7 @@ class CustomBottomNavBar extends StatelessWidget {
                               child: TextGradient(
                                 key: ValueKey(item.label),
                                 text: item.label,
-                                fontsize: 10,
+                                fontsize: 12,
                                 fontWeight: FontWeight.w600,
                               ),
                             )

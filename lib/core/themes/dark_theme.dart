@@ -24,10 +24,10 @@ class AppDarkTheme {
       labelSmall: AppTextStyles.medium12(const Color(0xFFB2B2B2)),
       bodySmall: AppTextStyles.regular12(Colors.white),
     ),
-    inputDecorationTheme: const InputDecorationTheme(
-      filled: true,
-      fillColor: Color(0xFF20222b),
-      hintStyle: TextStyle(color: Color(0xFFa4a4a4), fontSize: 14),
-    ),
+    // inputDecorationTheme: const InputDecorationTheme(
+    //   filled: true,
+    //   fillColor: Color(0xFF20222b),
+    //   hintStyle: TextStyle(color: Color(0xFFa4a4a4), fontSize: 14),
+    // ),
   );
 }

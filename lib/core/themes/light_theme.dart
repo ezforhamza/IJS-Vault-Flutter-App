@@ -22,10 +22,10 @@ class AppLightTheme {
       bodySmall: AppTextStyles.regular12(Colors.black),
       // bodyLarge:
     ),
-    inputDecorationTheme: const InputDecorationTheme(
-      filled: true,
-      fillColor: Color(0xFFfdfbf5),
-      hintStyle: TextStyle(color: Color(0xFFa4a4a4), fontSize: 14),
-    ),
+    // inputDecorationTheme: const InputDecorationTheme(
+    //   filled: true,
+    //   fillColor: Color(0xFFfdfbf5),
+    //   hintStyle: TextStyle(color: Color(0xFFa4a4a4), fontSize: 14),
+    // ),
   );
 }

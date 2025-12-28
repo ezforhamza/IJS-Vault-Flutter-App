@@ -4,15 +4,9 @@ import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 
 class OtpInput extends StatefulWidget {
-  const OtpInput({
-    super.key,
-    this.length = 6,
-    this.onOtpChanged,
-    this.isOtpWrong = false,
-  });
+  const OtpInput({super.key, this.length = 6, this.onOtpChanged});
   final int length;
   final ValueChanged<String>? onOtpChanged;
-  final bool isOtpWrong;
 
   @override
   State<OtpInput> createState() => _OtpInputState();
@@ -101,11 +95,7 @@ class _OtpInputState extends State<OtpInput> {
                               ? const Color(0xFF2C2C36)
                               : const Color(0xFFFBF9F2)),
                     borderRadius: BorderRadius.circular(8),
-
-                    /// 🔴 ERROR BORDER HAS HIGHEST PRIORITY
-                    border: widget.isOtpWrong
-                        ? Border.all(color: Colors.red, width: 1.5)
-                        : isFilled
+                    border: isFilled
                         ? const GradientBoxBorder(
                             gradient: LinearGradient(
                               colors: AppColors.gradient,
