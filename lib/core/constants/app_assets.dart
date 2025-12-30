@@ -8,6 +8,7 @@ class AppImages {
   static const String pinlock = 'assets/images/pinlock.png';
   static const String successicon = 'assets/images/successicon.png';
   static const String search = 'assets/images/search.png';
+  static const String splash = 'assets/images/splash.gif';
 
   // SVGS
   static const String email = 'assets/svgs/email.svg';
@@ -17,6 +18,8 @@ class AppImages {
   static const String pfpicon1 = 'assets/svgs/pfpicon1.svg';
   static const String pfpicon2 = 'assets/svgs/pfpicon2.svg';
   static const String profile = 'assets/svgs/profile.svg';
+  static const String pdf = 'assets/svgs/pdf.svg';
+
   static const String phone = 'assets/svgs/phone.svg';
 
   static const String back = 'assets/svgs/back.svg';

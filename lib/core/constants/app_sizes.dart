@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppSizes {
   static const EdgeInsets horizontalPadding = EdgeInsets.symmetric(
-    horizontal: 20,
+    horizontal: 15,
   );
-  static const double borderRadius = 10;
+  static const double borderRadius = 12;
 }

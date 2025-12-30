@@ -9,6 +9,7 @@ import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/my_vault.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 import 'package:ijs_vault/shared/widgets/profile_picture_widget.dart';
+import 'package:ijs_vault/shared/widgets/search_field.dart';
 
 class MyVaultScreen extends StatefulWidget {
   const MyVaultScreen({super.key});
@@ -42,18 +43,20 @@ class _MyVaultScreenState extends State<MyVaultScreen>
 
     return SafeArea(
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
+
+        appBar: ProfileHeader(textTheme: textTheme),
+
         body: Padding(
           padding: AppSizes.horizontalPadding,
           child: Column(
             spacing: 25,
             children: <Widget>[
-              const SizedBox(height: 0),
-
               // Build Header
-              ProfileHeader(textTheme: textTheme),
 
               // Search Bar
-              _buildSearchField(),
+              // _buildSearchField(isDarkMode),
+              CustomSearchField(isDarkMode: isDarkMode),
 
               // Gradient TabBar
               _buildGradientTabBar(isDarkMode),
@@ -76,44 +79,11 @@ class _MyVaultScreenState extends State<MyVaultScreen>
     );
   }
 
-  TextFormField _buildSearchField() {
-    return TextFormField(
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        hintText: 'Search',
-        // dark field fill color
-        isDense: true, // reduces height
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-
-        prefixIcon: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Image.asset(AppImages.search, width: 18, height: 18),
-        ),
-        prefixIconConstraints: const BoxConstraints(
-          minWidth: 18,
-          minHeight: 18,
-        ),
-
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.borderRadius),
-          borderSide: const BorderSide(
-            color: Colors.white,
-            width: 1.2,
-          ), // remove default border
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.borderRadius),
-          borderSide: const BorderSide(color: Colors.white, width: 1.2),
-        ),
-      ),
-    );
-  }
-
   Widget _buildGradientTabBar(bool isDark) {
     final MyVaultController controller = Get.find<MyVaultController>();
 
     return Container(
-      height: 45,
+      height: 40,
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF494a51) : const Color(0xFFf4f4f4),
         borderRadius: BorderRadius.circular(AppSizes.borderRadius),
@@ -150,7 +120,7 @@ class _MyVaultScreenState extends State<MyVaultScreen>
   }
 }
 
-class ProfileHeader extends StatelessWidget {
+class ProfileHeader extends StatelessWidget implements PreferredSizeWidget {
   const ProfileHeader({super.key, required this.textTheme});
 
   final TextTheme textTheme;
@@ -159,28 +129,40 @@ class ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isDarkMode = ScreenHelper.isdarkMode(context);
 
-    return Row(
-      children: <Widget>[
-        // Image
-        const ProfilePictureWidget(
+    return AppBar(
+      elevation: 0,
+      backgroundColor: Colors.transparent,
+      centerTitle: false,
+
+      // LEFT WIDGET
+      leading: const Padding(
+        padding: EdgeInsets.only(left: 12, top: 12, bottom: 12),
+        child: ProfilePictureWidget(
           radius: 15,
           imageUrl: "https://randomuser.me/api/portraits/men/1.jpg",
         ),
-        const SizedBox(width: 5),
+      ),
 
-        // Name
-        Text(
-          'Hello, John Marston',
-          style: textTheme.labelLarge!.copyWith(fontSize: 16),
-        ),
-        const Spacer(),
+      // TITLE
+      title: Text(
+        'Hello, John Marston',
+        style: textTheme.labelLarge!.copyWith(fontSize: 16),
+      ),
 
-        // Icon
-        SvgPicture.asset(
-          AppImages.bell,
-          color: isDarkMode ? Colors.white : Colors.black,
+      // RIGHT ACTION
+      actions: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: SvgPicture.asset(
+            AppImages.bell,
+            color: isDarkMode ? Colors.white : Colors.black,
+          ),
         ),
       ],
     );
   }
+
+  /// Required for AppBar height
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }

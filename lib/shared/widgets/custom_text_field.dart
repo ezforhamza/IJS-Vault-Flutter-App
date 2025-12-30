@@ -13,6 +13,8 @@ class CustomTextField extends StatefulWidget {
     this.isPassword = false,
     this.validator,
     this.controller,
+    this.minLines = 1,
+    this.maxLines = 1,
   });
 
   final String title;
@@ -21,6 +23,8 @@ class CustomTextField extends StatefulWidget {
   final bool isPassword;
   final String? Function(String?)? validator;
   final TextEditingController? controller;
+  final int minLines;
+  final int maxLines;
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -56,6 +60,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
           },
           cursorColor: const Color(0xFFa4a4a4),
           style: const TextStyle(color: Color(0xFFa4a4a4)),
+          minLines: widget.minLines,
+          maxLines: widget.isPassword ? 1 : widget.maxLines,
           decoration: InputDecoration(
             filled: true,
             fillColor: isDarkMode
@@ -82,7 +88,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
                     },
                   )
                 : null,
-            // No border by default
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSizes.borderRadius),
               borderSide: BorderSide.none,
@@ -91,7 +96,6 @@ class _CustomTextFieldState extends State<CustomTextField> {
               borderRadius: BorderRadius.circular(AppSizes.borderRadius),
               borderSide: BorderSide.none,
             ),
-            // Show red border only on validation error
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSizes.borderRadius),
               borderSide: const BorderSide(color: Colors.red, width: 2),

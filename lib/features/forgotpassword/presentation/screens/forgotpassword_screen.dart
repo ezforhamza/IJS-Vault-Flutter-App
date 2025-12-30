@@ -18,7 +18,7 @@ class ForgotpasswordScreen extends StatelessWidget {
     final double h = ScreenHelper.height(context);
 
     return Scaffold(
-      appBar: const CustomAppBar(),
+      appBar: const CustomAppBar(text: ''),
       resizeToAvoidBottomInset: false,
       body: Padding(
         padding: AppSizes.horizontalPadding,

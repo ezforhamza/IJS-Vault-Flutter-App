@@ -30,4 +30,5 @@ class AppDarkTheme {
     //   hintStyle: TextStyle(color: Color(0xFFa4a4a4), fontSize: 14),
     // ),
   );
+  static const Color textfieldColor = Color(0xFF20222b);
 }

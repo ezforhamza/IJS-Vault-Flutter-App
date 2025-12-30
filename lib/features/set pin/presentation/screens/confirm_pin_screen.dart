@@ -82,7 +82,7 @@ class _VerifyCodeScreenState extends State<ConfirmPinScreen> {
                         onTap: () async {
                           // Navigator.pop(context);
 
-                          await Future.delayed(const Duration(seconds: 5));
+                          // await Future.delayed(const Duration(seconds: 5));
                           // SHow SUccess DIalogue
                           // Get.dialog(SuccessDialogue(h: h, theme: theme));
                           showGeneralDialog(

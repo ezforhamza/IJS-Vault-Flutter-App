@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/screens/add_folder_screen.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 
 class AddButtonWidget extends StatelessWidget {
@@ -55,18 +56,25 @@ class AddButtonWidget extends StatelessWidget {
                     ],
                   ),
                   //Add Folder
-                  Row(
-                    spacing: 5,
-                    children: <Widget>[
-                      SvgPicture.asset(AppImages.selected1, height: 20),
-                      Text(
-                        'Add Folder',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDarkMode ? Colors.white : Colors.black,
+                  GestureDetector(
+                    onTap: () {
+                      // to aDD fOLDER sCREEN
+                      controller.isAddButtonTapped.value = false;
+                      Get.to(() => const AddFolderScreen());
+                    },
+                    child: Row(
+                      spacing: 5,
+                      children: <Widget>[
+                        SvgPicture.asset(AppImages.selected1, height: 20),
+                        Text(
+                          'Add Folder',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),

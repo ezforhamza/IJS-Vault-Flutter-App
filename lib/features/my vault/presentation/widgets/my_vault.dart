@@ -6,7 +6,10 @@ class MyVault extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TextTheme textTheme = Theme.of(context).textTheme;
-    return Scaffold(body: Center(child: buildEmptyText(textTheme)));
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: Center(child: buildEmptyText(textTheme)),
+    );
   }
 
   Text buildEmptyText(TextTheme textTheme) {
