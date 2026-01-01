@@ -9,9 +9,11 @@ import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/features/bottomNavigationbar/presentation/widgets/add_button_widget.dart';
+import 'package:ijs_vault/features/linked_users/presentation/screens/linked_users_screen.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/screens/my_vault_screen.dart';
 import 'package:ijs_vault/features/reminders/presentation/screens/reminders_screen.dart';
+import 'package:ijs_vault/features/settings/presentation/screens/settings_screen.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 import 'package:ijs_vault/shared/widgets/gradient_text_widget.dart';
 
@@ -29,8 +31,8 @@ class _HomeWithBottomNavScreenState extends State<HomeWithBottomNavScreen> {
   final List<Widget> pages = const <Widget>[
     MyVaultScreen(),
     RemindersScreen(),
-    Center(child: Text('Profile Screen')),
-    Center(child: Text('Setting Screen')),
+    LinkedUsersScreen(),
+    SettingsScreen(),
   ];
 
   final List<BottomNavItem> navItems = <BottomNavItem>[

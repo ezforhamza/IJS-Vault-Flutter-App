@@ -3,15 +3,14 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/route_manager.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
-import 'package:ijs_vault/features/reminders/presentation/screens/all_reminders_screen.dart';
-import 'package:ijs_vault/features/reminders/presentation/widgets/calender_widget.dart';
-import 'package:ijs_vault/features/reminders/presentation/widgets/reminder_widget.dart';
+import 'package:ijs_vault/features/linked_users/presentation/screens/all_linked_users_screen.dart';
+import 'package:ijs_vault/features/linked_users/presentation/widgets/linked_user_widget.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 import 'package:ijs_vault/shared/widgets/profile_picture_widget.dart';
 import 'package:ijs_vault/shared/widgets/search_field.dart';
 
-class RemindersScreen extends StatelessWidget {
-  const RemindersScreen({super.key});
+class LinkedUsersScreen extends StatelessWidget {
+  const LinkedUsersScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +18,7 @@ class RemindersScreen extends StatelessWidget {
     final bool isDarkMode = ScreenHelper.isdarkMode(context);
     return SafeArea(
       child: Scaffold(
-        appBar: ReminderProfileHeader(textTheme: textTheme),
+        appBar: LinkedUsersProfileHeader(textTheme: textTheme),
         body: Padding(
           padding: AppSizes.horizontalPadding,
           child: Column(
@@ -29,13 +28,11 @@ class RemindersScreen extends StatelessWidget {
               //
               CustomSearchField(isDarkMode: isDarkMode),
 
-              // Calender
-              const CalendarWidget(),
-              // Upcoming Reminders
+              //
               Row(
                 children: <Widget>[
                   Text(
-                    'Upcoming Reminders',
+                    'Linked Users',
                     style: textTheme.labelMedium!.copyWith(
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
@@ -44,7 +41,7 @@ class RemindersScreen extends StatelessWidget {
                   const Spacer(),
                   GestureDetector(
                     onTap: () {
-                      Get.to(() => const AllRemindersScreen());
+                      Get.to(() => const AllLinkedUsersScreen());
                     },
                     child: Text(
                       'View All',
@@ -56,8 +53,10 @@ class RemindersScreen extends StatelessWidget {
                   ),
                 ],
               ),
+
+              _buildLinkedUsers(textTheme),
+
               // Rminders
-              buildUpComingRemindersList(textTheme),
               const SizedBox(height: 90),
             ],
           ),
@@ -66,27 +65,33 @@ class RemindersScreen extends StatelessWidget {
     );
   }
 
-  Widget buildUpComingRemindersList(TextTheme textTheme) {
+  Widget _buildLinkedUsers(TextTheme theme) {
     return Expanded(
+      // child: Container(child: Center(child: buildEmptyText(theme))),
       child: ListView.separated(
+        itemBuilder: (BuildContext context, int index) {
+          return const LinkedUserWidget();
+        },
         separatorBuilder: (BuildContext context, int index) {
           return const SizedBox(height: 10);
         },
-        padding: const EdgeInsets.all(0),
-        // shrinkWrap: true,
-        // physics: const NeverScrollableScrollPhysics(),
         itemCount: 5,
-        itemBuilder: (BuildContext context, int index) {
-          return const ReminderWidget();
-        },
       ),
+    );
+  }
+
+  Text buildEmptyText(TextTheme textTheme) {
+    return Text(
+      textAlign: .center,
+      'No linked users yet.\nInvite people you trust to safely access your vault.',
+      style: textTheme.labelSmall,
     );
   }
 }
 
-class ReminderProfileHeader extends StatelessWidget
+class LinkedUsersProfileHeader extends StatelessWidget
     implements PreferredSizeWidget {
-  const ReminderProfileHeader({super.key, required this.textTheme});
+  const LinkedUsersProfileHeader({super.key, required this.textTheme});
 
   final TextTheme textTheme;
 
@@ -111,7 +116,7 @@ class ReminderProfileHeader extends StatelessWidget
 
       // TITLE
       title: Text(
-        'Reminders',
+        'Linked Users',
         style: textTheme.labelLarge!.copyWith(fontSize: 16),
       ),
 

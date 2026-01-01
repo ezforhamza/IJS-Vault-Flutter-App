@@ -23,6 +23,18 @@ class AppImages {
   static const String phone = 'assets/svgs/phone.svg';
 
   static const String back = 'assets/svgs/back.svg';
+  static const String bell2 = 'assets/svgs/bell2.svg';
+  static const String delete = 'assets/svgs/delete.svg';
+  static const String markcomplete = 'assets/svgs/markcomplete.svg';
+  static const String darkmode = 'assets/svgs/darkmode.svg';
+  static const String activitylog = 'assets/svgs/activitylog.svg';
+  static const String changepassword = 'assets/svgs/changepassword.svg';
+  static const String notification = 'assets/svgs/notification.svg';
+  static const String privacy = 'assets/svgs/privacy.svg';
+  static const String terms = 'assets/svgs/terms.svg';
+  static const String logout = 'assets/svgs/logout.svg';
+  static const String delaccount = 'assets/svgs/delaccount.svg';
+
   // Nav Bar
   static const String selected1 = 'assets/svgs/selected1.svg';
   static const String unselected1 = 'assets/svgs/unselected1.svg';

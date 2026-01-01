@@ -23,7 +23,7 @@ class RegisterScreen extends StatelessWidget {
         padding: AppSizes.horizontalPadding,
         child: SingleChildScrollView(
           child: Column(
-            spacing: 20,
+            spacing: 0,
             mainAxisAlignment: .start,
             crossAxisAlignment: .start,
             children: <Widget>[
@@ -146,7 +146,7 @@ class RegisterScreen extends StatelessWidget {
                   ),
                 ],
               ),
-
+              const SizedBox(height: 10),
               // Button
               CustomButton(
                 onTap: () {
@@ -154,6 +154,7 @@ class RegisterScreen extends StatelessWidget {
                 },
                 text: 'Create Account',
               ),
+              const SizedBox(height: 10),
 
               Row(
                 mainAxisAlignment: .center,

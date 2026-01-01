@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_strings.dart';
@@ -37,15 +38,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _nextPage() {
     if (_currentPage < _onboardingPages.length - 1) {
-      setState(() {
-        _currentPage++;
-      });
+      setState(() => _currentPage++);
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(
-          builder: (BuildContext context) => const LoginScreen(),
-        ),
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
     }
   }
@@ -53,7 +50,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _skipOnboarding() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (BuildContext context) => const LoginScreen()),
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
     );
   }
 
@@ -68,25 +65,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: <Widget>[
-            // Skip Text
+            // ───────── Skip ─────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               child: Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
                   onTap: _skipOnboarding,
-                  child: Text(
-                    isLastPage ? "" : AppStrings.skip,
-                    style: theme.bodyMedium,
-                  ),
+                  child:
+                      Text(
+                            isLastPage ? '' : AppStrings.skip,
+                            style: theme.bodyMedium,
+                          )
+                          .animate(key: ValueKey('skip_$_currentPage'))
+                          .fadeIn(duration: 300.ms)
+                          .slideX(begin: 0.2),
                 ),
               ),
             ),
-            SizedBox(height: h * 0.1),
 
-            // Image Section - Flexible to adapt to screen size
+            SizedBox(height: h * 0.08),
+
+            // ───────── Image ─────────
             Expanded(
-              // flex: 5,
+              flex: 5,
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -103,27 +105,35 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       builder:
                           (BuildContext context, BoxConstraints constraints) {
                             return Image.asset(
-                              _onboardingPages[_currentPage].image,
-                              key: ValueKey<int>(_currentPage),
-                              // height: constraints.maxHeight * 0.9,
-                              fit: BoxFit.contain,
-                            );
+                                  _onboardingPages[_currentPage].image,
+                                  key: ValueKey<int>(_currentPage),
+                                  height: constraints.maxHeight * 0.9,
+                                  fit: BoxFit.contain,
+                                )
+                                .animate(
+                                  key: ValueKey('image_anim_$_currentPage'),
+                                )
+                                .fadeIn(duration: 300.ms)
+                                .scale(
+                                  begin: const Offset(0.9, 0.9),
+                                  end: const Offset(1, 1),
+                                  curve: Curves.easeOut,
+                                );
                           },
                     ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 10),
 
-            // Onboarding Content - Flexible bottom section
+            // ───────── Bottom Card ─────────
             SizedBox(
               height: 280,
-              child: OnboardingWidget(
+              child: _OnboardingBottom(
                 h: h,
                 w: w,
                 currentPage: _currentPage,
-                onboardingPages: _onboardingPages,
+                pages: _onboardingPages,
                 onNextPressed: _nextPage,
               ),
             ),
@@ -134,150 +144,119 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 }
 
-class OnboardingWidget extends StatelessWidget {
-  const OnboardingWidget({
-    super.key,
+class _OnboardingBottom extends StatelessWidget {
+  const _OnboardingBottom({
     required this.h,
     required this.w,
     required this.currentPage,
-    required this.onboardingPages,
+    required this.pages,
     required this.onNextPressed,
   });
 
   final double h;
   final double w;
   final int currentPage;
-  final List<OnboardingData> onboardingPages;
+  final List<OnboardingData> pages;
   final VoidCallback onNextPressed;
 
   @override
   Widget build(BuildContext context) {
     final TextTheme theme = Theme.of(context).textTheme;
-    final bool isLastPage = currentPage == onboardingPages.length - 1;
+    final bool isLastPage = currentPage == pages.length - 1;
 
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        return Stack(
-          children: <Widget>[
-            Container(
-              height: constraints.maxHeight,
-              decoration: const BoxDecoration(
-                color: AppColors.scaffoldBackgroundColor,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
-                ),
-              ),
-            ),
-            Container(
-              height: constraints.maxHeight,
-              width: w,
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
-                ),
-                gradient: LinearGradient(
-                  colors: AppColors.gradient,
-                  begin: Alignment.topLeft,
-                  end: Alignment.topRight,
-                ),
-              ),
-              child: Container(
-                margin: const EdgeInsets.only(top: 1),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? AppColors.scaffoldBackgroundColor
-                      : Colors.white,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(32),
-                    topRight: Radius.circular(32),
+    return Stack(
+      children: <Widget>[
+        Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(colors: AppColors.gradient),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+          ),
+        ),
+        Container(
+          margin: const EdgeInsets.only(top: 1),
+          decoration: BoxDecoration(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.scaffoldBackgroundColor
+                : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
+              children: <Widget>[
+                const SizedBox(height: 25),
+
+                // ───────── Dots ─────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    pages.length,
+                    (int index) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: index == currentPage
+                          ? ActiveDot(
+                              key: ValueKey('dot_$currentPage'),
+                              size: 17,
+                            )
+                          : CircleAvatar(
+                              radius: 5,
+                              backgroundColor:
+                                  Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? const Color(0xFF827c5d)
+                                  : const Color(0xFFfaf3cf),
+                            ),
+                    ),
                   ),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    children: <Widget>[
-                      SizedBox(height: constraints.maxHeight * 0.06),
 
-                      // Page Indicators
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          onboardingPages.length,
-                          (int index) => AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            child: index == currentPage
-                                ? const ActiveDot(size: 17)
-                                : CircleAvatar(
-                                    backgroundColor:
-                                        Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? const Color(0xFF827c5d)
-                                        : const Color(0xFFfaf3cf),
-                                    radius: 5,
-                                  ),
-                          ),
-                        ),
-                      ),
+                const SizedBox(height: 25),
 
-                      SizedBox(height: constraints.maxHeight * 0.05),
-
-                      // Title and Subtitle - Takes available space
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 300),
-                            transitionBuilder:
-                                (Widget child, Animation<double> animation) {
-                                  return FadeTransition(
-                                    opacity: animation,
-                                    child: child,
-                                  );
-                                },
-                            child: Column(
-                              key: ValueKey<int>(currentPage),
+                // ───────── Text ─────────
+                Expanded(
+                  child: AnimatedSwitcher(
+                    duration: 350.ms,
+                    child:
+                        Column(
+                              key: ValueKey('text_$currentPage'),
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
-                                // Title
                                 Text(
-                                  onboardingPages[currentPage].title,
+                                  pages[currentPage].title,
                                   style: theme.labelLarge,
                                   textAlign: TextAlign.center,
                                 ),
-                                SizedBox(height: constraints.maxHeight * 0.02),
-
-                                // Subtitle
+                                const SizedBox(height: 12),
                                 Text(
-                                  onboardingPages[currentPage].subtitle,
+                                  pages[currentPage].subtitle,
                                   style: theme.labelSmall,
                                   textAlign: TextAlign.center,
                                 ),
                               ],
+                            )
+                            .animate(key: ValueKey('text_anim_$currentPage'))
+                            .fadeIn(duration: 250.ms)
+                            .slideY(begin: 0.2)
+                            .scale(
+                              begin: const Offset(0.95, 0.95),
+                              curve: Curves.easeOut,
                             ),
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(height: constraints.maxHeight * 0.03),
-
-                      // Button
-                      CustomButton(
-                        onTap: onNextPressed,
-                        text: isLastPage ? 'Get Started' : 'Next',
-                      ),
-
-                      SizedBox(height: constraints.maxHeight * 0.05),
-                    ],
                   ),
                 ),
-              ),
+
+                // ───────── Button ─────────
+                CustomButton(
+                  // key: ValueKey('btn_$currentPage'),
+                  onTap: onNextPressed,
+                  text: isLastPage ? 'Get Started' : 'Next',
+                ),
+
+                const SizedBox(height: 20),
+              ],
             ),
-          ],
-        );
-      },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -288,6 +267,7 @@ class OnboardingData {
     required this.title,
     required this.subtitle,
   });
+
   final String image;
   final String title;
   final String subtitle;

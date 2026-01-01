@@ -15,11 +15,14 @@ class CustomTextField extends StatefulWidget {
     this.controller,
     this.minLines = 1,
     this.maxLines = 1,
+    this.onChanged,
   });
 
   final String title;
   final String? hintText;
   final Widget? prefixIcon;
+  final ValueChanged<String>? onChanged;
+
   final bool isPassword;
   final String? Function(String?)? validator;
   final TextEditingController? controller;
@@ -32,7 +35,7 @@ class CustomTextField extends StatefulWidget {
 
 class _CustomTextFieldState extends State<CustomTextField> {
   bool _obscureText = true;
-  bool _hasError = false;
+  // bool _hasError = false;
 
   @override
   Widget build(BuildContext context) {
@@ -50,19 +53,24 @@ class _CustomTextFieldState extends State<CustomTextField> {
         const SizedBox(height: 8),
         TextFormField(
           controller: widget.controller,
+          onChanged: widget.onChanged, // ✅ added
+
           obscureText: widget.isPassword ? _obscureText : false,
+
           validator: (String? value) {
             final String? error = widget.validator?.call(value);
-            setState(() {
-              _hasError = error != null;
-            });
+            // setState(() {
+            //   _hasError = error != null;
+            // });
             return error;
           },
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           cursorColor: const Color(0xFFa4a4a4),
           style: const TextStyle(color: Color(0xFFa4a4a4)),
           minLines: widget.minLines,
           maxLines: widget.isPassword ? 1 : widget.maxLines,
           decoration: InputDecoration(
+            helperText: ' ',
             filled: true,
             fillColor: isDarkMode
                 ? const Color(0xFF20222b)
@@ -72,6 +80,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
               color: isDarkMode ? Colors.white54 : const Color(0xFFa4a4a4),
               fontSize: 14,
             ),
+            // isCollapsed: ,
+            isDense: true,
             prefixIcon: widget.prefixIcon != null
                 ? Padding(
                     padding: const EdgeInsets.all(12),

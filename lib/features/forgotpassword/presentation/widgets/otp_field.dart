@@ -4,9 +4,16 @@ import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 
 class OtpInput extends StatefulWidget {
-  const OtpInput({super.key, this.length = 6, this.onOtpChanged});
+  const OtpInput({
+    super.key,
+    this.length = 6,
+    this.onOtpChanged,
+    this.isOtpWrong = false, // ✅ new parameter
+  });
+
   final int length;
   final ValueChanged<String>? onOtpChanged;
+  final bool isOtpWrong; // ✅ indicates wrong OTP
 
   @override
   State<OtpInput> createState() => _OtpInputState();
@@ -63,7 +70,6 @@ class _OtpInputState extends State<OtpInput> {
         const double spacing = 10.0;
         const double maxBoxSize = 50.0;
         final double totalSpacing = spacing * (widget.length - 1);
-
         final double availableWidth = constraints.maxWidth - totalSpacing;
 
         final double boxSize = (availableWidth / widget.length).clamp(
@@ -95,7 +101,12 @@ class _OtpInputState extends State<OtpInput> {
                               ? const Color(0xFF2C2C36)
                               : const Color(0xFFFBF9F2)),
                     borderRadius: BorderRadius.circular(8),
-                    border: isFilled
+                    border: widget.isOtpWrong
+                        ? Border.all(
+                            color: Colors.red,
+                            width: 2,
+                          ) // ❌ show red border when wrong
+                        : isFilled
                         ? const GradientBoxBorder(
                             gradient: LinearGradient(
                               colors: AppColors.gradient,

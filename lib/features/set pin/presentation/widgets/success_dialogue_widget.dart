@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/utils.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
+import 'package:ijs_vault/features/bottomNavigationbar/presentation/screens/bottom_nav_bar_screen.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 import 'package:ijs_vault/shared/widgets/custom_button.dart';
 
@@ -55,7 +58,9 @@ class SuccessDialogue extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 CustomButton(
-                  onTap: () {},
+                  onTap: () {
+                    Get.offAll(() => const HomeWithBottomNavScreen());
+                  },
                   text: 'Continue',
                 ).animate().fadeIn(delay: 350.ms).slideY(begin: 0.3, end: 0),
               ],

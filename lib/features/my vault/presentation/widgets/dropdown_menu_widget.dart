@@ -14,19 +14,37 @@ class _CustomTextFieldWithDropdownState
     extends State<CustomTextFieldWithDropdown> {
   final TextEditingController _emailController = TextEditingController();
   String _selectedAccess = 'Select Access';
-  bool _isDropdownOpen = false;
   final GlobalKey _dropdownKey = GlobalKey();
   OverlayEntry? _overlayEntry;
+  bool _isMenuOpen = false;
+  bool _isDisposed = false;
+
+  // -------------------------------
+  // Lifecycle
+  // -------------------------------
+
+  @override
+  void didChangeDependencies() {
+    ModalRoute.of(context)?.addScopedWillPopCallback(() async {
+      _removeOverlay();
+      return true;
+    });
+    super.didChangeDependencies();
+  }
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _removeOverlay();
+    _isDisposed = true;
+    _removeOverlay(fromDispose: true);
     super.dispose();
   }
 
-  void _toggleDropdown() {
-    if (_isDropdownOpen) {
+  // -------------------------------
+  // Overlay control
+  // -------------------------------
+
+  void _toggleMenu() {
+    if (_isMenuOpen) {
       _removeOverlay();
     } else {
       _showOverlay();
@@ -96,15 +114,21 @@ class _CustomTextFieldWithDropdownState
     );
 
     Overlay.of(context).insert(_overlayEntry!);
-    setState(() => _isDropdownOpen = true);
+
+    if (mounted) {
+      setState(() => _isMenuOpen = true);
+    }
   }
 
-  void _removeOverlay() {
+  void _removeOverlay({bool fromDispose = false}) {
     _overlayEntry?.remove();
     _overlayEntry = null;
-    setState(() {
-      _isDropdownOpen = false;
-    });
+
+    if (fromDispose || !mounted || _isDisposed) return;
+
+    if (_isMenuOpen) {
+      setState(() => _isMenuOpen = false);
+    }
   }
 
   Widget _buildMenuItem(String value) {
@@ -197,7 +221,7 @@ class _CustomTextFieldWithDropdownState
               // Dropdown Button
               InkWell(
                 key: _dropdownKey,
-                onTap: _toggleDropdown,
+                onTap: _toggleMenu,
                 child: SizedBox(
                   width: 130, // fixed width for dropdown
                   child: Padding(
@@ -217,7 +241,7 @@ class _CustomTextFieldWithDropdownState
                           ),
                         ),
                         Icon(
-                          _isDropdownOpen
+                          _isMenuOpen
                               ? Icons.keyboard_arrow_up
                               : Icons.keyboard_arrow_down,
                           color: isDarkMode ? Colors.white : Colors.black,
