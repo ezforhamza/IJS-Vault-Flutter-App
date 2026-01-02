@@ -6,7 +6,6 @@ import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/features/reminders/presentation/screens/all_reminders_screen.dart';
 import 'package:ijs_vault/features/reminders/presentation/widgets/calender_widget.dart';
 import 'package:ijs_vault/features/reminders/presentation/widgets/reminder_widget.dart';
-import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 import 'package:ijs_vault/shared/widgets/profile_picture_widget.dart';
 import 'package:ijs_vault/shared/widgets/search_field.dart';
 
@@ -16,7 +15,7 @@ class RemindersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TextTheme textTheme = Theme.of(context).textTheme;
-    final bool isDarkMode = ScreenHelper.isdarkMode(context);
+    final bool isDarkMode = Get.isDarkMode;
     return SafeArea(
       child: Scaffold(
         appBar: ReminderProfileHeader(textTheme: textTheme),
@@ -92,7 +91,7 @@ class ReminderProfileHeader extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
-    final bool isDarkMode = ScreenHelper.isdarkMode(context);
+    final bool isDarkMode = Get.isDarkMode;
 
     return AppBar(
       elevation: 0,

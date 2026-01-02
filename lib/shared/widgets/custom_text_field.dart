@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
-import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 
 class CustomTextField extends StatefulWidget {
   const CustomTextField({
@@ -39,7 +40,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDarkMode = ScreenHelper.isdarkMode(context);
+    final bool isDarkMode = Get.isDarkMode;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,7 +79,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             hintText: widget.hintText,
             hintStyle: TextStyle(
               color: isDarkMode ? Colors.white54 : const Color(0xFFa4a4a4),
-              fontSize: 14,
+              fontSize: 13,
             ),
             // isCollapsed: ,
             isDense: true,
@@ -108,11 +109,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSizes.borderRadius),
-              borderSide: const BorderSide(color: Colors.red, width: 2),
+              borderSide: const BorderSide(color: Colors.red, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSizes.borderRadius),
-              borderSide: const BorderSide(color: Colors.red, width: 2),
+              borderSide: const BorderSide(color: Colors.red, width: 1),
             ),
           ),
         ),

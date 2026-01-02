@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:ijs_vault/shared/helpers/screen_helper.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 
 class CalendarWidget extends StatefulWidget {
   const CalendarWidget({super.key});
@@ -103,7 +104,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   @override
   Widget build(BuildContext context) {
     final List<DateTime?> calendarDays = getCalendarDays();
-    final bool isDarkMode = ScreenHelper.isdarkMode(context);
+    final bool isDarkMode = Get.isDarkMode;
 
     return Container(
       // height: 300,

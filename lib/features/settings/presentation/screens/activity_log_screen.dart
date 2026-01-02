@@ -1,45 +1,43 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/route_manager.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
-import 'package:ijs_vault/features/reminders/presentation/widgets/reminder_widget.dart';
+import 'package:ijs_vault/features/settings/presentation/widgets/activity_log_widget.dart';
 import 'package:ijs_vault/shared/widgets/app_bar.dart';
-import 'package:ijs_vault/shared/widgets/search_field.dart';
 
-class AllRemindersScreen extends StatefulWidget {
-  const AllRemindersScreen({super.key});
+class ActivityLogScreen extends StatefulWidget {
+  const ActivityLogScreen({super.key});
 
   @override
-  State<AllRemindersScreen> createState() => _AllRemindersScreenState();
+  State<ActivityLogScreen> createState() => _ActivityLogScreenState();
 }
 
-class _AllRemindersScreenState extends State<AllRemindersScreen> {
+class _ActivityLogScreenState extends State<ActivityLogScreen> {
   final List<String> reminderTypes = <String>[
-    'All',
-    'Pending',
-    'Overdue',
-    'Completed',
-    'Snoozed',
+    'All Actions',
+    'Shared',
+    'Unshared',
+    'Edited',
+    'Created',
+    'Deleted'
+        'Moved',
+    'Uploaded',
+    'PIN Changed',
+    'Reminder Set',
   ];
   int selectedIndex = 0;
-
   @override
   Widget build(BuildContext context) {
-    final TextTheme textTheme = Theme.of(context).textTheme;
     final bool isDarkMode = Get.isDarkMode;
 
     return Scaffold(
-      appBar: const CustomAppBar(text: "Upcoming Reminders"),
+      appBar: const CustomAppBar(text: 'Activity Log'),
       body: Padding(
         padding: AppSizes.horizontalPadding,
         child: Column(
           children: <Widget>[
-            const SizedBox(height: 10),
-            CustomSearchField(isDarkMode: isDarkMode),
-            const SizedBox(height: 15),
+            const SizedBox(height: 20),
 
-            // Horizontal Reminder Type List
             SizedBox(
               height: 35,
               child: ListView.builder(
@@ -89,15 +87,16 @@ class _AllRemindersScreenState extends State<AllRemindersScreen> {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Reminders List
+            //
             Expanded(
               child: ListView.separated(
-                separatorBuilder: (BuildContext context, int index) =>
-                    const SizedBox(height: 10),
-                itemCount: 5,
-                itemBuilder: (BuildContext context, int index) =>
-                    const ReminderWidget(),
+                itemBuilder: (BuildContext context, int index) {
+                  return ActivityLogWidget(isDarkMode: isDarkMode);
+                },
+                separatorBuilder: (BuildContext context, int index) {
+                  return const SizedBox(height: 20);
+                },
+                itemCount: 10,
               ),
             ),
           ],

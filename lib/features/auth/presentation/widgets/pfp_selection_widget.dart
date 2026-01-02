@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
-import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 
 class PfpSelectionWidget extends StatelessWidget {
   const PfpSelectionWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final bool isDarkMode = ScreenHelper.isdarkMode(context);
+    final bool isDarkMode = Get.isDarkMode;
 
     return SizedBox(
       height: 100,

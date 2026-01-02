@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get.dart';
+import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
-import 'package:ijs_vault/core/constants/app_sizes.dart';
+import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 
-class ReminderWidget extends StatefulWidget {
-  const ReminderWidget({super.key});
+class VaultItem extends StatefulWidget {
+  const VaultItem({super.key});
 
   @override
-  State<ReminderWidget> createState() => _ReminderWidgetState();
+  State<VaultItem> createState() => _VaultItemState();
 }
 
-class _ReminderWidgetState extends State<ReminderWidget> {
+class _VaultItemState extends State<VaultItem> {
+  final GlobalKey _itemKey = GlobalKey();
   final GlobalKey _moreKey = GlobalKey();
+
   OverlayEntry? _overlayEntry;
   bool _isMenuOpen = false;
   bool _isDisposed = false;
@@ -40,24 +42,27 @@ class _ReminderWidgetState extends State<ReminderWidget> {
   }
 
   // -------------------------------
-  // Overlay control
+  // Overlay Control
   // -------------------------------
 
   void _toggleMenu() {
-    if (_isMenuOpen) {
-      _removeOverlay();
-    } else {
-      _showOverlay();
-    }
+    _isMenuOpen ? _removeOverlay() : _showOverlay();
   }
 
   void _showOverlay() {
     if (_isDisposed || _overlayEntry != null) return;
 
-    final RenderBox renderBox =
+    // Get icon render box
+    final RenderBox iconBox =
         _moreKey.currentContext!.findRenderObject() as RenderBox;
-    final Size size = renderBox.size;
-    final Offset offset = renderBox.localToGlobal(Offset.zero);
+    final Offset iconOffset = iconBox.localToGlobal(Offset.zero);
+    final double iconHeight = iconBox.size.height;
+
+    // VaultItem container
+    final RenderBox itemBox =
+        _itemKey.currentContext!.findRenderObject() as RenderBox;
+    final double overlayWidth = itemBox.size.width; // same as card
+    final double itemLeft = itemBox.localToGlobal(Offset.zero).dx; // left edge
 
     _overlayEntry = OverlayEntry(
       builder: (BuildContext context) {
@@ -65,7 +70,7 @@ class _ReminderWidgetState extends State<ReminderWidget> {
 
         return Stack(
           children: <Widget>[
-            /// Tap outside
+            // Tap outside
             Positioned.fill(
               child: Listener(
                 behavior: HitTestBehavior.translucent,
@@ -74,18 +79,18 @@ class _ReminderWidgetState extends State<ReminderWidget> {
               ),
             ),
 
-            /// Dropdown
+            // Overlay positioned right below icon but aligned left to card
             Positioned(
-              left: offset.dx - 120,
-              top: offset.dy + size.height + 6,
-              width: 140,
+              left: itemLeft, // left aligned to VaultItem
+              top: iconOffset.dy + iconHeight + 6, // just below icon
+              width: overlayWidth,
               child: Material(
                 color: Colors.transparent,
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: isDarkMode ? Colors.black : Colors.white,
-                    // borderRadius: BorderRadius.circular(AppSizes.borderRadius),
+                    // borderRadius: BorderRadius.circular(8),
                     boxShadow: <BoxShadow>[
                       BoxShadow(
                         color: Colors.grey.withValues(alpha: 0.2),
@@ -96,21 +101,21 @@ class _ReminderWidgetState extends State<ReminderWidget> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      _buildMenuItem(
-                        title: 'Mark Complete',
-                        image: AppImages.markcomplete,
-                        isdel: false,
+                      _menuItem(
+                        title: 'Rename',
+                        icon: AppImages.delete,
+                        isDelete: false,
                       ),
-                      _buildMenuItem(
-                        title: 'Mark Pending',
-                        image: AppImages.bell2,
-                        isdel: false,
+                      _menuItem(
+                        title: 'Move',
+                        icon: AppImages.delete,
+                        isDelete: false,
                       ),
                       const Divider(),
-                      _buildMenuItem(
+                      _menuItem(
                         title: 'Delete',
-                        image: AppImages.delete,
-                        isdel: true,
+                        icon: AppImages.delete,
+                        isDelete: true,
                       ),
                     ],
                   ),
@@ -123,10 +128,7 @@ class _ReminderWidgetState extends State<ReminderWidget> {
     );
 
     Overlay.of(context).insert(_overlayEntry!);
-
-    if (mounted) {
-      setState(() => _isMenuOpen = true);
-    }
+    setState(() => _isMenuOpen = true);
   }
 
   void _removeOverlay({bool fromDispose = false}) {
@@ -134,20 +136,17 @@ class _ReminderWidgetState extends State<ReminderWidget> {
     _overlayEntry = null;
 
     if (fromDispose || !mounted || _isDisposed) return;
-
-    if (_isMenuOpen) {
-      setState(() => _isMenuOpen = false);
-    }
+    setState(() => _isMenuOpen = false);
   }
 
   // -------------------------------
   // Menu Item
   // -------------------------------
 
-  Widget _buildMenuItem({
+  Widget _menuItem({
     required String title,
-    required String image,
-    required bool isdel,
+    required String icon,
+    required bool isDelete,
   }) {
     return InkWell(
       onTap: () => _removeOverlay(),
@@ -156,8 +155,8 @@ class _ReminderWidgetState extends State<ReminderWidget> {
         child: Row(
           children: <Widget>[
             SvgPicture.asset(
-              image,
-              color: isdel
+              icon,
+              color: isDelete
                   ? null
                   : ScreenHelper.isdarkMode(context)
                   ? Colors.white
@@ -185,68 +184,63 @@ class _ReminderWidgetState extends State<ReminderWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final TextTheme textTheme = Theme.of(context).textTheme;
     final bool isDarkMode = Get.isDarkMode;
 
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: isDarkMode ? const Color(0xFF20222b) : Colors.white,
-        border: Border.all(
-          color: isDarkMode ? const Color(0xFF47443b) : const Color(0xFFf7f2e0),
-        ),
-        borderRadius: BorderRadius.circular(AppSizes.borderRadius),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              Text('Letter for job', style: textTheme.labelMedium),
-              const Spacer(),
-              InkWell(
-                key: _moreKey,
-                onTap: _toggleMenu,
-                child: const Icon(Icons.more_vert),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: <Widget>[
-              SvgPicture.asset(AppImages.pdf),
-              const SizedBox(width: 6),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text('Cover Letter', style: textTheme.labelMedium),
-                  Text('867 KB', style: textTheme.labelSmall),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Scanned copy of my Cover Letter.',
-            style: textTheme.labelSmall!.copyWith(fontSize: 14),
-          ),
-          const SizedBox(height: 4),
-          Text.rich(
-            TextSpan(
-              children: <InlineSpan>[
-                TextSpan(
-                  text: 'Reminder Date & Time: ',
-                  style: textTheme.labelMedium,
+    return Stack(
+      children: <Widget>[
+        Column(
+          mainAxisSize: MainAxisSize.max,
+          children: <Widget>[
+            Container(
+              key: _itemKey,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDarkMode
+                    ? const Color(0xFF292416)
+                    : const Color(0xFFf4edd7),
+                borderRadius: BorderRadius.circular(12),
+                border: const GradientBoxBorder(
+                  gradient: LinearGradient(colors: AppColors.gradient),
                 ),
-                TextSpan(
-                  text: '20 Oct, 2025 - 8:00',
-                  style: textTheme.labelSmall!.copyWith(fontSize: 14),
+              ),
+              child: Center(
+                child: SvgPicture.asset(
+                  AppImages.selected1,
+                  height: 70,
+                  width: 70,
+                  // fit: BoxFit.contain,
                 ),
-              ],
+              ),
             ),
+            const SizedBox(height: 6),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  'Images',
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        Positioned(
+          top: 6,
+          right: 6,
+          child: InkWell(
+            key: _moreKey,
+            onTap: _toggleMenu,
+            child: const Icon(Icons.more_vert, size: 16),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

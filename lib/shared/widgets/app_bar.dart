@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
-import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   const CustomAppBar({super.key, required this.text});
@@ -11,7 +10,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final TextTheme textTheme = Theme.of(context).textTheme;
-    final bool isDarkMode = ScreenHelper.isdarkMode(context);
+    final bool isDarkMode = Get.isDarkMode;
     return AppBar(
       elevation: 0,
       backgroundColor: Colors.transparent,

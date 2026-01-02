@@ -5,7 +5,6 @@ import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/screens/add_folder_screen.dart';
-import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 
 class AddButtonWidget extends StatelessWidget {
   const AddButtonWidget({super.key});
@@ -13,7 +12,7 @@ class AddButtonWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final MyVaultController controller = Get.find<MyVaultController>();
-    final bool isDarkMode = ScreenHelper.isdarkMode(context);
+    final bool isDarkMode = Get.isDarkMode;
 
     return Obx(() {
       if (!controller.showAddButton.value) {

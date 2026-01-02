@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/widgets/vault_item.dart';
 
 class MyVault extends StatelessWidget {
   const MyVault({super.key});
@@ -6,16 +7,40 @@ class MyVault extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TextTheme textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Center(child: buildEmptyText(textTheme)),
+      body: Column(
+        children: <Widget>[
+          Expanded(child: _buildGrid()),
+          const SizedBox(height: 20),
+          // _buildEmptyText(textTheme),
+        ],
+      ),
     );
   }
 
-  Text buildEmptyText(TextTheme textTheme) {
+  Widget _buildGrid() {
+    return GridView.builder(
+      padding: const EdgeInsets.all(0),
+      itemCount: 7,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3, // ✅ 3 items per row
+        crossAxisSpacing: 10,
+        mainAxisSpacing: 10,
+        childAspectRatio: 0.8,
+      ),
+      itemBuilder: (BuildContext context, int index) {
+        return const VaultItem();
+      },
+    );
+  }
+
+  Widget _buildEmptyText(TextTheme textTheme) {
     return Text(
-      textAlign: .center,
-      'No Folder & File\n YetStart by creating your first folder to \norganize your vault.',
+      'No Folder & File Yet\n'
+      'Start by creating your first folder to\n'
+      'organize your vault.',
+      textAlign: TextAlign.center,
       style: textTheme.labelSmall,
     );
   }

@@ -34,6 +34,12 @@ class AppImages {
   static const String terms = 'assets/svgs/terms.svg';
   static const String logout = 'assets/svgs/logout.svg';
   static const String delaccount = 'assets/svgs/delaccount.svg';
+  static const String plusicon = 'assets/svgs/plusicon.svg';
+  static const String lock2 = 'assets/svgs/lock2.svg';
+  static const String uploaded = 'assets/svgs/uploaded.svg';
+  static const String nreminders = 'assets/svgs/nreminders.svg';
+  static const String confirmlogout = 'assets/svgs/Confirmlogout.svg';
+  static const String confirmdelete = 'assets/svgs/confirmdelete.svg';
 
   // Nav Bar
   static const String selected1 = 'assets/svgs/selected1.svg';

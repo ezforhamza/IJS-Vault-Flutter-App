@@ -5,7 +5,6 @@ import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/features/linked_users/presentation/screens/shared_vault_scrren.dart';
-import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 import 'package:ijs_vault/shared/widgets/gradient_text_widget.dart';
 import 'package:ijs_vault/shared/widgets/profile_picture_widget.dart';
 
@@ -15,7 +14,7 @@ class LinkedUserWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TextTheme theme = Theme.of(context).textTheme;
-    final bool isDarkMode = ScreenHelper.isdarkMode(context);
+    final bool isDarkMode = Get.isDarkMode;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,

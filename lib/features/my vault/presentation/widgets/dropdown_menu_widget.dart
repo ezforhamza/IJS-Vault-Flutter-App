@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 
@@ -158,10 +160,10 @@ class _CustomTextFieldWithDropdownState
   @override
   Widget build(BuildContext context) {
     final TextTheme theme = Theme.of(context).textTheme;
-    final bool isDarkMode = ScreenHelper.isdarkMode(context);
+    final bool isDarkMode = Get.isDarkMode;
 
     return Container(
-      height: 55,
+      height: 60,
       decoration: BoxDecoration(
         color: isDarkMode ? const Color(0xFF20222b) : const Color(0xFFfdfbf5),
         borderRadius: BorderRadius.circular(AppSizes.borderRadius),
@@ -216,7 +218,7 @@ class _CustomTextFieldWithDropdownState
                 ),
               ),
               // Vertical Divider
-              Container(width: 2, height: 55, color: const Color(0xFFa4a4a4)),
+              Container(width: 2, height: 60, color: const Color(0xFFa4a4a4)),
               // Dropdown Button
               // Dropdown Button
               InkWell(

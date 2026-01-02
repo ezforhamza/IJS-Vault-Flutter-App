@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:gradient_borders/gradient_borders.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
-import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 
 class OtpInput extends StatefulWidget {
   const OtpInput({
@@ -63,7 +64,7 @@ class _OtpInputState extends State<OtpInput> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isDarkMode = ScreenHelper.isdarkMode(context);
+    final bool isDarkMode = Get.isDarkMode;
 
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {

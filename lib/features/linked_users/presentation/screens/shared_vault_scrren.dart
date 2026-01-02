@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
-import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 import 'package:ijs_vault/shared/widgets/app_bar.dart';
 import 'package:ijs_vault/shared/widgets/search_field.dart';
 
@@ -10,7 +11,7 @@ class SharedVaultScrren extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TextTheme textTheme = Theme.of(context).textTheme;
-    final bool isDarkMode = ScreenHelper.isdarkMode(context);
+    final bool isDarkMode = Get.isDarkMode;
 
     return Scaffold(
       appBar: const CustomAppBar(text: "Shared Vault"),
