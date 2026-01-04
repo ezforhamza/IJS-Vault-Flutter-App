@@ -8,6 +8,8 @@ class AppImages {
   static const String pinlock = 'assets/images/pinlock.png';
   static const String successicon = 'assets/images/successicon.png';
   static const String search = 'assets/images/search.png';
+  static const String imagePlaceholder = 'assets/images/imagePlaceholder.png';
+
   static const String splash = 'assets/images/splash.gif';
 
   // SVGS
@@ -19,6 +21,8 @@ class AppImages {
   static const String pfpicon2 = 'assets/svgs/pfpicon2.svg';
   static const String profile = 'assets/svgs/profile.svg';
   static const String pdf = 'assets/svgs/pdf.svg';
+  static const String doc = 'assets/svgs/pdf.svg'; // Placeholder
+  static const String image = 'assets/svgs/pdf.svg'; // Placeholder
 
   static const String phone = 'assets/svgs/phone.svg';
 
@@ -42,6 +46,15 @@ class AppImages {
   static const String confirmdelete = 'assets/svgs/confirmdelete.svg';
   static const String edit = 'assets/svgs/edit.svg';
   static const String move = 'assets/svgs/move.svg';
+  static const String folder = 'assets/svgs/folder.svg';
+  static const String preview = 'assets/svgs/preview.svg';
+  static const String download = 'assets/svgs/download.svg';
+  static const String setreminder = 'assets/svgs/setreminder.svg';
+  static const String pdficon = 'assets/svgs/pdficon.svg';
+
+  static const String selectreminderdate = 'assets/svgs/selectreminderdate.svg';
+  static const String selectremindertimeicon =
+      'assets/svgs/selectremindertimeicon.svg';
 
   // Nav Bar
   static const String selected1 = 'assets/svgs/selected1.svg';

@@ -29,6 +29,7 @@ class ItemModel {
     required this.createdAt,
     required this.updatedAt,
     required this.breadcrumb,
+    required this.fileType,
   });
 
   factory ItemModel.fromJson(Map<String, dynamic>? json) {
@@ -37,6 +38,7 @@ class ItemModel {
       name: json?['name'] ?? '',
       description: json?['description'] ?? '',
       type: json?['type'] ?? '',
+      fileType: json?['fileType'] ?? '',
       parentId: json?['parentId'],
       isLocked: json?['isLocked'] ?? false,
       owner: OwnerModel.fromJson(json?['ownerId']),
@@ -51,12 +53,14 @@ class ItemModel {
   final String name;
   final String description;
   final String type;
+  final String fileType;
   final dynamic parentId;
   final bool isLocked;
   final OwnerModel owner;
   final List<dynamic> linkedUsers;
   final String createdAt;
   final String updatedAt;
+
   final BreadcrumbModel breadcrumb;
 }
 

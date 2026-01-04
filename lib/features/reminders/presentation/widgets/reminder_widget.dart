@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
+import 'package:ijs_vault/features/reminders/data/models/reminders_model.dart';
+import 'package:ijs_vault/features/reminders/presentation/controllers/reminder_controller.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 
 class ReminderWidget extends StatefulWidget {
-  const ReminderWidget({super.key});
+  const ReminderWidget({super.key, required this.reminder});
+
+  final ReminderItemModel reminder;
 
   @override
   State<ReminderWidget> createState() => _ReminderWidgetState();
@@ -96,21 +99,38 @@ class _ReminderWidgetState extends State<ReminderWidget> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      _buildMenuItem(
-                        title: 'Mark Complete',
-                        image: AppImages.markcomplete,
-                        isdel: false,
-                      ),
-                      _buildMenuItem(
-                        title: 'Mark Pending',
-                        image: AppImages.bell2,
-                        isdel: false,
-                      ),
+                      if (widget.reminder.status != 'completed')
+                        _buildMenuItem(
+                          title: 'Mark Complete',
+                          image: AppImages.markcomplete,
+                          isdel: false,
+                          onTap: () {
+                            Get.find<ReminderController>().markAsComplete(
+                              widget.reminder.id,
+                            );
+                          },
+                        ),
+                      if (widget.reminder.status == 'completed')
+                        _buildMenuItem(
+                          title: 'Mark Pending',
+                          image: AppImages.bell2,
+                          isdel: false,
+                          onTap: () {
+                            Get.find<ReminderController>().markAsPending(
+                              widget.reminder.id,
+                            );
+                          },
+                        ),
                       const Divider(),
                       _buildMenuItem(
                         title: 'Delete',
                         image: AppImages.delete,
                         isdel: true,
+                        onTap: () {
+                          Get.find<ReminderController>().deleteReminder(
+                            widget.reminder.id,
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -148,9 +168,13 @@ class _ReminderWidgetState extends State<ReminderWidget> {
     required String title,
     required String image,
     required bool isdel,
+    required VoidCallback onTap,
   }) {
     return InkWell(
-      onTap: () => _removeOverlay(),
+      onTap: () {
+        _removeOverlay();
+        onTap();
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(
@@ -188,13 +212,34 @@ class _ReminderWidgetState extends State<ReminderWidget> {
     final TextTheme textTheme = Theme.of(context).textTheme;
     final bool isDarkMode = Get.isDarkMode;
 
+    // Check status
+    final bool isCompleted = widget.reminder.status == 'completed';
+    // Simple improved check for overdue: if pending & past due
+    // Note: Ideally compare parsed date/time
+    bool isOverdue = false;
+    try {
+      final String dateTimeStr =
+          "${widget.reminder.date} ${widget.reminder.time}";
+      final DateTime dt = DateTime.parse(dateTimeStr);
+      if (dt.isBefore(DateTime.now()) && !isCompleted) {
+        isOverdue = true;
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    // Border color based on status
+    Color borderColor = isDarkMode
+        ? const Color(0xFF47443b)
+        : const Color(0xFFf7f2e0);
+    if (isOverdue) borderColor = Colors.redAccent.withOpacity(0.5);
+    if (isCompleted) borderColor = Colors.green.withOpacity(0.5);
+
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: isDarkMode ? const Color(0xFF20222b) : Colors.white,
-        border: Border.all(
-          color: isDarkMode ? const Color(0xFF47443b) : const Color(0xFFf7f2e0),
-        ),
+        border: Border.all(color: borderColor),
         borderRadius: BorderRadius.circular(AppSizes.borderRadius),
       ),
       child: Column(
@@ -202,8 +247,18 @@ class _ReminderWidgetState extends State<ReminderWidget> {
         children: <Widget>[
           Row(
             children: <Widget>[
-              Text('Letter for job', style: textTheme.labelMedium),
-              const Spacer(),
+              // Title
+              Expanded(
+                child: Text(
+                  widget.reminder.title,
+                  style: textTheme.labelMedium!.copyWith(
+                    decoration: isCompleted ? TextDecoration.lineThrough : null,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              // const Spacer(),
               InkWell(
                 key: _moreKey,
                 onTap: _toggleMenu,
@@ -212,25 +267,52 @@ class _ReminderWidgetState extends State<ReminderWidget> {
             ],
           ),
           const SizedBox(height: 8),
+
+          // Associated Item Info
           Row(
             children: <Widget>[
-              SvgPicture.asset(AppImages.pdf),
+              // Icon based on type (simple logic for now)
+              SvgPicture.asset(
+                _getIconForType(widget.reminder.itemType),
+                height: 24,
+                width: 24,
+              ),
               const SizedBox(width: 6),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text('Cover Letter', style: textTheme.labelMedium),
-                  Text('867 KB', style: textTheme.labelSmall),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      widget.reminder.itemName,
+                      style: textTheme.labelMedium,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    // Assuming description holds size or similar info if relevant,
+                    // otherwise just show type
+                    Text(
+                      widget.reminder.itemType.toUpperCase(),
+                      style: textTheme.labelSmall,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
           const SizedBox(height: 6),
-          Text(
-            'Scanned copy of my Cover Letter.',
-            style: textTheme.labelSmall!.copyWith(fontSize: 14),
-          ),
-          const SizedBox(height: 4),
+
+          // Description
+          if (widget.reminder.description.isNotEmpty) ...<Widget>[
+            Text(
+              widget.reminder.description,
+              style: textTheme.labelSmall!.copyWith(fontSize: 14),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+          ],
+
+          // DateTime
           Text.rich(
             TextSpan(
               children: <InlineSpan>[
@@ -239,8 +321,11 @@ class _ReminderWidgetState extends State<ReminderWidget> {
                   style: textTheme.labelMedium,
                 ),
                 TextSpan(
-                  text: '20 Oct, 2025 - 8:00',
-                  style: textTheme.labelSmall!.copyWith(fontSize: 14),
+                  text: '${widget.reminder.date} - ${widget.reminder.time}',
+                  style: textTheme.labelSmall!.copyWith(
+                    fontSize: 14,
+                    color: isOverdue ? Colors.redAccent : null,
+                  ),
                 ),
               ],
             ),
@@ -248,5 +333,13 @@ class _ReminderWidgetState extends State<ReminderWidget> {
         ],
       ),
     );
+  }
+
+  String _getIconForType(String type) {
+    if (type.contains('pdf')) return AppImages.pdf;
+    if (type.contains('doc')) return AppImages.doc;
+    if (type.contains('image')) return AppImages.image;
+    // fallback
+    return AppImages.pdf;
   }
 }

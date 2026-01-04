@@ -12,4 +12,13 @@ class AppUrls {
   // Vault
   static const String createFolder = 'vault/folders';
   static const String getVaultItems = 'vault/items';
+  // static const String uploadFile = 'vault/files';
+  static const String renameItem = 'vault/items'; // /{id}
+  static const String moveItem = 'vault/items';
+  static const String deleteItem = 'vault/items'; // /{id}
+  static const String uploadlessThan100 = 'vault/upload'; // /{id}
+
+  // Rminders
+  static const String createreminders = 'reminders';
+  static const String auditLogs = 'audit-logs';
 }

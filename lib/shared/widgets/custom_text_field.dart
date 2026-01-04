@@ -17,11 +17,16 @@ class CustomTextField extends StatefulWidget {
     this.minLines = 1,
     this.maxLines = 1,
     this.onChanged,
+    this.isTitle = true,
+    this.suffixIcon,
+    this.readOnly = false,
   });
 
   final String title;
   final String? hintText;
   final Widget? prefixIcon;
+  final Widget? suffixIcon;
+
   final ValueChanged<String>? onChanged;
 
   final bool isPassword;
@@ -29,6 +34,8 @@ class CustomTextField extends StatefulWidget {
   final TextEditingController? controller;
   final int minLines;
   final int maxLines;
+  final bool isTitle;
+  final bool readOnly;
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -45,14 +52,16 @@ class _CustomTextFieldState extends State<CustomTextField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Text(
-          widget.title,
-          style: Theme.of(
-            context,
-          ).textTheme.labelMedium!.copyWith(fontSize: 14),
-        ),
+        if (widget.isTitle)
+          Text(
+            widget.title,
+            style: Theme.of(
+              context,
+            ).textTheme.labelMedium!.copyWith(fontSize: 14),
+          ),
         const SizedBox(height: 8),
         TextFormField(
+          readOnly: widget.readOnly,
           controller: widget.controller,
           onChanged: widget.onChanged, // ✅ added
 
@@ -67,10 +76,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
           },
           autovalidateMode: AutovalidateMode.onUserInteraction,
           cursorColor: const Color(0xFFa4a4a4),
-          style: const TextStyle(color: Color(0xFFa4a4a4)),
+          style: const TextStyle(color: Color(0xFFa4a4a4), fontSize: 12),
           minLines: widget.minLines,
           maxLines: widget.isPassword ? 1 : widget.maxLines,
           decoration: InputDecoration(
+            errorStyle: const TextStyle(color: Colors.red, fontSize: 12),
             helperText: ' ',
             filled: true,
             fillColor: isDarkMode
@@ -98,7 +108,10 @@ class _CustomTextFieldState extends State<CustomTextField> {
                       });
                     },
                   )
-                : null,
+                : Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: widget.suffixIcon,
+                  ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppSizes.borderRadius),
               borderSide: BorderSide.none,

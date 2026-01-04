@@ -5,7 +5,6 @@ import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:get/utils.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
-import 'package:ijs_vault/features/auth/presentation/screens/login_screen.dart';
 import 'package:ijs_vault/shared/widgets/custom_button.dart';
 
 class ConfirmationDialogue extends StatelessWidget {
@@ -17,6 +16,7 @@ class ConfirmationDialogue extends StatelessWidget {
     required this.subtitle,
     required this.image,
     required this.buttonText,
+    required this.onTap,
   });
 
   final double h;
@@ -25,6 +25,7 @@ class ConfirmationDialogue extends StatelessWidget {
   final String subtitle;
   final String image;
   final String buttonText;
+  final VoidCallback onTap; // ✅ callback
 
   @override
   Widget build(BuildContext context) {
@@ -69,9 +70,7 @@ class ConfirmationDialogue extends StatelessWidget {
                 const SizedBox(height: 16),
 
                 CustomButton(
-                  onTap: () {
-                    Get.offAll(() => const LoginScreen());
-                  },
+                  onTap: onTap,
                   text: buttonText,
                 ).animate().fadeIn(delay: 350.ms).slideY(begin: 0.3, end: 0),
               ],

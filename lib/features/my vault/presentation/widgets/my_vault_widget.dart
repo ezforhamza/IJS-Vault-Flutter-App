@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/features/my%20vault/data/models/vault_item_model.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/widgets/move_item_dialog.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/vault_item.dart';
+import 'package:ijs_vault/features/settings/presentation/widgets/dialoge.dart';
+import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 import 'package:shimmer/shimmer.dart';
 
 class MyVault extends StatefulWidget {
@@ -63,7 +67,77 @@ class _MyVaultState extends State<MyVault> {
       ),
       itemBuilder: (_, int index) {
         final ItemModel item = controller.items[index];
-        return VaultItem(item: item);
+        return VaultItem(
+          type: item.fileType == 'media'
+              ? VaultItemType.media
+              : VaultItemType.folder,
+          item: item,
+          onMove: () {
+            showDialog(
+              context: context,
+              builder: (_) => MoveItemDialog(
+                itemToMove: item,
+                initialParentId: null, // Root
+                onMove: (String? newParentId) {
+                  // See FolderViewScreen reasoning. If newParentId is null, moving to root.
+                  // Repo expects string.
+                  controller.moveItem(item.id, newParentId ?? '', index);
+                  // Get.back();
+                },
+              ),
+            );
+          },
+          onDelete: () {
+            showGeneralDialog(
+              context: context,
+              barrierDismissible: true,
+              barrierLabel: 'Success',
+              barrierColor: Colors.black.withOpacity(0.4),
+              transitionDuration: const Duration(milliseconds: 350),
+              pageBuilder:
+                  (
+                    BuildContext context,
+                    Animation<double> animation,
+                    Animation<double> secondaryAnimation,
+                  ) {
+                    return Center(
+                      child: ConfirmationDialogue(
+                        onTap: () async {
+                          await controller.deleteItem(item.id, index);
+                          Get.back();
+                        },
+                        h: ScreenHelper.height(context),
+                        theme: Theme.of(context).textTheme,
+                        title: 'Delte Item?',
+                        subtitle: 'Do you really want to delete ${item.name}',
+                        image: AppImages.delete,
+                        buttonText: 'Delete',
+                      ),
+                    );
+                  },
+              transitionBuilder:
+                  (
+                    BuildContext context,
+                    Animation<double> animation,
+                    Animation<double> secondaryAnimation,
+                    Widget child,
+                  ) {
+                    final CurvedAnimation curvedAnimation = CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutBack,
+                    );
+
+                    return FadeTransition(
+                      opacity: animation,
+                      child: ScaleTransition(
+                        scale: curvedAnimation,
+                        child: child,
+                      ),
+                    );
+                  },
+            );
+          },
+        );
       },
     );
   }
@@ -102,7 +176,7 @@ class GridShimmer extends StatelessWidget {
         crossAxisCount: 3,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
-        childAspectRatio: 0.8,
+        childAspectRatio: 1,
       ),
       itemBuilder: (_, __) {
         return Shimmer.fromColors(

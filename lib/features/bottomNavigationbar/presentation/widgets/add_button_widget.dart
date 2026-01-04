@@ -41,21 +41,30 @@ class AddButtonWidget extends StatelessWidget {
                 mainAxisAlignment: .center,
                 children: <Widget>[
                   // Add File
-                  Row(
-                    spacing: 5,
-                    children: <Widget>[
-                      SvgPicture.asset(AppImages.uploadfile, height: 18),
-                      Text(
-                        'Upload Files',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: isDarkMode ? Colors.white : Colors.black,
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+
+                    onTap: () {
+                      controller.isAddButtonTapped.value = false;
+                      controller.pickAndConfirmUpload(context);
+                    },
+                    child: Row(
+                      spacing: 5,
+                      children: <Widget>[
+                        SvgPicture.asset(AppImages.uploadfile, height: 18),
+                        Text(
+                          'Upload Files',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   //Add Folder
                   GestureDetector(
+                    behavior: HitTestBehavior.opaque,
                     onTap: () {
                       // to aDD fOLDER sCREEN
                       controller.isAddButtonTapped.value = false;

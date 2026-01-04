@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get.dart';
+import 'package:ijs_vault/features/reminders/data/models/reminders_model.dart';
+import 'package:ijs_vault/features/reminders/presentation/controllers/reminder_controller.dart';
 
 class CalendarWidget extends StatefulWidget {
   const CalendarWidget({super.key});
@@ -10,14 +11,13 @@ class CalendarWidget extends StatefulWidget {
 }
 
 class _CalendarWidgetState extends State<CalendarWidget> {
-  DateTime selectedMonth = DateTime(2025, 8);
+  late DateTime selectedMonth;
   DateTime today = DateTime.now();
-
-  // Example reminders - add your dates here
-  final List<DateTime> reminders = <DateTime>[
-    DateTime(2025, 8, 14), // Past reminder (red)
-    DateTime(2025, 8, 31), // Upcoming reminder (blue)
-  ];
+  @override
+  void initState() {
+    super.initState();
+    selectedMonth = DateTime(today.year, today.month);
+  }
 
   List<String> monthNames = <String>[
     'January',
@@ -78,27 +78,6 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     }
 
     return days;
-  }
-
-  bool isSameDay(DateTime? date1, DateTime? date2) {
-    if (date1 == null || date2 == null) return false;
-    return date1.year == date2.year &&
-        date1.month == date2.month &&
-        date1.day == date2.day;
-  }
-
-  bool hasReminder(DateTime? date) {
-    if (date == null) return false;
-    return reminders.any((DateTime reminder) => isSameDay(reminder, date));
-  }
-
-  bool isReminderPassed(DateTime? date) {
-    if (date == null) return false;
-    final DateTime reminder = reminders.firstWhere(
-      (DateTime r) => isSameDay(r, date),
-      orElse: () => DateTime.now(),
-    );
-    return reminder.isBefore(today);
   }
 
   @override
@@ -271,65 +250,116 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             ),
             const SizedBox(height: 20),
             // Calendar grid
-            GridView.builder(
-              shrinkWrap: true,
-              padding: const EdgeInsets.all(0),
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 7,
-                mainAxisSpacing: 5,
-                crossAxisSpacing: 20,
-              ),
-              itemCount: calendarDays.length,
-              itemBuilder: (BuildContext context, int index) {
-                final DateTime? date = calendarDays[index];
-                final bool isCurrentMonth = date?.month == selectedMonth.month;
-                final bool isReminder = hasReminder(date);
-                final bool isPassed = isReminderPassed(date);
+            // Calendar grid
+            Obx(() {
+              final ReminderController controller =
+                  Get.find<ReminderController>();
+              // Force rebuild when reminders change
+              // ignore: unused_local_variable
+              final int _ = controller.reminders.length;
 
-                return isReminder
-                    ? Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isReminder
-                              ? (isPassed
-                                    ? const Color(0xFFE85D5D)
-                                    : const Color(0xFF3B9FE8))
-                              : Colors.transparent,
+              return GridView.builder(
+                shrinkWrap: true,
+                padding: const EdgeInsets.all(0),
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7,
+                  mainAxisSpacing: 5,
+                  crossAxisSpacing: 20,
+                ),
+                itemCount: calendarDays.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final DateTime? date = calendarDays[index];
+                  final bool isCurrentMonth =
+                      date?.month == selectedMonth.month;
+
+                  // Get Status Color
+                  final Color? statusColor = _getDayStatusColor(
+                    date,
+                    controller,
+                  );
+                  final bool hasStatus = statusColor != null;
+
+                  return Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: statusColor ?? Colors.transparent,
+                    ),
+                    child: Center(
+                      child: Text(
+                        date?.day.toString() ?? '',
+                        style: TextStyle(
+                          color: hasStatus
+                              ? Colors.white
+                              : isCurrentMonth
+                              ? isDarkMode
+                                    ? Colors.white
+                                    : Colors.black
+                              : const Color(0xFF888888),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
                         ),
-                        child: Center(
-                          child: Text(
-                            date?.day.toString() ?? '',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ),
-                      )
-                    : Container(
-                        decoration: const BoxDecoration(shape: BoxShape.circle),
-                        child: Center(
-                          child: Text(
-                            date?.day.toString() ?? '',
-                            style: TextStyle(
-                              color: isCurrentMonth
-                                  ? isDarkMode
-                                        ? Colors.white
-                                        : Colors.black
-                                  : const Color(0xFF888888),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ),
-                      );
-              },
-            ),
+                      ),
+                    ),
+                  );
+                },
+              );
+            }),
           ],
         ),
       ),
     );
+  }
+
+  Color? _getDayStatusColor(DateTime? date, ReminderController controller) {
+    if (date == null) return null;
+
+    final List<ReminderItemModel> dayReminders = controller.reminders.where((
+      ReminderItemModel r,
+    ) {
+      if (r.date.isEmpty) return false;
+      try {
+        final DateTime rDate = DateTime.parse(r.date);
+        return rDate.year == date.year &&
+            rDate.month == date.month &&
+            rDate.day == date.day;
+      } catch (e) {
+        return false;
+      }
+    }).toList();
+
+    if (dayReminders.isEmpty) return null;
+
+    // Check Priority: Overdue > Pending > Snoozed > Completed
+    bool hasOverdue = false;
+    bool hasPending = false;
+    bool hasSnoozed = false;
+    bool hasCompleted = false;
+
+    final DateTime now = DateTime.now();
+    final DateTime todayStart = DateTime(now.year, now.month, now.day);
+
+    for (final ReminderItemModel r in dayReminders) {
+      final String status = r.status.toLowerCase();
+
+      // Overdue check: Pending and date is strictly before today
+      // (Ignoring time for calendar dot simplicity, strictly date based)
+      if (status == 'pending' && date.isBefore(todayStart)) {
+        hasOverdue = true;
+      } else if (status == 'pending') {
+        hasPending = true;
+      } else if (status == 'snoozed') {
+        hasSnoozed = true;
+      } else if (status == 'completed') {
+        hasCompleted = true;
+      }
+    }
+
+    if (hasOverdue) return const Color(0xFFE85D5D); // Red
+    if (hasPending) return const Color(0xFF3B9FE8); // Blue
+    if (hasSnoozed) return Colors.orangeAccent;
+    if (hasCompleted) return Colors.green; // Green
+
+    return null;
   }
 }

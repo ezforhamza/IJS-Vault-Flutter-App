@@ -4,6 +4,7 @@ import 'package:get/get_navigation/get_navigation.dart';
 import 'package:get/utils.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
+import 'package:ijs_vault/features/auth/presentation/screens/login_screen.dart';
 import 'package:ijs_vault/features/settings/presentation/screens/activity_log_screen.dart';
 import 'package:ijs_vault/features/settings/presentation/screens/change_password_screen.dart';
 import 'package:ijs_vault/features/settings/presentation/screens/notification_screen.dart';
@@ -15,6 +16,7 @@ import 'package:ijs_vault/features/settings/presentation/widgets/profile_widget.
 import 'package:ijs_vault/features/settings/presentation/widgets/setting_option_widget.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 import 'package:ijs_vault/shared/widgets/profile_picture_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -112,6 +114,12 @@ class SettingsScreen extends StatelessWidget {
                           ) {
                             return Center(
                               child: ConfirmationDialogue(
+                                onTap: () async {
+                                  final SharedPreferences prefs =
+                                      await SharedPreferences.getInstance();
+                                  prefs.clear();
+                                  Get.offAll(() => const LoginScreen());
+                                },
                                 h: ScreenHelper.height(context),
                                 theme: Theme.of(context).textTheme,
                                 title: 'Logout?',
@@ -166,6 +174,7 @@ class SettingsScreen extends StatelessWidget {
                           ) {
                             return Center(
                               child: ConfirmationDialogue(
+                                onTap: () {},
                                 h: ScreenHelper.height(context),
                                 theme: Theme.of(context).textTheme,
                                 title: 'Delete?',

@@ -5,6 +5,7 @@ import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/controllers/folder_view_controller.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/dropdown_menu_widget.dart';
 import 'package:ijs_vault/features/settings/presentation/widgets/custom_switch.dart';
@@ -14,7 +15,8 @@ import 'package:ijs_vault/shared/widgets/custom_text_field.dart';
 import 'package:ijs_vault/shared/widgets/gradient_text_widget.dart';
 
 class AddFolderScreen extends StatelessWidget {
-  const AddFolderScreen({super.key});
+  const AddFolderScreen({super.key, this.parentId});
+  final String? parentId;
 
   @override
   Widget build(BuildContext context) {
@@ -35,11 +37,20 @@ class AddFolderScreen extends StatelessWidget {
           child: CustomButton(
             onTap: () async {
               if (formKey.currentState!.validate()) {
-                await controller.addNewFolder(
-                  name: nameCOntroller.text,
-                  description: descriptionController.text,
-                  parentId: null,
-                );
+                if (parentId != null) {
+                  final FolderViewController folderController =
+                      Get.find<FolderViewController>(tag: parentId);
+                  await folderController.addNewFolder(
+                    name: nameCOntroller.text,
+                    description: descriptionController.text,
+                  );
+                } else {
+                  await controller.addNewFolder(
+                    name: nameCOntroller.text,
+                    description: descriptionController.text,
+                    parentId: parentId,
+                  );
+                }
                 Get.back();
               }
             },

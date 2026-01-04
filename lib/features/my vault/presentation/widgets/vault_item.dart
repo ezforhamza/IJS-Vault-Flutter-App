@@ -1,16 +1,56 @@
+import 'package:file_icon/file_icon.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/features/my%20vault/data/models/vault_item_model.dart';
-import 'package:ijs_vault/features/my%20vault/presentation/screens/folder_view_Screen.dart.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/screens/folder_view_screen.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/screens/item_preview_screen.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/widgets/set_reminder_widget.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 
+/// ---------------------------------------------------------------------------
+/// ENUM
+/// ---------------------------------------------------------------------------
+enum VaultItemType { folder, media, document, secureNote }
+
+/// ---------------------------------------------------------------------------
+/// MENU ACTION MODEL
+/// ---------------------------------------------------------------------------
+class VaultMenuAction {
+  const VaultMenuAction({
+    required this.title,
+    required this.icon,
+    this.onTap,
+    this.isDelete = false,
+  });
+  final String title;
+  final String icon;
+  final VoidCallback? onTap;
+  final bool isDelete;
+}
+
+/// ---------------------------------------------------------------------------
+/// WIDGET
+/// ---------------------------------------------------------------------------
 class VaultItem extends StatefulWidget {
-  const VaultItem({super.key, required this.item});
+  const VaultItem({
+    super.key,
+    required this.item,
+    required this.type,
+    this.onEdit,
+    this.onMove,
+    this.onDelete,
+  });
+
   final ItemModel item;
+  final VaultItemType type;
+  final VoidCallback? onEdit;
+  final VoidCallback? onMove;
+  final VoidCallback? onDelete;
 
   @override
   State<VaultItem> createState() => _VaultItemState();
@@ -24,9 +64,9 @@ class _VaultItemState extends State<VaultItem> {
   bool _isMenuOpen = false;
   bool _isDisposed = false;
 
-  // -------------------------------
-  // Lifecycle
-  // -------------------------------
+  // ---------------------------------------------------------------------------
+  // LIFECYCLE
+  // ---------------------------------------------------------------------------
 
   @override
   void didChangeDependencies() {
@@ -44,9 +84,9 @@ class _VaultItemState extends State<VaultItem> {
     super.dispose();
   }
 
-  // -------------------------------
-  // Overlay Control
-  // -------------------------------
+  // ---------------------------------------------------------------------------
+  // OVERLAY CONTROL
+  // ---------------------------------------------------------------------------
 
   void _toggleMenu() {
     _isMenuOpen ? _removeOverlay() : _showOverlay();
@@ -55,17 +95,16 @@ class _VaultItemState extends State<VaultItem> {
   void _showOverlay() {
     if (_isDisposed || _overlayEntry != null) return;
 
-    // Get icon render box
     final RenderBox iconBox =
         _moreKey.currentContext!.findRenderObject() as RenderBox;
     final Offset iconOffset = iconBox.localToGlobal(Offset.zero);
     final double iconHeight = iconBox.size.height;
 
-    // VaultItem container
     final RenderBox itemBox =
         _itemKey.currentContext!.findRenderObject() as RenderBox;
-    final double overlayWidth = itemBox.size.width; // same as card
-    final double itemLeft = itemBox.localToGlobal(Offset.zero).dx; // left edge
+    final double itemLeft = itemBox.localToGlobal(Offset.zero).dx;
+
+    final List<VaultMenuAction> actions = _getMenuActions();
 
     _overlayEntry = OverlayEntry(
       builder: (BuildContext context) {
@@ -73,7 +112,6 @@ class _VaultItemState extends State<VaultItem> {
 
         return Stack(
           children: <Widget>[
-            // Tap outside
             Positioned.fill(
               child: Listener(
                 behavior: HitTestBehavior.translucent,
@@ -81,19 +119,16 @@ class _VaultItemState extends State<VaultItem> {
                 child: const SizedBox.expand(),
               ),
             ),
-
-            // Overlay positioned right below icon but aligned left to card
             Positioned(
-              left: itemLeft, // left aligned to VaultItem
-              top: iconOffset.dy + iconHeight + 6, // just below icon
-              width: overlayWidth,
+              left: itemLeft,
+              top: iconOffset.dy + iconHeight + 6,
+              width: 110,
               child: Material(
                 color: Colors.transparent,
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: isDarkMode ? Colors.black : Colors.white,
-                    // borderRadius: BorderRadius.circular(8),
                     boxShadow: <BoxShadow>[
                       BoxShadow(
                         color: Colors.grey.withValues(alpha: 0.2),
@@ -103,24 +138,17 @@ class _VaultItemState extends State<VaultItem> {
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      _menuItem(
-                        title: 'Edit',
-                        icon: AppImages.edit,
-                        isDelete: false,
-                      ),
-                      _menuItem(
-                        title: 'Move',
-                        icon: AppImages.move,
-                        isDelete: false,
-                      ),
-                      const Divider(),
-                      _menuItem(
-                        title: 'Delete',
-                        icon: AppImages.delete,
-                        isDelete: true,
-                      ),
-                    ],
+                    children: actions.map((VaultMenuAction action) {
+                      if (action.isDelete) {
+                        return Column(
+                          children: <Widget>[
+                            const Divider(),
+                            _menuItem(action),
+                          ],
+                        );
+                      }
+                      return _menuItem(action);
+                    }).toList(),
                   ),
                 ),
               ),
@@ -142,24 +170,91 @@ class _VaultItemState extends State<VaultItem> {
     setState(() => _isMenuOpen = false);
   }
 
-  // -------------------------------
-  // Menu Item
-  // -------------------------------
+  // ---------------------------------------------------------------------------
+  // MENU CONFIGURATION
+  // ---------------------------------------------------------------------------
 
-  Widget _menuItem({
-    required String title,
-    required String icon,
-    required bool isDelete,
-  }) {
+  List<VaultMenuAction> _getMenuActions() {
+    if (widget.item.type == 'folder') {
+      // Case: folder
+      return <VaultMenuAction>[
+        VaultMenuAction(
+          title: 'Rename',
+          icon: AppImages.edit,
+          onTap: widget.onEdit,
+        ),
+        VaultMenuAction(
+          title: 'Move',
+          icon: AppImages.move,
+          onTap: widget.onMove,
+        ),
+        VaultMenuAction(
+          title: 'Delete',
+          icon: AppImages.delete,
+          isDelete: true,
+          onTap: widget.onDelete,
+        ),
+      ];
+    } else {
+      // Case: anything else (media, document, secureNote, etc.)
+      return <VaultMenuAction>[
+        VaultMenuAction(
+          title: 'Preview',
+          icon: AppImages.preview,
+          onTap: widget.onEdit,
+        ),
+        VaultMenuAction(
+          title: 'Download',
+          icon: AppImages.download,
+          onTap: widget.onEdit,
+        ),
+        VaultMenuAction(
+          title: 'Set Reminder',
+          icon: AppImages.setreminder,
+          onTap: () {
+            showCupertinoDialog(
+              barrierColor: const Color(0xFF494a51).withAlpha(100),
+              context: context,
+              builder: (_) => SetReminderWidget(
+                title: "Set Reminder",
+                itemId: widget.item.id,
+              ),
+            );
+          },
+        ),
+        ..._commonActions(), // include edit, move, delete if needed
+      ];
+    }
+  }
+
+  List<VaultMenuAction> _commonActions() => <VaultMenuAction>[
+    VaultMenuAction(title: 'Edit', icon: AppImages.edit, onTap: widget.onEdit),
+    VaultMenuAction(title: 'Move', icon: AppImages.move, onTap: widget.onMove),
+    VaultMenuAction(
+      title: 'Delete',
+      icon: AppImages.delete,
+      isDelete: true,
+      onTap: widget.onDelete,
+    ),
+  ];
+
+  // ---------------------------------------------------------------------------
+  // MENU ITEM WIDGET
+  // ---------------------------------------------------------------------------
+
+  Widget _menuItem(VaultMenuAction action) {
     return InkWell(
-      onTap: () => _removeOverlay(),
+      onTap: () {
+        _removeOverlay();
+        action.onTap?.call();
+      },
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Row(
           children: <Widget>[
             SvgPicture.asset(
-              icon,
-              color: isDelete
+              action.icon,
+              color: action.isDelete
                   ? null
                   : ScreenHelper.isdarkMode(context)
                   ? Colors.white
@@ -167,9 +262,9 @@ class _VaultItemState extends State<VaultItem> {
             ),
             const SizedBox(width: 6),
             Text(
-              title,
+              action.title,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 10,
                 color: ScreenHelper.isdarkMode(context)
                     ? Colors.white
                     : Colors.black,
@@ -181,9 +276,9 @@ class _VaultItemState extends State<VaultItem> {
     );
   }
 
-  // -------------------------------
+  // ---------------------------------------------------------------------------
   // UI
-  // -------------------------------
+  // ---------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -191,48 +286,49 @@ class _VaultItemState extends State<VaultItem> {
 
     return GestureDetector(
       onTap: () {
-        Get.to(() => FolderViewScreen(folderName: widget.item.name));
+        if (widget.item.type == 'folder') {
+          Get.to(
+            () => FolderViewScreen(item: widget.item),
+            preventDuplicates: false,
+          );
+        } else {
+          Get.to(() => ItemPreviewScreen(item: widget.item));
+        }
       },
       child: Stack(
         children: <Widget>[
           Column(
-            mainAxisSize: MainAxisSize.max,
             children: <Widget>[
-              Container(
-                key: _itemKey,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isDarkMode
-                      ? const Color(0xFF292416)
-                      : const Color(0xFFf4edd7),
-                  borderRadius: BorderRadius.circular(12),
-                  border: const GradientBoxBorder(
-                    gradient: LinearGradient(colors: AppColors.gradient),
+              Expanded(
+                child: Container(
+                  key: _itemKey,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isDarkMode
+                        ? const Color(0xFF292416)
+                        : const Color(0xFFf4edd7),
+                    borderRadius: BorderRadius.circular(12),
+                    border: const GradientBoxBorder(
+                      gradient: LinearGradient(colors: AppColors.gradient),
+                    ),
                   ),
-                ),
-                child: Center(
-                  child: SvgPicture.asset(
-                    AppImages.selected1,
-                    height: 70,
-                    width: 70,
-                    // fit: BoxFit.contain,
+                  child: Center(
+                    child: FileTypeImageWidget(type: widget.item.name),
                   ),
                 ),
               ),
               const SizedBox(height: 6),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(
-                    widget.item.name,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: isDarkMode ? Colors.white : Colors.black,
-                    ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Text(
+                  widget.item.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: isDarkMode ? Colors.white : Colors.black,
                   ),
                 ),
               ),
@@ -250,5 +346,48 @@ class _VaultItemState extends State<VaultItem> {
         ],
       ),
     );
+  }
+}
+
+class FileTypeImageWidget extends StatelessWidget {
+  const FileTypeImageWidget({
+    super.key,
+    required this.type,
+    this.height,
+    this.width,
+  });
+  final String type; // e.g., "media", "folder", "note"
+  final double? height;
+  final double? width;
+
+  @override
+  Widget build(BuildContext context) {
+    // Map file type to corresponding SVG
+    String asset;
+    switch (type.toLowerCase()) {
+      case 'media':
+        asset = AppImages.bell;
+        break;
+      case 'folder':
+        asset = AppImages.folder; // replace with your folder image
+        break;
+      case 'note':
+        asset = AppImages.activitylog; // replace with your note image
+        break;
+      case 'document':
+        asset = AppImages.pdficon;
+      default:
+        asset = AppImages.folder; // fallback image
+    }
+
+    return type.contains('.')
+        ? FileIcon(
+            // File name
+            type,
+
+            // Icon size
+            size: 50,
+          )
+        : SvgPicture.asset(AppImages.selected1, height: double.infinity);
   }
 }

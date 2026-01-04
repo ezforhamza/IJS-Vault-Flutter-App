@@ -2,136 +2,252 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:ijs_vault/core/network/app_urls.dart';
 import 'package:ijs_vault/core/services/local_storage.dart';
+import 'package:ijs_vault/features/auth/data/models/user_model.dart';
 import 'package:ijs_vault/shared/models/response_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  final Dio _dio = Dio(
-    BaseOptions(
-      validateStatus: (int? status) => true,
+  ApiService() {
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: AppUrls.baseUrl,
+        connectTimeout: const Duration(seconds: 60),
+        receiveTimeout: const Duration(seconds: 60),
+        validateStatus: (int? status) => true,
+        headers: <String, dynamic>{
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
+    _dio.interceptors.add(_loggingInterceptor());
+  }
 
-      baseUrl: AppUrls.baseUrl, // Replace with your actual base URL
-      connectTimeout: const Duration(seconds: 20),
-      receiveTimeout: const Duration(seconds: 20),
-      headers: <String, dynamic>{
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ),
-  );
-
+  late final Dio _dio;
   String? _token;
 
-  /// Call this during app startup or before making secure API calls
-  Future<void> initToken() async {
+  /// =====================================================
+  /// Init Access Token
+  /// =====================================================
+
+  Future<void> _initToken() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     _token = prefs.getString(LocalStorageService.keyAccessToken);
 
-    debugPrint(_token);
     if (_token != null) {
       _dio.options.headers['Authorization'] = 'Bearer $_token';
     }
   }
 
-  // POST
-  Future<ApiResponse> post(String endpoint, {dynamic data}) async {
-    await initToken();
+  /// =====================================================
+  /// Refresh Token
+  /// =====================================================
 
+  Future<bool> _refreshToken() async {
     try {
-      final Response<dynamic> response = await _dio.post(endpoint, data: data);
-      debugPrint("$response");
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      final String? refreshToken = prefs.getString(
+        LocalStorageService.keyRefreshToken,
+      );
 
-      return _buildResponse(response);
+      if (refreshToken == null) return false;
+
+      final Response response = await _dio.post(
+        AppUrls.refreshToken, // <-- refresh endpoint
+        data: <String, dynamic>{'refreshToken': refreshToken},
+        options: Options(
+          headers: <String, dynamic>{
+            'Authorization': null, // IMPORTANT
+          },
+        ),
+      );
+
+      if (response.statusCode == 200 &&
+          response.data != null &&
+          response.data['success'] == true) {
+        final TokensModel tokens = TokensModel.fromJson(
+          response.data['data']['tokens'],
+        );
+
+        await LocalStorageService.saveTokens(tokens);
+
+        _dio.options.headers['Authorization'] = 'Bearer ${tokens.access.token}';
+
+        return true;
+      }
     } catch (e) {
-      return _handleError(e);
+      debugPrint('Refresh token failed: $e');
     }
+    return false;
   }
 
-  // GET
+  /// =====================================================
+  /// HTTP METHODS
+  /// =====================================================
+
   Future<ApiResponse> get(
     String endpoint, {
     Map<String, dynamic>? queryParams,
   }) async {
-    await initToken();
+    await _initToken();
+
     try {
-      final Response<dynamic> response = await _dio.get(
+      final Response response = await _dio.get(
         endpoint,
         queryParameters: queryParams,
       );
-      debugPrint("$response");
-      return _buildResponse(response);
+
+      return await _handleResponse(
+        response,
+        retry: () => _dio.get(endpoint, queryParameters: queryParams),
+      );
     } catch (e) {
       return _handleError(e);
     }
   }
 
-  // PUT
-  Future<ApiResponse> put(String endpoint, {Map<String, dynamic>? data}) async {
-    await initToken();
+  Future<ApiResponse> post(String endpoint, {dynamic data}) async {
+    await _initToken();
 
     try {
-      final Response<dynamic> response = await _dio.put(endpoint, data: data);
-      return _buildResponse(response);
+      final Response response = await _dio.post(endpoint, data: data);
+
+      return await _handleResponse(
+        response,
+        retry: () => _dio.post(endpoint, data: data),
+      );
     } catch (e) {
       return _handleError(e);
     }
   }
 
-  // DELETE
+  Future<ApiResponse> put(String endpoint, {Map<String, dynamic>? data}) async {
+    await _initToken();
+
+    try {
+      final Response response = await _dio.put(endpoint, data: data);
+
+      return await _handleResponse(
+        response,
+        retry: () => _dio.put(endpoint, data: data),
+      );
+    } catch (e) {
+      return _handleError(e);
+    }
+  }
+
+  Future<ApiResponse> patch(
+    String endpoint, {
+    Map<String, dynamic>? data,
+  }) async {
+    await _initToken();
+
+    try {
+      final Response response = await _dio.patch(endpoint, data: data);
+
+      return await _handleResponse(
+        response,
+        retry: () => _dio.patch(endpoint, data: data),
+      );
+    } catch (e) {
+      return _handleError(e);
+    }
+  }
+
   Future<ApiResponse> delete(
     String endpoint, {
     Map<String, dynamic>? data,
   }) async {
-    await initToken();
+    await _initToken();
 
     try {
-      final Response<dynamic> response = await _dio.delete(
-        endpoint,
-        data: data,
+      final Response response = await _dio.delete(endpoint, data: data);
+
+      return await _handleResponse(
+        response,
+        retry: () => _dio.delete(endpoint, data: data),
       );
-      return _buildResponse(response);
     } catch (e) {
       return _handleError(e);
     }
   }
 
-  // === Helpers ===
+  /// =====================================================
+  /// RESPONSE HANDLER
+  /// =====================================================
 
-  ApiResponse _buildResponse(Response response) {
+  Future<ApiResponse> _handleResponse(
+    Response response, {
+    required Future<Response> Function() retry,
+  }) async {
+    // Unauthorized → try refresh
+    if (response.statusCode == 401) {
+      final bool refreshed = await _refreshToken();
+
+      if (refreshed) {
+        final Response retryResponse = await retry();
+        return ApiResponse.fromJson(retryResponse.data);
+      }
+
+      // Refresh failed → logout
+      await LocalStorageService().clearAll();
+      return ApiResponse(
+        success: false,
+        message: 'Session expired. Please login again.',
+      );
+    }
+
     if (response.data is Map<String, dynamic>) {
       return ApiResponse.fromJson(response.data);
-    } else {
-      return ApiResponse(success: false, message: 'Unexpected response format');
     }
+
+    return ApiResponse(success: false, message: 'Unexpected response format');
   }
+
+  /// =====================================================
+  /// ERROR HANDLER
+  /// =====================================================
 
   ApiResponse _handleError(Object error) {
     if (error is DioException) {
-      final Map<String, dynamic> errData = _handleDioError(error);
       return ApiResponse(
-        success: errData['status'],
-        message: errData['message'],
+        success: false,
+        message: error.message ?? 'Network error',
       );
     }
-    return ApiResponse(success: false, message: 'Something went wrong: $error');
+
+    return ApiResponse(success: false, message: 'Something went wrong');
   }
 
-  Map<String, dynamic> _handleDioError(DioException e) {
-    if (e.response != null && e.response?.data is Map<String, dynamic>) {
-      return e.response?.data ??
-          <String, dynamic>{'status': false, 'message': 'Unknown error'};
-    } else if (e.type == DioExceptionType.connectionTimeout) {
-      return <String, dynamic>{
-        'status': false,
-        'message': 'Connection timeout',
-      };
-    } else if (e.type == DioExceptionType.receiveTimeout) {
-      return <String, dynamic>{'status': false, 'message': 'Receive timeout'};
-    } else {
-      return <String, dynamic>{
-        'status': false,
-        'message': 'Network error or unexpected issue',
-      };
-    }
+  Interceptor _loggingInterceptor() {
+    return InterceptorsWrapper(
+      onRequest: (RequestOptions options, RequestInterceptorHandler handler) {
+        debugPrint('━━━━━━━━━━━━━━ REQUEST ━━━━━━━━━━━━━━');
+        debugPrint('➡️ ${options.method} ${options.uri}');
+        debugPrint('Headers: ${options.headers}');
+        debugPrint('Token: $_token');
+        debugPrint('Data: ${options.data}');
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        handler.next(options);
+      },
+      onResponse:
+          (Response<dynamic> response, ResponseInterceptorHandler handler) {
+            debugPrint('━━━━━━━━━━━━━━ RESPONSE ━━━━━━━━━━━━━');
+            debugPrint(
+              '⬅️ ${response.statusCode} ${response.requestOptions.uri}',
+            );
+            debugPrint('Response: ${response.data}');
+            debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+            handler.next(response);
+          },
+      onError: (DioException error, ErrorInterceptorHandler handler) {
+        debugPrint('━━━━━━━━━━━━━━ ERROR ━━━━━━━━━━━━━━━━');
+        debugPrint('❌ ${error.requestOptions.uri}');
+        debugPrint('Message: ${error.message}');
+        debugPrint('Response: ${error.response?.data}');
+        debugPrint('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+        handler.next(error);
+      },
+    );
   }
 }

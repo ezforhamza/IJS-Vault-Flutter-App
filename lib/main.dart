@@ -3,6 +3,7 @@ import 'package:get/get_instance/get_instance.dart';
 import 'package:get/route_manager.dart';
 import 'package:ijs_vault/core/themes/app_theme.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
+import 'package:ijs_vault/features/reminders/presentation/controllers/reminder_controller.dart';
 import 'package:ijs_vault/features/settings/presentation/controller/theme_controller.dart';
 import 'package:ijs_vault/features/splash/presentation/screen/splash_screen.dart';
 
@@ -17,6 +18,7 @@ void main() async {
   // );
 
   Get.put(MyVaultController());
+  Get.put(ReminderController());
 
   runApp(const MyApp());
 }

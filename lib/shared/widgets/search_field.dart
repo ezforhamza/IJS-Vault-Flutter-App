@@ -24,18 +24,19 @@ class CustomSearchField extends StatelessWidget {
       decoration: InputDecoration(
         hintText: 'Search',
         filled: true,
+        hintStyle: const TextStyle(fontSize: 13),
         fillColor: isDarkMode
             ? AppDarkTheme.textfieldColor
             : AppLightTheme.textfieldColor,
         isDense: true,
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
         prefixIcon: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Image.asset(AppImages.search, width: 18, height: 18),
+          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          child: Image.asset(AppImages.search, width: 15, height: 15),
         ),
         prefixIconConstraints: const BoxConstraints(
-          minWidth: 18,
-          minHeight: 18,
+          minWidth: 15,
+          minHeight: 15,
         ),
         border: _whiteBorder(),
         enabledBorder: _whiteBorder(),

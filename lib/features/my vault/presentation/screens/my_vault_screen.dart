@@ -147,7 +147,7 @@ class ProfileHeader extends StatelessWidget implements PreferredSizeWidget {
 
       // TITLE
       title: Text(
-        controller.user.value!.fullName,
+        ' ${controller.user.value!.fullName}',
         style: textTheme.labelLarge!.copyWith(fontSize: 16),
       ),
 

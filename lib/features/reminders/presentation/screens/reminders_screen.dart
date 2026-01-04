@@ -1,133 +1,111 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:get/get_instance/src/extension_instance.dart';
+import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:get/route_manager.dart';
-import 'package:ijs_vault/core/constants/app_assets.dart';
-import 'package:ijs_vault/core/constants/app_sizes.dart';
+import 'package:ijs_vault/core/constants/app_colors.dart';
+import 'package:ijs_vault/features/reminders/data/models/reminders_model.dart';
+import 'package:ijs_vault/features/reminders/presentation/controllers/reminder_controller.dart';
 import 'package:ijs_vault/features/reminders/presentation/screens/all_reminders_screen.dart';
 import 'package:ijs_vault/features/reminders/presentation/widgets/calender_widget.dart';
 import 'package:ijs_vault/features/reminders/presentation/widgets/reminder_widget.dart';
-import 'package:ijs_vault/shared/widgets/profile_picture_widget.dart';
-import 'package:ijs_vault/shared/widgets/search_field.dart';
+import 'package:ijs_vault/shared/widgets/app_bar.dart';
 
 class RemindersScreen extends StatelessWidget {
   const RemindersScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final TextTheme textTheme = Theme.of(context).textTheme;
-    final bool isDarkMode = Get.isDarkMode;
-    return SafeArea(
-      child: Scaffold(
-        appBar: ReminderProfileHeader(textTheme: textTheme),
-        body: Padding(
-          padding: AppSizes.horizontalPadding,
-          child: Column(
-            spacing: 20,
-            children: <Widget>[
-              // _buildSearchField(isDarkMode)
-              //
-              CustomSearchField(isDarkMode: isDarkMode),
+    final ReminderController controller = Get.put(ReminderController());
+    // Trigger fetch on load
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.getAllReminders();
+    });
 
-              // Calender
+    final bool isDarkMode = Get.isDarkMode;
+
+    return Scaffold(
+      backgroundColor: isDarkMode ? AppColors.black : AppColors.white,
+      appBar: const CustomAppBar(text: 'Reminders'),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              // Search
+              // CustomSearchField(isDarkMode: isDarkMode),
+              const SizedBox(height: 10),
+
+              // Calendar
               const CalendarWidget(),
-              // Upcoming Reminders
+              const SizedBox(height: 20),
+
+              // Title ROW
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Text(
-                    'Upcoming Reminders',
-                    style: textTheme.labelMedium!.copyWith(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
+                    'Upcoming',
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  const Spacer(),
                   GestureDetector(
+                    // Navigate to "All Reminders" or similar
                     onTap: () {
                       Get.to(() => const AllRemindersScreen());
                     },
                     child: Text(
                       'View All',
-                      style: textTheme.labelMedium!.copyWith(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
+                      style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                        color: isDarkMode ? Colors.white54 : Colors.black54,
                       ),
                     ),
                   ),
                 ],
               ),
-              // Rminders
-              buildUpComingRemindersList(textTheme),
-              const SizedBox(height: 90),
+              const SizedBox(height: 10),
+
+              // List of reminders (showing recent/upcoming)
+              Obx(() {
+                if (controller.isFetchingReminders.value) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (controller.reminders.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Text(
+                        'No reminders found',
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white54 : Colors.black54,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                // Show top 5 or so
+                final List<ReminderItemModel> displayList = controller.reminders
+                    .take(5)
+                    .toList();
+
+                return ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: displayList.length,
+                  separatorBuilder: (BuildContext context, int index) =>
+                      const SizedBox(height: 10),
+                  itemBuilder: (BuildContext context, int index) {
+                    final ReminderItemModel reminder = displayList[index];
+                    return ReminderWidget(reminder: reminder);
+                  },
+                );
+              }),
+              const SizedBox(height: 20),
             ],
           ),
         ),
       ),
     );
   }
-
-  Widget buildUpComingRemindersList(TextTheme textTheme) {
-    return Expanded(
-      child: ListView.separated(
-        separatorBuilder: (BuildContext context, int index) {
-          return const SizedBox(height: 10);
-        },
-        padding: const EdgeInsets.all(0),
-        // shrinkWrap: true,
-        // physics: const NeverScrollableScrollPhysics(),
-        itemCount: 5,
-        itemBuilder: (BuildContext context, int index) {
-          return const ReminderWidget();
-        },
-      ),
-    );
-  }
-}
-
-class ReminderProfileHeader extends StatelessWidget
-    implements PreferredSizeWidget {
-  const ReminderProfileHeader({super.key, required this.textTheme});
-
-  final TextTheme textTheme;
-
-  @override
-  Widget build(BuildContext context) {
-    final bool isDarkMode = Get.isDarkMode;
-
-    return AppBar(
-      elevation: 0,
-      scrolledUnderElevation: 0,
-      backgroundColor: Colors.transparent,
-      centerTitle: true,
-
-      // LEFT WIDGET
-      leading: const Padding(
-        padding: EdgeInsets.only(left: 12, top: 12, bottom: 12),
-        child: ProfilePictureWidget(
-          radius: 15,
-          imageUrl: "https://randomuser.me/api/portraits/men/1.jpg",
-        ),
-      ),
-
-      // TITLE
-      title: Text(
-        'Reminders',
-        style: textTheme.labelLarge!.copyWith(fontSize: 16),
-      ),
-
-      // RIGHT ACTION
-      actions: <Widget>[
-        Padding(
-          padding: const EdgeInsets.only(right: 12),
-          child: SvgPicture.asset(
-            AppImages.bell,
-            color: isDarkMode ? Colors.white : Colors.black,
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// Required for AppBar height
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 }
