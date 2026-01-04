@@ -40,6 +40,8 @@ class AppImages {
   static const String nreminders = 'assets/svgs/nreminders.svg';
   static const String confirmlogout = 'assets/svgs/Confirmlogout.svg';
   static const String confirmdelete = 'assets/svgs/confirmdelete.svg';
+  static const String edit = 'assets/svgs/edit.svg';
+  static const String move = 'assets/svgs/move.svg';
 
   // Nav Bar
   static const String selected1 = 'assets/svgs/selected1.svg';

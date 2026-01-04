@@ -1,19 +1,25 @@
 class ApiResponse {
-  final bool status;
-  final String message;
-  final dynamic data;
-
-  ApiResponse({required this.status, required this.message, this.data});
+  ApiResponse({required this.success, required this.message, this.data});
 
   factory ApiResponse.fromJson(Map<String, dynamic> json) {
     return ApiResponse(
-      status: json['status'] ?? false,
-      message: json['message'] ?? '',
+      success: json['success'] ?? false,
+      message: json['success'] == true
+          ? (json['message'] ?? '') // optional success message
+          : (json['error'] != null ? json['error']['message'] ?? '' : ''),
       data: json['data'],
     );
   }
-  // ✅ Add this to fix the error
+
+  final bool success;
+  final String message;
+  final dynamic data;
+
   Map<String, dynamic> toJson() {
-    return {'status': status, 'message': message, 'data': data};
+    return <String, dynamic>{
+      'success': success,
+      'message': message,
+      'data': data,
+    };
   }
 }

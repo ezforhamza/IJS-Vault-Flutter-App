@@ -4,10 +4,13 @@ import 'package:get/get.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
+import 'package:ijs_vault/features/my%20vault/data/models/vault_item_model.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/screens/folder_view_Screen.dart.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 
 class VaultItem extends StatefulWidget {
-  const VaultItem({super.key});
+  const VaultItem({super.key, required this.item});
+  final ItemModel item;
 
   @override
   State<VaultItem> createState() => _VaultItemState();
@@ -102,13 +105,13 @@ class _VaultItemState extends State<VaultItem> {
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       _menuItem(
-                        title: 'Rename',
-                        icon: AppImages.delete,
+                        title: 'Edit',
+                        icon: AppImages.edit,
                         isDelete: false,
                       ),
                       _menuItem(
                         title: 'Move',
-                        icon: AppImages.delete,
+                        icon: AppImages.move,
                         isDelete: false,
                       ),
                       const Divider(),
@@ -166,7 +169,7 @@ class _VaultItemState extends State<VaultItem> {
             Text(
               title,
               style: TextStyle(
-                fontSize: 10,
+                fontSize: 12,
                 color: ScreenHelper.isdarkMode(context)
                     ? Colors.white
                     : Colors.black,
@@ -186,61 +189,66 @@ class _VaultItemState extends State<VaultItem> {
   Widget build(BuildContext context) {
     final bool isDarkMode = Get.isDarkMode;
 
-    return Stack(
-      children: <Widget>[
-        Column(
-          mainAxisSize: MainAxisSize.max,
-          children: <Widget>[
-            Container(
-              key: _itemKey,
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isDarkMode
-                    ? const Color(0xFF292416)
-                    : const Color(0xFFf4edd7),
-                borderRadius: BorderRadius.circular(12),
-                border: const GradientBoxBorder(
-                  gradient: LinearGradient(colors: AppColors.gradient),
+    return GestureDetector(
+      onTap: () {
+        Get.to(() => FolderViewScreen(folderName: widget.item.name));
+      },
+      child: Stack(
+        children: <Widget>[
+          Column(
+            mainAxisSize: MainAxisSize.max,
+            children: <Widget>[
+              Container(
+                key: _itemKey,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: isDarkMode
+                      ? const Color(0xFF292416)
+                      : const Color(0xFFf4edd7),
+                  borderRadius: BorderRadius.circular(12),
+                  border: const GradientBoxBorder(
+                    gradient: LinearGradient(colors: AppColors.gradient),
+                  ),
                 ),
-              ),
-              child: Center(
-                child: SvgPicture.asset(
-                  AppImages.selected1,
-                  height: 70,
-                  width: 70,
-                  // fit: BoxFit.contain,
-                ),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Text(
-                  'Images',
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: isDarkMode ? Colors.white : Colors.black,
+                child: Center(
+                  child: SvgPicture.asset(
+                    AppImages.selected1,
+                    height: 70,
+                    width: 70,
+                    // fit: BoxFit.contain,
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-        Positioned(
-          top: 6,
-          right: 6,
-          child: InkWell(
-            key: _moreKey,
-            onTap: _toggleMenu,
-            child: const Icon(Icons.more_vert, size: 16),
+              const SizedBox(height: 6),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    widget.item.name,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-      ],
+          Positioned(
+            top: 6,
+            right: 6,
+            child: InkWell(
+              key: _moreKey,
+              onTap: _toggleMenu,
+              child: const Icon(Icons.more_vert, size: 16),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

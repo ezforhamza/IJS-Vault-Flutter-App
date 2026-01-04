@@ -26,6 +26,14 @@ class HomeWithBottomNavScreen extends StatefulWidget {
 }
 
 class _HomeWithBottomNavScreenState extends State<HomeWithBottomNavScreen> {
+  final MyVaultController controller = Get.find<MyVaultController>();
+
+  @override
+  void initState() {
+    super.initState();
+    controller.getVaultItems();
+  }
+
   int currentIndex = 0;
 
   final List<Widget> pages = const <Widget>[

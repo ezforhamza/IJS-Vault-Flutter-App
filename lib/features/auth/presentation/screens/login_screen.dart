@@ -115,7 +115,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       onTap: () {
                         // _login();
                         if (formKey.currentState!.validate()) {
-                          controller.login();
+                          controller.login(
+                            email: emailController.text,
+                            password: passwordController.text,
+                          );
                         }
                         // setState(() {});
                       },

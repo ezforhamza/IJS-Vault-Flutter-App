@@ -6,7 +6,7 @@ import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_
 import 'package:ijs_vault/features/settings/presentation/controller/theme_controller.dart';
 import 'package:ijs_vault/features/splash/presentation/screen/splash_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // SystemChrome.setSystemUIOverlayStyle(
   //   const SystemUiOverlayStyle(
@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Get.put(ThemeController()); // ✅ add this
+    Get.put(ThemeController());
 
     return GetMaterialApp(
       // defaultTransition: Transition.rightToLeft,

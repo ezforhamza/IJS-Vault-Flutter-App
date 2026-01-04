@@ -1,21 +1,41 @@
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
-import 'package:get/get_rx/src/rx_types/rx_types.dart';
-import 'package:get/get_state_manager/src/simple/get_controllers.dart';
+import 'package:flutter/rendering.dart';
+import 'package:get/get.dart';
+import 'package:ijs_vault/core/services/local_storage.dart';
+import 'package:ijs_vault/features/auth/data/models/user_model.dart';
+import 'package:ijs_vault/features/auth/domain/repositories/auth_repository.dart';
 import 'package:ijs_vault/features/bottomNavigationbar/presentation/screens/bottom_nav_bar_screen.dart';
 import 'package:ijs_vault/shared/helpers/loader.dart';
+import 'package:ijs_vault/shared/helpers/toasts.dart';
+import 'package:ijs_vault/shared/models/response_model.dart';
 
 class SigninController extends GetxController {
-  RxBool isLoading = false.obs;
-  RxBool forceError = false.obs;
+  AuthRepository repository = .new();
 
-  void login() async {
+  // Register User
+  void login({required String email, required String password}) async {
     AppLoader.showLoadingDialog();
 
-    await Future.delayed(const Duration(seconds: 4));
+    try {
+      final ApiResponse res = await repository.login(
+        email: email,
+        password: password,
+      );
+      if (res.success) {
+        final UserModel user = UserModel.fromJson(res.data['user']);
+        final TokensModel tokens = TokensModel.fromJson(res.data['tokens']);
 
-    AppLoader.hideLoadingDialog(); // 🔴 MUST CLOSE FIRST
+        await LocalStorageService.saveUser(user);
+        await LocalStorageService.saveTokens(tokens);
 
-    Get.offAll(() => const HomeWithBottomNavScreen());
+        Get.offAll(() => const HomeWithBottomNavScreen());
+      } else {
+        debugPrint('Login error${res.message}');
+        AppToasts.showErrorToast(message: res.message);
+      }
+    } catch (e) {
+      debugPrint('$e');
+    } finally {
+      AppLoader.hideLoadingDialog();
+    }
   }
 }

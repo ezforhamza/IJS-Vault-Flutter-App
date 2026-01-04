@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/dropdown_menu_widget.dart';
 import 'package:ijs_vault/features/settings/presentation/widgets/custom_switch.dart';
 import 'package:ijs_vault/shared/widgets/app_bar.dart';
@@ -18,6 +20,10 @@ class AddFolderScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final TextTheme theme = Theme.of(context).textTheme;
     final bool isDarkMode = Get.isDarkMode;
+    final MyVaultController controller = Get.find<MyVaultController>();
+    final TextEditingController nameCOntroller = TextEditingController();
+    final TextEditingController descriptionController = TextEditingController();
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
     return SafeArea(
       child: Scaffold(
         appBar: const CustomAppBar(text: 'Add Folder'),
@@ -26,7 +32,19 @@ class AddFolderScreen extends StatelessWidget {
             horizontal: 15,
             vertical: 10,
           ),
-          child: CustomButton(onTap: () {}, text: 'Save'),
+          child: CustomButton(
+            onTap: () async {
+              if (formKey.currentState!.validate()) {
+                await controller.addNewFolder(
+                  name: nameCOntroller.text,
+                  description: descriptionController.text,
+                  parentId: null,
+                );
+                Get.back();
+              }
+            },
+            text: 'Save',
+          ),
         ),
         body: Padding(
           padding: AppSizes.horizontalPadding,
@@ -36,11 +54,22 @@ class AddFolderScreen extends StatelessWidget {
               spacing: 10,
               children: <Widget>[
                 // Folder Name
-                const CustomTextField(
-                  title: 'Folder Name',
-                  hintText: 'Enter Name',
+                Form(
+                  key: formKey,
+                  child: CustomTextField(
+                    controller: nameCOntroller,
+                    title: 'Folder Name',
+                    hintText: 'Enter Name',
+                    validator: (String? value) {
+                      if (value == null || value.isEmpty) {
+                        return "Folder name is required";
+                      }
+                      return null;
+                    },
+                  ),
                 ),
-                const CustomTextField(
+                CustomTextField(
+                  controller: descriptionController,
                   title: 'Description (optional)',
                   hintText: 'Write Description...',
                   minLines: 5,

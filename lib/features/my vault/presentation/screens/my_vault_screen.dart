@@ -7,7 +7,7 @@ import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
-import 'package:ijs_vault/features/my%20vault/presentation/widgets/my_vault.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/widgets/my_vault_widget.dart';
 import 'package:ijs_vault/shared/widgets/profile_picture_widget.dart';
 import 'package:ijs_vault/shared/widgets/search_field.dart';
 
@@ -127,6 +127,8 @@ class ProfileHeader extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    final MyVaultController controller = Get.find<MyVaultController>();
+
     final bool isDarkMode = Get.isDarkMode;
 
     return AppBar(
@@ -145,7 +147,7 @@ class ProfileHeader extends StatelessWidget implements PreferredSizeWidget {
 
       // TITLE
       title: Text(
-        'Hello, John Marston',
+        controller.user.value!.fullName,
         style: textTheme.labelLarge!.copyWith(fontSize: 16),
       ),
 

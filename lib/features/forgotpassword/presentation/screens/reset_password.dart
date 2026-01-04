@@ -4,7 +4,7 @@ import 'package:get/get.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/core/utils/input_validators.dart';
-import 'package:ijs_vault/features/forgotpassword/presentation/controllers/reset_password_controller.dart';
+import 'package:ijs_vault/features/forgotpassword/presentation/controllers/forgot_password_controller.dart';
 import 'package:ijs_vault/shared/helpers/key_board_helper.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 import 'package:ijs_vault/shared/widgets/app_bar.dart';
@@ -43,9 +43,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   Widget build(BuildContext context) {
     final TextTheme theme = Theme.of(context).textTheme;
     final double h = ScreenHelper.height(context);
-    final ResetPasswordController controller = Get.put(
-      ResetPasswordController(),
-    );
+    final ForgotPasswordController controller =
+        Get.find<ForgotPasswordController>();
 
     return Scaffold(
       appBar: const CustomAppBar(text: ''),
@@ -117,7 +116,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       KeyboardHelper.closeKeyboard(context);
                       // Call API or navigate
                       // Get.snackbar('Success', 'Password reset successfully');
-                      controller.resePassword();
+                      // controller.resePassword();
                     }
                   },
                 ),

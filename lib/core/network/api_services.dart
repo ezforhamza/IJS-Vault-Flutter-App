@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:ijs_vault/core/network/app_urls.dart';
+import 'package:ijs_vault/core/services/local_storage.dart';
 import 'package:ijs_vault/shared/models/response_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -24,7 +25,8 @@ class ApiService {
   /// Call this during app startup or before making secure API calls
   Future<void> initToken() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    _token = prefs.getString('token');
+    _token = prefs.getString(LocalStorageService.keyAccessToken);
+
     debugPrint(_token);
     if (_token != null) {
       _dio.options.headers['Authorization'] = 'Bearer $_token';
@@ -99,7 +101,7 @@ class ApiService {
     if (response.data is Map<String, dynamic>) {
       return ApiResponse.fromJson(response.data);
     } else {
-      return ApiResponse(status: false, message: 'Unexpected response format');
+      return ApiResponse(success: false, message: 'Unexpected response format');
     }
   }
 
@@ -107,11 +109,11 @@ class ApiService {
     if (error is DioException) {
       final Map<String, dynamic> errData = _handleDioError(error);
       return ApiResponse(
-        status: errData['status'],
+        success: errData['status'],
         message: errData['message'],
       );
     }
-    return ApiResponse(status: false, message: 'Something went wrong: $error');
+    return ApiResponse(success: false, message: 'Something went wrong: $error');
   }
 
   Map<String, dynamic> _handleDioError(DioException e) {
