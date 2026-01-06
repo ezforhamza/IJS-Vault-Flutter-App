@@ -12,7 +12,6 @@ import 'package:ijs_vault/shared/models/response_model.dart';
 class ChangeProfileController extends GetxController {
   final ChangeProfileRepo _repository = ChangeProfileRepo();
 
-  // Reactive state
   final RxString fullName = ''.obs;
   final RxString phone = ''.obs;
   final Rx<File?> selectedImage = Rx<File?>(null);
@@ -25,7 +24,6 @@ class ChangeProfileController extends GetxController {
     _loadUserData();
   }
 
-  /// 🔹 Load user from ProfileController
   Future<void> _loadUserData() async {
     final ProfileController profileController = Get.find<ProfileController>();
     currentUser = profileController.currentUser.value;

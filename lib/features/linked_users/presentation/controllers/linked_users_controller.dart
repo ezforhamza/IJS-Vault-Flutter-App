@@ -13,8 +13,16 @@ class LinkedUsersController extends GetxController {
   final Rxn<LinkedUsersDataModel> linkedUsersData = Rxn<LinkedUsersDataModel>();
   final RxList<LinkedUserModel> users = <LinkedUserModel>[].obs;
 
-  Future<void> getLinkedUsers() async {
-    isLoading.value = true;
+  @override
+  void onInit() {
+    super.onInit();
+    getLinkedUsers(showLoader: false);
+  }
+
+  Future<void> getLinkedUsers({bool showLoader = true}) async {
+    if (showLoader) {
+      isLoading.value = true;
+    }
     try {
       final ApiResponse response = await _repository.getLinkedUsers();
 
@@ -30,7 +38,9 @@ class LinkedUsersController extends GetxController {
       debugPrint('Error fetching linked users: $e');
       AppToasts.showErrorToast(message: 'Failed to fetch linked users');
     } finally {
-      isLoading.value = false;
+      if (showLoader) {
+        isLoading.value = false;
+      }
     }
   }
 

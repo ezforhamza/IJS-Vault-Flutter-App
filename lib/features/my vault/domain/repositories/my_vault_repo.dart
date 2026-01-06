@@ -89,4 +89,26 @@ class MyVaultRepo {
       data: <String, dynamic>{'users': users},
     );
   }
+
+  // Set PIN
+  Future<ApiResponse> setItemPin({
+    required String itemId,
+    required String pin,
+  }) async {
+    return await apiService.post(
+      'vault/items/$itemId/set-pin',
+      data: <String, dynamic>{'pin': pin},
+    );
+  }
+
+  // Verify Pin
+  Future<ApiResponse> verifyItemPin({
+    required String itemId,
+    required String pin,
+  }) async {
+    return await apiService.post(
+      'vault/items/$itemId/verify-pin',
+      data: <String, dynamic>{'pin': pin},
+    );
+  }
 }

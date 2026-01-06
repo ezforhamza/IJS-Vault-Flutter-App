@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:get/get.dart' hide Response;
+import 'package:ijs_vault/core/controllers/network_controller.dart';
 import 'package:ijs_vault/core/network/app_urls.dart';
 import 'package:ijs_vault/core/services/local_storage.dart';
 import 'package:ijs_vault/features/auth/data/models/user_model.dart';
@@ -83,6 +87,19 @@ class ApiService {
   }
 
   /// =====================================================
+  /// CHECK CONNECTIVITY
+  /// =====================================================
+
+  bool _checkConnectivity() {
+    final NetworkController networkController = Get.find<NetworkController>();
+    if (!networkController.isConnected.value) {
+      // AppToasts.showErrorToast(message: 'No Internet Connection');
+      return false;
+    }
+    return true;
+  }
+
+  /// =====================================================
   /// HTTP METHODS
   /// =====================================================
 
@@ -90,6 +107,9 @@ class ApiService {
     String endpoint, {
     Map<String, dynamic>? queryParams,
   }) async {
+    if (!_checkConnectivity()) {
+      return ApiResponse(success: false, message: 'No Internet Connection');
+    }
     await _initToken();
 
     try {
@@ -108,6 +128,9 @@ class ApiService {
   }
 
   Future<ApiResponse> post(String endpoint, {dynamic data}) async {
+    if (!_checkConnectivity()) {
+      return ApiResponse(success: false, message: 'No Internet Connection');
+    }
     await _initToken();
 
     try {
@@ -123,6 +146,9 @@ class ApiService {
   }
 
   Future<ApiResponse> put(String endpoint, {Map<String, dynamic>? data}) async {
+    if (!_checkConnectivity()) {
+      return ApiResponse(success: false, message: 'No Internet Connection');
+    }
     await _initToken();
 
     try {
@@ -141,6 +167,9 @@ class ApiService {
     String endpoint, {
     Map<String, dynamic>? data,
   }) async {
+    if (!_checkConnectivity()) {
+      return ApiResponse(success: false, message: 'No Internet Connection');
+    }
     await _initToken();
 
     try {
@@ -159,6 +188,9 @@ class ApiService {
     String endpoint, {
     Map<String, dynamic>? data,
   }) async {
+    if (!_checkConnectivity()) {
+      return ApiResponse(success: false, message: 'No Internet Connection');
+    }
     await _initToken();
 
     try {

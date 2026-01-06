@@ -20,12 +20,16 @@ class CustomTextField extends StatefulWidget {
     this.isTitle = true,
     this.suffixIcon,
     this.readOnly = false,
+    this.keyboardType,
+    this.maxLength,
   });
 
   final String title;
   final String? hintText;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
+  final TextInputType? keyboardType;
+  final int? maxLength;
 
   final ValueChanged<String>? onChanged;
 
@@ -78,6 +82,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
           cursorColor: const Color(0xFFa4a4a4),
           style: const TextStyle(color: Color(0xFFa4a4a4), fontSize: 13),
           minLines: widget.minLines,
+          keyboardType: widget.keyboardType,
+          maxLength: widget.maxLength,
           maxLines: widget.isPassword ? 1 : widget.maxLines,
           decoration: InputDecoration(
             errorStyle: const TextStyle(color: Colors.red, fontSize: 12),

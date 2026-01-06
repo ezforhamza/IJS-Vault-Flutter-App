@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/features/forgotpassword/presentation/widgets/otp_field.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
 import 'package:ijs_vault/features/set%20pin/presentation/widgets/success_dialogue_widget.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
+import 'package:ijs_vault/shared/helpers/toasts.dart';
 import 'package:ijs_vault/shared/widgets/custom_button.dart';
 
 class ConfirmPinScreen extends StatefulWidget {
-  const ConfirmPinScreen({super.key});
+  const ConfirmPinScreen({super.key, this.itemId, this.firstPin});
+  final String? itemId;
+  final String? firstPin;
 
   @override
   State<ConfirmPinScreen> createState() => _VerifyCodeScreenState();
@@ -15,6 +20,7 @@ class ConfirmPinScreen extends StatefulWidget {
 
 class _VerifyCodeScreenState extends State<ConfirmPinScreen> {
   bool isOtpFIlled = false;
+  String enteredPin = '';
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +51,7 @@ class _VerifyCodeScreenState extends State<ConfirmPinScreen> {
                   length: 4,
                   onOtpChanged: (String value) {
                     setState(() {
+                      enteredPin = value;
                       isOtpFIlled = value.length == 4;
                     });
                   },
@@ -80,54 +87,29 @@ class _VerifyCodeScreenState extends State<ConfirmPinScreen> {
                     ? CustomButton(
                         key: const ValueKey('verify_button'),
                         onTap: () async {
-                          // Navigator.pop(context);
+                          if (widget.firstPin != null &&
+                              widget.firstPin != enteredPin) {
+                            AppToasts.showErrorToast(
+                              message: 'PINs do not match',
+                            );
+                            return;
+                          }
 
-                          // await Future.delayed(const Duration(seconds: 5));
-                          // SHow SUccess DIalogue
-                          // Get.dialog(SuccessDialogue(h: h, theme: theme));
-                          showGeneralDialog(
-                            context: context,
-                            barrierDismissible: false,
-                            barrierLabel: 'Success',
-                            barrierColor: Colors.black.withOpacity(0.4),
-                            transitionDuration: const Duration(
-                              milliseconds: 350,
-                            ),
-                            pageBuilder:
-                                (
-                                  BuildContext context,
-                                  Animation<double> animation,
-                                  Animation<double> secondaryAnimation,
-                                ) {
-                                  return Center(
-                                    child: SuccessDialogue(
-                                      h: ScreenHelper.height(context),
-                                      theme: Theme.of(context).textTheme,
-                                    ),
-                                  );
-                                },
-                            transitionBuilder:
-                                (
-                                  BuildContext context,
-                                  Animation<double> animation,
-                                  Animation<double> secondaryAnimation,
-                                  Widget child,
-                                ) {
-                                  final CurvedAnimation curvedAnimation =
-                                      CurvedAnimation(
-                                        parent: animation,
-                                        curve: Curves.easeOutBack,
-                                      );
+                          if (widget.itemId != null) {
+                            final MyVaultController controller =
+                                Get.find<MyVaultController>();
+                            final bool success = await controller.setItemPin(
+                              itemId: widget.itemId!,
+                              pin: enteredPin,
+                            );
 
-                                  return FadeTransition(
-                                    opacity: animation,
-                                    child: ScaleTransition(
-                                      scale: curvedAnimation,
-                                      child: child,
-                                    ),
-                                  );
-                                },
-                          );
+                            if (success) {
+                              _showSuccessDialog();
+                            }
+                          } else {
+                            // Original logic (could be setting general vault PIN)
+                            _showSuccessDialog();
+                          }
                         },
                         text: 'Save',
                         isDisabled: false,
@@ -138,6 +120,46 @@ class _VerifyCodeScreenState extends State<ConfirmPinScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showSuccessDialog() {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: 'Success',
+      barrierColor: Colors.black.withOpacity(0.4),
+      transitionDuration: const Duration(milliseconds: 350),
+      pageBuilder:
+          (
+            BuildContext context,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+          ) {
+            return Center(
+              child: SuccessDialogue(
+                h: ScreenHelper.height(context),
+                theme: Theme.of(context).textTheme,
+              ),
+            );
+          },
+      transitionBuilder:
+          (
+            BuildContext context,
+            Animation<double> animation,
+            Animation<double> secondaryAnimation,
+            Widget child,
+          ) {
+            final CurvedAnimation curvedAnimation = CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutBack,
+            );
+
+            return FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(scale: curvedAnimation, child: child),
+            );
+          },
     );
   }
 }

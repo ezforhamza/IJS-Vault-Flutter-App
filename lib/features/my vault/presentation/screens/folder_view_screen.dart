@@ -18,6 +18,7 @@ import 'package:ijs_vault/features/my%20vault/presentation/widgets/move_item_dia
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/my_vault_widget.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/vault_item.dart';
 import 'package:ijs_vault/features/settings/presentation/widgets/dialoge.dart';
+import 'package:ijs_vault/shared/helpers/dialog_helper.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 import 'package:ijs_vault/shared/widgets/app_bar.dart';
 import 'package:ijs_vault/shared/widgets/search_field.dart';
@@ -80,116 +81,89 @@ class FolderViewScreen extends StatelessWidget {
                                 style: Theme.of(context).textTheme.labelSmall,
                               ),
                             )
-                          : GridView.builder(
-                              // key: const ValueKey('grid'),
-                              padding: const EdgeInsets.only(bottom: 80),
-                              itemCount: controller.items.length,
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 3,
-                                    crossAxisSpacing: 10,
-                                    mainAxisSpacing: 10,
-                                    childAspectRatio: 0.8,
-                                  ),
-                              itemBuilder: (_, int index) {
-                                final ItemModel item = controller.items[index];
-                                return GestureDetector(
-                                  onTap: () {
-                                    Get.to(
-                                      () => FolderViewScreen(item: item),
-                                      preventDuplicates: false,
+                          : LayoutBuilder(
+                              builder: (BuildContext context, BoxConstraints constraints) {
+                                final double width = constraints.maxWidth;
+                                final double itemWidth =
+                                    (width - 20) / 3; // 10 spacing * 2
+                                final double itemHeight = itemWidth * 1.25;
+                                final double ratio = itemWidth / itemHeight;
+
+                                return GridView.builder(
+                                  // key: const ValueKey('grid'),
+                                  padding: const EdgeInsets.only(bottom: 80),
+                                  itemCount: controller.items.length,
+                                  gridDelegate:
+                                      SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 3,
+                                        crossAxisSpacing: 10,
+                                        mainAxisSpacing: 10,
+                                        childAspectRatio: ratio < 0.7
+                                            ? 0.7
+                                            : ratio,
+                                      ),
+                                  itemBuilder: (_, int index) {
+                                    final ItemModel item =
+                                        controller.items[index];
+                                    return GestureDetector(
+                                      onTap: () {
+                                        Get.to(
+                                          () => FolderViewScreen(item: item),
+                                          preventDuplicates: false,
+                                        );
+                                      },
+                                      child: VaultItem(
+                                        onMove: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (_) => MoveItemDialog(
+                                              itemToMove: item,
+                                              initialParentId: null, // Root
+                                              onMove: (String? newParentId) {
+                                                // See FolderViewScreen reasoning. If newParentId is null, moving to root.
+                                                // Repo expects string.
+                                                controller.moveItem(
+                                                  item.id,
+                                                  newParentId ?? '',
+                                                  index,
+                                                );
+                                                // Get.back();
+                                              },
+                                            ),
+                                          );
+                                        },
+                                        type: item.fileType == 'media'
+                                            ? VaultItemType.media
+                                            : VaultItemType.folder,
+                                        item: item,
+                                        onDelete: () {
+                                          DialogHelper.showAnimatedDialog(
+                                            context: context,
+                                            child: Center(
+                                              child: ConfirmationDialogue(
+                                                onTap: () async {
+                                                  await controller.deleteItem(
+                                                    item.id,
+                                                    index,
+                                                  );
+                                                  Get.back();
+                                                },
+                                                h: ScreenHelper.height(context),
+                                                theme: Theme.of(
+                                                  context,
+                                                ).textTheme,
+                                                title: 'Delte Item?',
+                                                subtitle:
+                                                    'Do you really want to delete ${item.name}',
+                                                image: AppImages.delete,
+                                                buttonText: 'Delete',
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
                                     );
                                   },
-                                  child: VaultItem(
-                                    onMove: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (_) => MoveItemDialog(
-                                          itemToMove: item,
-                                          initialParentId: null, // Root
-                                          onMove: (String? newParentId) {
-                                            // See FolderViewScreen reasoning. If newParentId is null, moving to root.
-                                            // Repo expects string.
-                                            controller.moveItem(
-                                              item.id,
-                                              newParentId ?? '',
-                                              index,
-                                            );
-                                            // Get.back();
-                                          },
-                                        ),
-                                      );
-                                    },
-                                    type: item.fileType == 'media'
-                                        ? VaultItemType.media
-                                        : VaultItemType.folder,
-                                    item: item,
-                                    onDelete: () {
-                                      showGeneralDialog(
-                                        context: context,
-                                        barrierDismissible: true,
-                                        barrierLabel: 'Success',
-                                        barrierColor: Colors.black.withOpacity(
-                                          0.4,
-                                        ),
-                                        transitionDuration: const Duration(
-                                          milliseconds: 350,
-                                        ),
-                                        pageBuilder:
-                                            (
-                                              BuildContext context,
-                                              Animation<double> animation,
-                                              Animation<double>
-                                              secondaryAnimation,
-                                            ) {
-                                              return Center(
-                                                child: ConfirmationDialogue(
-                                                  onTap: () async {
-                                                    await controller.deleteItem(
-                                                      item.id,
-                                                      index,
-                                                    );
-                                                    Get.back();
-                                                  },
-                                                  h: ScreenHelper.height(
-                                                    context,
-                                                  ),
-                                                  theme: Theme.of(
-                                                    context,
-                                                  ).textTheme,
-                                                  title: 'Delte Item?',
-                                                  subtitle:
-                                                      'Do you really want to delete ${item.name}',
-                                                  image: AppImages.delete,
-                                                  buttonText: 'Delete',
-                                                ),
-                                              );
-                                            },
-                                        transitionBuilder:
-                                            (
-                                              BuildContext context,
-                                              Animation<double> animation,
-                                              Animation<double>
-                                              secondaryAnimation,
-                                              Widget child,
-                                            ) {
-                                              final CurvedAnimation
-                                              curvedAnimation = CurvedAnimation(
-                                                parent: animation,
-                                                curve: Curves.easeOutBack,
-                                              );
-
-                                              return FadeTransition(
-                                                opacity: animation,
-                                                child: ScaleTransition(
-                                                  scale: curvedAnimation,
-                                                  child: child,
-                                                ),
-                                              );
-                                            },
-                                      );
-                                    },
-                                  ),
                                 );
                               },
                             ),

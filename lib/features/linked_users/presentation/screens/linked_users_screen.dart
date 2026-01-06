@@ -23,7 +23,7 @@ class _LinkedUsersScreenState extends State<LinkedUsersScreen> {
   @override
   void initState() {
     super.initState();
-    controller.getLinkedUsers();
+    controller.getLinkedUsers(showLoader: false);
   }
 
   @override
@@ -76,7 +76,7 @@ class _LinkedUsersScreenState extends State<LinkedUsersScreen> {
               /// 👇 Controller-driven UI
               Expanded(
                 child: Obx(() {
-                  if (controller.isLoading.value) {
+                  if (controller.isLoading.value && controller.users.isEmpty) {
                     return const Center(child: CircularProgressIndicator());
                   }
 

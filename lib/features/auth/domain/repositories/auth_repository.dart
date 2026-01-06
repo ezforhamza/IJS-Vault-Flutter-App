@@ -68,4 +68,8 @@ class AuthRepository {
 
     return await apiService.post(AppUrls.uploadPfp, data: formData);
   }
+
+  Future<ApiResponse> deleteAccount() async {
+    return await apiService.delete(AppUrls.deleteAccount);
+  }
 }

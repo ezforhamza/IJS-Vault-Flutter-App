@@ -6,7 +6,7 @@ import 'package:get/state_manager.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
-import 'package:ijs_vault/features/settings/presentation/controller/theme_controller.dart';
+import 'package:ijs_vault/features/settings/presentation/controllers/theme_controller.dart';
 import 'package:ijs_vault/features/settings/presentation/widgets/custom_switch.dart';
 
 class SettingOptionWidget extends StatelessWidget {

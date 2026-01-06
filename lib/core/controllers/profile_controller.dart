@@ -20,6 +20,10 @@ class ProfileController extends GetxController {
   Future<void> loadUser() async {
     final UserModel? user = await LocalStorageService.getUser();
     currentUser.value = user;
+    debugPrint(
+      '=========================================================================================================',
+    );
+    debugPrint(user!.fullName);
   }
 
   /// Update user in local storage and reactive state

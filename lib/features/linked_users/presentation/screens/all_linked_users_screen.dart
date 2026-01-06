@@ -29,7 +29,7 @@ class AllLinkedUsersScreen extends StatelessWidget {
             /// 👇 Controller-driven list
             Expanded(
               child: Obx(() {
-                if (controller.isLoading.value) {
+                if (controller.isLoading.value && controller.users.isEmpty) {
                   return const Center(child: CircularProgressIndicator());
                 }
 

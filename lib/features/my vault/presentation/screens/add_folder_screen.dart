@@ -5,9 +5,11 @@ import 'package:get/get_instance/src/extension_instance.dart';
 import 'package:get/get_navigation/src/extension_navigation.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
+import 'package:ijs_vault/features/my%20vault/data/models/vault_item_model.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/folder_view_controller.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/dropdown_menu_widget.dart';
+import 'package:ijs_vault/features/set%20pin/presentation/screens/set_pin_screen.dart';
 import 'package:ijs_vault/features/settings/presentation/widgets/custom_switch.dart';
 import 'package:ijs_vault/shared/widgets/app_bar.dart';
 import 'package:ijs_vault/shared/widgets/custom_button.dart';
@@ -31,6 +33,7 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
   final List<GlobalKey> userFieldKeys = <GlobalKey<State<StatefulWidget>>>[];
   int userFieldCount = 1;
   static const int maxUserFields = 5;
+  bool isPinEnabled = false;
 
   @override
   void initState() {
@@ -95,22 +98,31 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
                 final List<Map<String, String>> linkedUsers =
                     _getSelectedUsers();
 
+                ItemModel? newItem;
+
                 if (widget.parentId != null) {
                   final FolderViewController folderController =
                       Get.find<FolderViewController>(tag: widget.parentId);
-                  await folderController.addNewFolder(
+                  newItem = await folderController.addNewFolder(
                     name: nameController.text,
                     description: descriptionController.text,
                   );
                 } else {
-                  await controller.addNewFolder(
+                  newItem = await controller.addNewFolder(
                     name: nameController.text,
                     description: descriptionController.text,
                     parentId: widget.parentId,
                     linkedUsers: linkedUsers,
                   );
                 }
-                Get.back();
+
+                if (newItem != null) {
+                  if (isPinEnabled) {
+                    Get.off(() => SetPinScreen(itemId: newItem!.id));
+                  } else {
+                    Get.back();
+                  }
+                }
               }
             },
             text: 'Save',
@@ -220,7 +232,14 @@ class _AddFolderScreenState extends State<AddFolderScreen> {
                       ],
                     ),
                     //
-                    const CustomSwitch(),
+                    CustomSwitch(
+                      value: isPinEnabled,
+                      onChanged: (bool value) {
+                        setState(() {
+                          isPinEnabled = value;
+                        });
+                      },
+                    ),
                   ],
                 ),
               ],

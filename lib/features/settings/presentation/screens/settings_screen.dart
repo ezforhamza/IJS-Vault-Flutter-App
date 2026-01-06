@@ -6,6 +6,7 @@ import 'package:get/utils.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/core/controllers/fcm_controller.dart';
+import 'package:ijs_vault/features/auth/domain/repositories/auth_repository.dart';
 import 'package:ijs_vault/features/auth/presentation/screens/login_screen.dart';
 import 'package:ijs_vault/features/reminders/presentation/screens/reminders_screen.dart';
 import 'package:ijs_vault/features/settings/presentation/screens/activity_log_screen.dart';
@@ -17,7 +18,11 @@ import 'package:ijs_vault/features/settings/presentation/screens/terms_and_condi
 import 'package:ijs_vault/features/settings/presentation/widgets/dialoge.dart';
 import 'package:ijs_vault/features/settings/presentation/widgets/profile_widget.dart';
 import 'package:ijs_vault/features/settings/presentation/widgets/setting_option_widget.dart';
+import 'package:ijs_vault/shared/helpers/dialog_helper.dart';
+import 'package:ijs_vault/shared/helpers/loader.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
+import 'package:ijs_vault/shared/helpers/toasts.dart';
+import 'package:ijs_vault/shared/models/response_model.dart';
 import 'package:ijs_vault/shared/widgets/profile_picture_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,8 +31,23 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final TextTheme textTheme = Theme.of(context).textTheme;
-    final bool isDarkMode = Get.isDarkMode;
+    void deleteAccount() async {
+      final AuthRepository authRepository = AuthRepository();
+      AppLoader.showLoadingDialog();
+
+      try {
+        final ApiResponse response = await authRepository.deleteAccount();
+        AppLoader.hideLoadingDialog();
+        if (response.success) {
+          AppToasts.showSuccessToast(message: response.message);
+        } else {
+          AppToasts.showErrorToast(message: response.message);
+        }
+      } catch (e) {
+        debugPrint('$e');
+      }
+    }
+
     return SafeArea(
       child: Scaffold(
         // bottomNavigationBar: Container(
@@ -107,59 +127,23 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    showGeneralDialog(
+                    DialogHelper.showAnimatedDialog(
                       context: context,
-                      barrierDismissible: true,
-                      barrierLabel: 'Success',
-                      barrierColor: Colors.black.withOpacity(0.4),
-                      transitionDuration: const Duration(milliseconds: 350),
-                      pageBuilder:
-                          (
-                            BuildContext context,
-                            Animation<double> animation,
-                            Animation<double> secondaryAnimation,
-                          ) {
-                            return Center(
-                              child: ConfirmationDialogue(
-                                onTap: () async {
-                                  final SharedPreferences prefs =
-                                      await SharedPreferences.getInstance();
-                                  Get.find<FCMController>()
-                                      .unregisterFCMToken();
-                                  prefs.clear();
-                                  Get.offAll(() => const LoginScreen());
-                                },
-                                h: ScreenHelper.height(context),
-                                theme: Theme.of(context).textTheme,
-                                title: 'Logout?',
-                                subtitle:
-                                    'Do you really want to logout this account?',
-                                image: AppImages.confirmlogout,
-                                buttonText: 'Logout',
-                              ),
-                            );
-                          },
-                      transitionBuilder:
-                          (
-                            BuildContext context,
-                            Animation<double> animation,
-                            Animation<double> secondaryAnimation,
-                            Widget child,
-                          ) {
-                            final CurvedAnimation curvedAnimation =
-                                CurvedAnimation(
-                                  parent: animation,
-                                  curve: Curves.easeOutBack,
-                                );
-
-                            return FadeTransition(
-                              opacity: animation,
-                              child: ScaleTransition(
-                                scale: curvedAnimation,
-                                child: child,
-                              ),
-                            );
-                          },
+                      child: ConfirmationDialogue(
+                        onTap: () async {
+                          final SharedPreferences prefs =
+                              await SharedPreferences.getInstance();
+                          Get.find<FCMController>().unregisterFCMToken();
+                          prefs.clear();
+                          Get.offAll(() => const LoginScreen());
+                        },
+                        h: ScreenHelper.height(context),
+                        theme: Theme.of(context).textTheme,
+                        title: 'Logout?',
+                        subtitle: 'Do you really want to logout this account?',
+                        image: AppImages.confirmlogout,
+                        buttonText: 'Logout',
+                      ),
                     );
                   },
                   child: const SettingOptionWidget(
@@ -169,55 +153,21 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    showGeneralDialog(
+                    DialogHelper.showAnimatedDialog(
                       context: context,
-                      barrierDismissible: true,
-                      barrierLabel: 'Success',
-                      barrierColor: Colors.black.withOpacity(0.4),
-                      transitionDuration: const Duration(milliseconds: 350),
-                      pageBuilder:
-                          (
-                            BuildContext context,
-                            Animation<double> animation,
-                            Animation<double> secondaryAnimation,
-                          ) {
-                            return Center(
-                              child: ConfirmationDialogue(
-                                onTap: () {},
-                                h: ScreenHelper.height(context),
-                                theme: Theme.of(context).textTheme,
-                                title: 'Delete?',
-                                subtitle:
-                                    'Do you really want to delete this account?',
-                                image: AppImages.confirmdelete,
-                                buttonText: 'Delete',
-                              ),
-                            );
-                          },
-                      transitionBuilder:
-                          (
-                            BuildContext context,
-                            Animation<double> animation,
-                            Animation<double> secondaryAnimation,
-                            Widget child,
-                          ) {
-                            final CurvedAnimation curvedAnimation =
-                                CurvedAnimation(
-                                  parent: animation,
-                                  curve: Curves.easeOutBack,
-                                );
-
-                            return FadeTransition(
-                              opacity: animation,
-                              child: ScaleTransition(
-                                scale: curvedAnimation,
-                                child: child,
-                              ),
-                            );
-                          },
+                      child: ConfirmationDialogue(
+                        onTap: () {
+                          deleteAccount();
+                        },
+                        h: ScreenHelper.height(context),
+                        theme: Theme.of(context).textTheme,
+                        title: 'Delete?',
+                        subtitle: 'Do you really want to delete this account?',
+                        image: AppImages.confirmdelete,
+                        buttonText: 'Delete',
+                      ),
                     );
                   },
-
                   child: const SettingOptionWidget(
                     text: 'Delete Account',
                     icon: AppImages.delaccount,

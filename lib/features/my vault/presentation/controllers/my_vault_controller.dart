@@ -68,7 +68,7 @@ class MyVaultController extends GetxController {
   /* -------------------------------------------------------------------------- */
 
   /// Create new folder
-  Future<void> addNewFolder({
+  Future<ItemModel?> addNewFolder({
     required String name,
     required String description,
     String? parentId,
@@ -84,7 +84,6 @@ class MyVaultController extends GetxController {
 
       if (response.success) {
         AppToasts.showSuccessToast(message: response.message);
-        Get.back();
         // getVaultItems();
         final ItemModel newItem = ItemModel.fromJson(response.data['folder']);
         items.add(newItem);
@@ -93,6 +92,7 @@ class MyVaultController extends GetxController {
         if (linkedUsers != null && linkedUsers.isNotEmpty) {
           await repo.linkSelectedUsers(itemId: newItem.id, users: linkedUsers);
         }
+        return newItem;
       } else {
         AppToasts.showErrorToast(message: response.message);
       }
@@ -101,6 +101,58 @@ class MyVaultController extends GetxController {
     } finally {
       AppLoader.hideLoadingDialog();
     }
+    return null;
+  }
+
+  /// Set Item PIN
+  Future<bool> setItemPin({required String itemId, required String pin}) async {
+    AppLoader.showLoadingDialog();
+    try {
+      final ApiResponse response = await repo.setItemPin(
+        itemId: itemId,
+        pin: pin,
+      );
+
+      if (response.success) {
+        AppToasts.showSuccessToast(message: response.message);
+        return true;
+      } else {
+        AppToasts.showErrorToast(message: response.message);
+      }
+    } catch (e) {
+      debugPrint('Set PIN error: $e');
+      AppToasts.showErrorToast(message: 'Failed to set PIN');
+    } finally {
+      AppLoader.hideLoadingDialog();
+    }
+    return false;
+  }
+
+  /// Verify Item PIN
+  Future<bool> verifyItemPin({
+    required String itemId,
+    required String pin,
+  }) async {
+    AppLoader.showLoadingDialog();
+    try {
+      final ApiResponse response = await repo.verifyItemPin(
+        itemId: itemId,
+        pin: pin,
+      );
+
+      if (response.success) {
+        // AppToasts.showSuccessToast(message: response.message);
+        return true;
+      } else {
+        AppToasts.showErrorToast(message: response.message);
+      }
+    } catch (e) {
+      debugPrint('Verify PIN error: $e');
+      AppToasts.showErrorToast(message: 'Failed to verify PIN');
+    } finally {
+      AppLoader.hideLoadingDialog();
+    }
+    return false;
   }
 
   /// Fetch vault items

@@ -64,7 +64,7 @@ class FolderViewController extends GetxController {
     }
   }
 
-  Future<void> addNewFolder({
+  Future<ItemModel?> addNewFolder({
     required String name,
     required String description,
   }) async {
@@ -78,10 +78,10 @@ class FolderViewController extends GetxController {
 
       if (response.success) {
         AppToasts.showSuccessToast(message: response.message);
-        Get.back(); // Close dialog
         // getVaultItems(); // Refresh list
         final ItemModel newItem = ItemModel.fromJson(response.data['folder']);
         items.add(newItem);
+        return newItem;
       } else {
         AppToasts.showErrorToast(message: response.message);
       }
@@ -90,6 +90,7 @@ class FolderViewController extends GetxController {
     } finally {
       AppLoader.hideLoadingDialog();
     }
+    return null;
   }
 
   // Upload File

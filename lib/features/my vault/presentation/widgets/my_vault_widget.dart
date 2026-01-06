@@ -6,6 +6,7 @@ import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/move_item_dialog.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/vault_item.dart';
 import 'package:ijs_vault/features/settings/presentation/widgets/dialoge.dart';
+import 'package:ijs_vault/shared/helpers/dialog_helper.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -55,86 +56,63 @@ class _MyVaultState extends State<MyVault> {
       return _buildEmptyText(textTheme);
     }
 
-    return GridView.builder(
-      key: key,
-      padding: const EdgeInsets.all(10),
-      itemCount: controller.items.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-        childAspectRatio: 0.8,
-      ),
-      itemBuilder: (_, int index) {
-        final ItemModel item = controller.items[index];
-        return VaultItem(
-          type: item.fileType == 'media'
-              ? VaultItemType.media
-              : VaultItemType.folder,
-          item: item,
-          onMove: () {
-            showDialog(
-              context: context,
-              builder: (_) => MoveItemDialog(
-                itemToMove: item,
-                initialParentId: null, // Root
-                onMove: (String? newParentId) {
-                  // See FolderViewScreen reasoning. If newParentId is null, moving to root.
-                  // Repo expects string.
-                  controller.moveItem(item.id, newParentId ?? '', index);
-                  // Get.back();
-                },
-              ),
-            );
-          },
-          onDelete: () {
-            showGeneralDialog(
-              context: context,
-              barrierDismissible: true,
-              barrierLabel: 'Success',
-              barrierColor: Colors.black.withOpacity(0.4),
-              transitionDuration: const Duration(milliseconds: 350),
-              pageBuilder:
-                  (
-                    BuildContext context,
-                    Animation<double> animation,
-                    Animation<double> secondaryAnimation,
-                  ) {
-                    return Center(
-                      child: ConfirmationDialogue(
-                        onTap: () async {
-                          await controller.deleteItem(item.id, index);
-                          Get.back();
-                        },
-                        h: ScreenHelper.height(context),
-                        theme: Theme.of(context).textTheme,
-                        title: 'Delte Item?',
-                        subtitle: 'Do you really want to delete ${item.name}',
-                        image: AppImages.delete,
-                        buttonText: 'Delete',
-                      ),
-                    );
-                  },
-              transitionBuilder:
-                  (
-                    BuildContext context,
-                    Animation<double> animation,
-                    Animation<double> secondaryAnimation,
-                    Widget child,
-                  ) {
-                    final CurvedAnimation curvedAnimation = CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutBack,
-                    );
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final double width = constraints.maxWidth;
+        // Calculate childAspectRatio to keep items professional
+        final double itemWidth =
+            (width - 40) / 3; // 10 padding * 2 + 10 spacing * 2
+        final double itemHeight = itemWidth * 1.25; // Base height ratio
+        final double ratio = itemWidth / itemHeight;
 
-                    return FadeTransition(
-                      opacity: animation,
-                      child: ScaleTransition(
-                        scale: curvedAnimation,
-                        child: child,
-                      ),
-                    );
-                  },
+        return GridView.builder(
+          key: key,
+          padding: const EdgeInsets.all(10),
+          itemCount: controller.items.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: ratio < 0.7 ? 0.7 : ratio,
+          ),
+          itemBuilder: (_, int index) {
+            final ItemModel item = controller.items[index];
+            return VaultItem(
+              type: item.fileType == 'media'
+                  ? VaultItemType.media
+                  : VaultItemType.folder,
+              item: item,
+              onMove: () {
+                DialogHelper.showAnimatedDialog(
+                  context: context,
+                  child: MoveItemDialog(
+                    itemToMove: item,
+                    initialParentId: null, // Root
+                    onMove: (String? newParentId) {
+                      controller.moveItem(item.id, newParentId ?? '', index);
+                    },
+                  ),
+                );
+              },
+              onDelete: () {
+                DialogHelper.showAnimatedDialog(
+                  context: context,
+                  child: Center(
+                    child: ConfirmationDialogue(
+                      onTap: () async {
+                        await controller.deleteItem(item.id, index);
+                        Get.back();
+                      },
+                      h: ScreenHelper.height(context),
+                      theme: Theme.of(context).textTheme,
+                      title: 'Delte Item?',
+                      subtitle: 'Do you really want to delete ${item.name}',
+                      image: AppImages.delete,
+                      buttonText: 'Delete',
+                    ),
+                  ),
+                );
+              },
             );
           },
         );

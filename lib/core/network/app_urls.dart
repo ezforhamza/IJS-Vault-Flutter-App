@@ -6,6 +6,7 @@ class AppUrls {
   static const String login = 'auth/login';
   static const String logout = 'auth/logout';
   static const String refreshToken = 'auth/refresh-tokens';
+  static const String deleteAccount = 'auth/account';
   static const String forgotPassword = 'auth/forgot-password';
   static const String verifyOtp = 'auth/verify-otp';
   static const String resendVerificationCode = 'auth/resend-code';
@@ -18,6 +19,9 @@ class AppUrls {
   static const String getLinkedUsers = 'users/linked/details';
   static const String registerFCM = 'fcm/register';
   static const String unregisterFCM = 'fcm/unregister';
+  static const String getAllNotifications = 'notifications';
+  static const String updateNotificationPrefs =
+      'users/notification-preferences';
 
   // Vault
   static const String createFolder = 'vault/folders';

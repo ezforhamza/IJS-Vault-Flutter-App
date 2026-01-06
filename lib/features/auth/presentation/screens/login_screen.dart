@@ -21,21 +21,16 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool forceError = false;
+  final SigninController controller = Get.put(SigninController());
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final SigninController controller = Get.put(SigninController());
-    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-
-    final TextEditingController emailController = TextEditingController();
-    final TextEditingController passwordController = TextEditingController();
     final TextTheme theme = Theme.of(context).textTheme;
     final bool isDarkMode = Get.isDarkMode;
-    void playError() async {
-      forceError = true;
-      await Future.delayed(const Duration(milliseconds: 100));
-      forceError = false;
-    }
 
     return Scaffold(
       body: Padding(

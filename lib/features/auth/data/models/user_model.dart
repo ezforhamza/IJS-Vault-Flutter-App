@@ -38,6 +38,33 @@ class UserModel {
   final NotificationPreferencesModel notificationPreferences;
   final SubscriptionModel subscription;
   final List<dynamic> billingHistory;
+
+  UserModel copyWith({
+    String? id,
+    String? fullName,
+    String? email,
+    String? image,
+    String? role,
+    bool? isEmailVerified,
+    String? provider,
+    NotificationPreferencesModel? notificationPreferences,
+    SubscriptionModel? subscription,
+    List<dynamic>? billingHistory,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      fullName: fullName ?? this.fullName,
+      email: email ?? this.email,
+      image: image ?? this.image,
+      role: role ?? this.role,
+      isEmailVerified: isEmailVerified ?? this.isEmailVerified,
+      provider: provider ?? this.provider,
+      notificationPreferences:
+          notificationPreferences ?? this.notificationPreferences,
+      subscription: subscription ?? this.subscription,
+      billingHistory: billingHistory ?? this.billingHistory,
+    );
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -59,6 +86,18 @@ class NotificationPreferencesModel {
   final bool reminders;
   final bool linkedUsersActivity;
   final bool inviteNotifications;
+
+  NotificationPreferencesModel copyWith({
+    bool? reminders,
+    bool? linkedUsersActivity,
+    bool? inviteNotifications,
+  }) {
+    return NotificationPreferencesModel(
+      reminders: reminders ?? this.reminders,
+      linkedUsersActivity: linkedUsersActivity ?? this.linkedUsersActivity,
+      inviteNotifications: inviteNotifications ?? this.inviteNotifications,
+    );
+  }
 }
 
 /* -------------------------------------------------------------------------- */

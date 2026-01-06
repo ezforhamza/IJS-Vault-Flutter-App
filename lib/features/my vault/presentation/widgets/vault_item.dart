@@ -1,5 +1,4 @@
 import 'package:file_icon/file_icon.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -10,6 +9,8 @@ import 'package:ijs_vault/features/my%20vault/data/models/vault_item_model.dart'
 import 'package:ijs_vault/features/my%20vault/presentation/screens/folder_view_screen.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/screens/item_preview_screen.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/set_reminder_widget.dart';
+import 'package:ijs_vault/features/set%20pin/presentation/screens/verify_pin_screen.dart';
+import 'package:ijs_vault/shared/helpers/dialog_helper.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
 
 /// ---------------------------------------------------------------------------
@@ -212,10 +213,17 @@ class _VaultItemState extends State<VaultItem> {
           title: 'Set Reminder',
           icon: AppImages.setreminder,
           onTap: () {
-            showCupertinoDialog(
-              barrierColor: const Color(0xFF494a51).withAlpha(100),
+            // showCupertinoDialog(
+            //   barrierColor: const Color(0xFF494a51).withAlpha(100),
+            //   context: context,
+            //   builder: (_) => SetReminderWidget(
+            //     title: "Set Reminder",
+            //     itemId: widget.item.id,
+            //   ),
+            // );
+            DialogHelper.showAnimatedDialog(
               context: context,
-              builder: (_) => SetReminderWidget(
+              child: SetReminderWidget(
                 title: "Set Reminder",
                 itemId: widget.item.id,
               ),
@@ -284,15 +292,28 @@ class _VaultItemState extends State<VaultItem> {
   Widget build(BuildContext context) {
     final bool isDarkMode = Get.isDarkMode;
 
+    void navigateToDetails() {
+      if (widget.item.type == 'folder') {
+        Get.to(
+          () => FolderViewScreen(item: widget.item),
+          preventDuplicates: false,
+        );
+      } else {
+        Get.to(() => ItemPreviewScreen(item: widget.item));
+      }
+    }
+
     return GestureDetector(
       onTap: () {
-        if (widget.item.type == 'folder') {
+        if (widget.item.isLocked) {
           Get.to(
-            () => FolderViewScreen(item: widget.item),
-            preventDuplicates: false,
+            () => VerifyPinScreen(
+              itemId: widget.item.id,
+              onSuccess: navigateToDetails,
+            ),
           );
         } else {
-          Get.to(() => ItemPreviewScreen(item: widget.item));
+          navigateToDetails();
         }
       },
       child: Stack(
@@ -320,27 +341,49 @@ class _VaultItemState extends State<VaultItem> {
               const SizedBox(height: 6),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Text(
-                  widget.item.name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Flexible(
+                      child: Text(
+                        widget.item.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ),
+                    if (widget.item.isLocked) ...<Widget>[
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.lock,
+                        size: 14,
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ],
           ),
           Positioned(
-            top: 6,
-            right: 6,
-            child: InkWell(
-              key: _moreKey,
-              onTap: _toggleMenu,
-              child: const Icon(Icons.more_vert, size: 16),
+            top: 2,
+            right: 2,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(20),
+                key: _moreKey,
+                onTap: _toggleMenu,
+                child: const Padding(
+                  padding: EdgeInsets.all(6.0),
+                  child: Icon(Icons.more_vert, size: 16),
+                ),
+              ),
             ),
           ),
         ],

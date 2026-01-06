@@ -1,24 +1,31 @@
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_navigation/src/extension_navigation.dart';
+import 'package:get/get.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/features/forgotpassword/presentation/widgets/otp_field.dart';
-import 'package:ijs_vault/features/set%20pin/presentation/screens/confirm_pin_screen.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
+import 'package:ijs_vault/shared/widgets/app_bar.dart';
 import 'package:ijs_vault/shared/widgets/custom_button.dart';
 
-class SetPinScreen extends StatefulWidget {
-  const SetPinScreen({super.key, this.itemId});
-  final String? itemId;
+class VerifyPinScreen extends StatefulWidget {
+  const VerifyPinScreen({
+    super.key,
+    required this.itemId,
+    required this.onSuccess,
+  });
+
+  final String itemId;
+  final VoidCallback onSuccess;
 
   @override
-  State<SetPinScreen> createState() => _VerifyCodeScreenState();
+  State<VerifyPinScreen> createState() => _VerifyPinScreenState();
 }
 
-class _VerifyCodeScreenState extends State<SetPinScreen> {
+class _VerifyPinScreenState extends State<VerifyPinScreen> {
   bool isOtpFIlled = false;
   String enteredPin = '';
+  final MyVaultController controller = Get.find<MyVaultController>();
 
   @override
   Widget build(BuildContext context) {
@@ -26,19 +33,21 @@ class _VerifyCodeScreenState extends State<SetPinScreen> {
     final double h = ScreenHelper.height(context);
 
     return Scaffold(
-      resizeToAvoidBottomInset: true, // 🔥 KEY FIX
+      resizeToAvoidBottomInset: true,
+      appBar: const CustomAppBar(text: ''),
+
       body: Stack(
         children: <Widget>[
-          /// MAIN CONTENT (Never moves)
+          /// MAIN CONTENT
           Padding(
             padding: AppSizes.horizontalPadding,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Center(child: Image.asset(AppImages.pinlock, height: h * 0.08)),
-                Text('Set PIN', style: theme.labelLarge),
+                Text('Verify PIN', style: theme.labelLarge),
                 Text(
-                  'Create a 4-digit PIN to protect \nyour vault.',
+                  'Enter your 4-digit PIN to access \nthis item.',
                   textAlign: TextAlign.center,
                   style: theme.labelSmall,
                 ),
@@ -47,7 +56,6 @@ class _VerifyCodeScreenState extends State<SetPinScreen> {
                 /// PIN INPUT
                 OtpInput(
                   length: 4,
-                  // isOtpWrong: false,
                   onOtpChanged: (String value) {
                     setState(() {
                       enteredPin = value;
@@ -85,15 +93,18 @@ class _VerifyCodeScreenState extends State<SetPinScreen> {
                 child: isOtpFIlled
                     ? CustomButton(
                         key: const ValueKey('verify_button'),
-                        onTap: () {
-                          Get.to(
-                            () => ConfirmPinScreen(
-                              itemId: widget.itemId,
-                              firstPin: enteredPin,
-                            ),
+                        onTap: () async {
+                          final bool success = await controller.verifyItemPin(
+                            itemId: widget.itemId,
+                            pin: enteredPin,
                           );
+
+                          if (success) {
+                            Get.back(); // Close PIN screen
+                            widget.onSuccess();
+                          }
                         },
-                        text: 'Next',
+                        text: 'Verify',
                         isDisabled: false,
                       )
                     : const SizedBox(key: ValueKey('empty_space')),

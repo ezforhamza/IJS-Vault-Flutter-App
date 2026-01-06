@@ -11,6 +11,7 @@ import 'package:ijs_vault/features/reminders/presentation/controllers/reminder_c
 import 'package:ijs_vault/features/reminders/presentation/screens/all_reminders_screen.dart';
 import 'package:ijs_vault/features/reminders/presentation/widgets/calender_widget.dart';
 import 'package:ijs_vault/features/reminders/presentation/widgets/reminder_widget.dart';
+import 'package:ijs_vault/features/settings/presentation/screens/all_notifications_screen.dart';
 import 'package:ijs_vault/shared/widgets/profile_picture_widget.dart';
 
 class RemindersScreen extends StatelessWidget {
@@ -35,13 +36,18 @@ class RemindersScreen extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+          padding: const EdgeInsets.only(
+            left: 15,
+            right: 15,
+            bottom: 40,
+            top: 10,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               // Search
               // CustomSearchField(isDarkMode: isDarkMode),
-              const SizedBox(height: 10),
+              // const SizedBox(height: 10),
 
               // Calendar
               const CalendarWidget(),
@@ -156,17 +162,22 @@ class CustomProfileAppBar extends StatelessWidget
         title: Text(
           // ' ${controller.user.value!.fullName}',
           // controller.user.value == null ? "" : controller.user.value!.fullName,
-          isCentre ? 'Reminders' : controller.userFullName!,
+          isCentre ? '$title' : controller.userFullName!,
           style: textTheme.labelLarge!.copyWith(fontSize: 16),
         ),
 
         // RIGHT ACTION
         actions: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: SvgPicture.asset(
-              AppImages.bell,
-              color: isDarkMode ? Colors.white : Colors.black,
+          GestureDetector(
+            onTap: () {
+              Get.to(() => const AllNotificationsScreen());
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: SvgPicture.asset(
+                AppImages.bell,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
             ),
           ),
         ],

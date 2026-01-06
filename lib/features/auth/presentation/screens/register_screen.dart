@@ -14,20 +14,25 @@ import 'package:ijs_vault/shared/widgets/custom_button.dart';
 import 'package:ijs_vault/shared/widgets/custom_text_field.dart';
 import 'package:ijs_vault/shared/widgets/gradient_text_widget.dart';
 
-class RegisterScreen extends StatelessWidget {
+class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
+  State<RegisterScreen> createState() => _RegisterScreenState();
+}
+
+class _RegisterScreenState extends State<RegisterScreen> {
+  final RegisterController controller = Get.put(RegisterController());
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmpasswordController =
+      TextEditingController();
+  final GlobalKey<FormState> formkey = GlobalKey<FormState>();
+  @override
   Widget build(BuildContext context) {
-    final RegisterController controller = Get.put(RegisterController());
     final TextTheme theme = Theme.of(context).textTheme;
-    final TextEditingController nameController = TextEditingController();
-    final TextEditingController emailController = TextEditingController();
-    final TextEditingController phoneController = TextEditingController();
-    final TextEditingController passwordController = TextEditingController();
-    final TextEditingController confirmpasswordController =
-        TextEditingController();
-    final GlobalKey<FormState> formkey = GlobalKey<FormState>();
 
     return Scaffold(
       body: Padding(
