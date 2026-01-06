@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:dio/dio.dart';
 import 'package:ijs_vault/core/network/api_services.dart';
 import 'package:ijs_vault/core/network/app_urls.dart';
 import 'package:ijs_vault/shared/models/response_model.dart';
@@ -31,5 +34,38 @@ class AuthRepository {
       AppUrls.login,
       data: <String, String>{"email": email, "password": password},
     );
+  }
+
+  Future<ApiResponse> changePassword({
+    required String otp,
+    required String newPassword,
+  }) async {
+    return await apiService.post(
+      AppUrls.changePassword,
+      data: <String, String>{"otp": otp, "newPassword": newPassword},
+    );
+  }
+
+  // SEND oTP Send Function for Change password
+  Future<ApiResponse> sendPasswordChangeOtp({
+    required String currentPassword,
+  }) async {
+    return await apiService.post(
+      AppUrls.sendPasswordChangeOtp,
+      data: <String, String>{"currentPassword": currentPassword},
+    );
+  }
+
+  // Upload PFP
+  Future<ApiResponse> uploadProfilePicture({
+    required String userId,
+    required File filePath,
+  }) async {
+    final FormData formData = FormData.fromMap(<String, dynamic>{
+      'image': await MultipartFile.fromFile(filePath.path),
+      'userId': userId,
+    });
+
+    return await apiService.post(AppUrls.uploadPfp, data: formData);
   }
 }

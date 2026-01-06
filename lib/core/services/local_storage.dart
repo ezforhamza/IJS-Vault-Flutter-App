@@ -7,6 +7,7 @@ class LocalStorageService {
   static const String keyUser = 'user';
   static const String keyAccessToken = 'access_token';
   static const String keyRefreshToken = 'refresh_token';
+  static const String keyIsFirstTime = 'is_first_time';
 
   /// ------------------- Save Functions -------------------
 
@@ -50,6 +51,11 @@ class LocalStorageService {
     await prefs.setString(keyRefreshToken, tokens.refresh.token);
   }
 
+  static Future<void> setFirstTime(bool isFirstTime) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(keyIsFirstTime, isFirstTime);
+  }
+
   /// ------------------- Get Functions -------------------
 
   static Future<UserModel?> getUser() async {
@@ -62,7 +68,7 @@ class LocalStorageService {
     return UserModel.fromJson(userMap);
   }
 
-  Future<String?> getAccessToken() async {
+  static Future<String?> getAccessToken() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString(keyAccessToken);
   }
@@ -70,6 +76,11 @@ class LocalStorageService {
   Future<String?> getRefreshToken() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString(keyRefreshToken);
+  }
+
+  static Future<bool> isFirstTime() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(keyIsFirstTime) ?? true;
   }
 
   /// ------------------- Clear Functions -------------------

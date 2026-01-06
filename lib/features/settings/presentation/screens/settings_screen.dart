@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get_instance/get_instance.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:get/utils.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
+import 'package:ijs_vault/core/controllers/fcm_controller.dart';
 import 'package:ijs_vault/features/auth/presentation/screens/login_screen.dart';
+import 'package:ijs_vault/features/reminders/presentation/screens/reminders_screen.dart';
 import 'package:ijs_vault/features/settings/presentation/screens/activity_log_screen.dart';
 import 'package:ijs_vault/features/settings/presentation/screens/change_password_screen.dart';
 import 'package:ijs_vault/features/settings/presentation/screens/notification_screen.dart';
@@ -31,7 +34,11 @@ class SettingsScreen extends StatelessWidget {
         //   height: 60,
         //   color: AppColors.scaffoldBackgroundColor,
         // ),
-        appBar: SettingsScreenAppBar(textTheme: textTheme),
+        appBar: CustomProfileAppBar(
+          textTheme: Theme.of(context).textTheme,
+          isCentre: true,
+          title: 'Settings',
+        ),
         body: Padding(
           padding: AppSizes.horizontalPadding,
           child: SingleChildScrollView(
@@ -117,6 +124,8 @@ class SettingsScreen extends StatelessWidget {
                                 onTap: () async {
                                   final SharedPreferences prefs =
                                       await SharedPreferences.getInstance();
+                                  Get.find<FCMController>()
+                                      .unregisterFCMToken();
                                   prefs.clear();
                                   Get.offAll(() => const LoginScreen());
                                 },

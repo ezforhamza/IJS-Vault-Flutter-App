@@ -1,5 +1,7 @@
 import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
+import 'package:ijs_vault/core/controllers/fcm_controller.dart';
+import 'package:ijs_vault/core/controllers/profile_controller.dart';
 import 'package:ijs_vault/core/services/local_storage.dart';
 import 'package:ijs_vault/features/auth/data/models/user_model.dart';
 import 'package:ijs_vault/features/auth/domain/repositories/auth_repository.dart';
@@ -24,8 +26,24 @@ class SigninController extends GetxController {
         final UserModel user = UserModel.fromJson(res.data['user']);
         final TokensModel tokens = TokensModel.fromJson(res.data['tokens']);
 
-        await LocalStorageService.saveUser(user);
+        // if (user.isEmailVerified == false) {
+        //   AppLoader.hideLoadingDialog();
+
+        //   Get.to(() => SigninEmailVerificationScreen(email: email));
+
+        //   return;
+        // }
+
         await LocalStorageService.saveTokens(tokens);
+
+        // Update ProfileController with user data
+        final ProfileController profileController =
+            Get.find<ProfileController>();
+        await profileController.updateUser(user);
+
+        // Register FCM Token
+        final FCMController fcmController = Get.find<FCMController>();
+        await fcmController.registerFCMToken();
 
         Get.offAll(() => const HomeWithBottomNavScreen());
       } else {

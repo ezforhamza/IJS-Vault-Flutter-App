@@ -19,9 +19,31 @@ class InputValidators {
     if (value == null || value.isEmpty) {
       return 'Password is required';
     }
-    if (value.length < 6) {
+    if (value.length < 8) {
       return 'Minimum 6 characters';
     }
+    return null;
+  }
+
+  static String? createAccountpassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Password is required';
+    }
+
+    if (value.length < 8) {
+      return 'Minimum 8 characters';
+    }
+
+    // At least one letter
+    if (!RegExp(r'[A-Za-z]').hasMatch(value)) {
+      return 'Password must contain at least one letter';
+    }
+
+    // At least one number
+    if (!RegExp(r'\d').hasMatch(value)) {
+      return 'Password must contain at least one number';
+    }
+
     return null;
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_strings.dart';
+import 'package:ijs_vault/core/services/local_storage.dart';
 import 'package:ijs_vault/features/auth/presentation/screens/login_screen.dart';
 import 'package:ijs_vault/features/onboarding/presentation/widgets/active_dot.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
@@ -36,22 +37,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
   ];
 
-  void _nextPage() {
+  void _nextPage() async {
     if (_currentPage < _onboardingPages.length - 1) {
       setState(() => _currentPage++);
     } else {
+      await LocalStorageService.setFirstTime(false);
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      }
+    }
+  }
+
+  void _skipOnboarding() async {
+    await LocalStorageService.setFirstTime(false);
+    if (mounted) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
     }
-  }
-
-  void _skipOnboarding() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-    );
   }
 
   @override

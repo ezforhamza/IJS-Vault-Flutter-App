@@ -76,7 +76,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           },
           autovalidateMode: AutovalidateMode.onUserInteraction,
           cursorColor: const Color(0xFFa4a4a4),
-          style: const TextStyle(color: Color(0xFFa4a4a4), fontSize: 12),
+          style: const TextStyle(color: Color(0xFFa4a4a4), fontSize: 13),
           minLines: widget.minLines,
           maxLines: widget.isPassword ? 1 : widget.maxLines,
           decoration: InputDecoration(

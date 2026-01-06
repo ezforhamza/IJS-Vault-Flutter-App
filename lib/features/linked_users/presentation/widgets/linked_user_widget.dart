@@ -4,12 +4,14 @@ import 'package:get/state_manager.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
+import 'package:ijs_vault/features/linked_users/data/models/linked_user_model.dart';
 import 'package:ijs_vault/features/linked_users/presentation/screens/shared_vault_scrren.dart';
 import 'package:ijs_vault/shared/widgets/gradient_text_widget.dart';
 import 'package:ijs_vault/shared/widgets/profile_picture_widget.dart';
 
 class LinkedUserWidget extends StatelessWidget {
-  const LinkedUserWidget({super.key});
+  const LinkedUserWidget({super.key, required this.user});
+  final LinkedUserModel user;
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +37,7 @@ class LinkedUserWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             // Profile Picture
-            const ProfilePictureWidget(
-              radius: 20,
-              imageUrl: "https://randomuser.me/api/portraits/men/1.jpg",
-            ),
+            ProfilePictureWidget(radius: 20, imageUrl: user.image),
 
             const SizedBox(width: 10),
 
@@ -49,13 +48,13 @@ class LinkedUserWidget extends StatelessWidget {
                 children: <Widget>[
                   // Name
                   Text(
-                    'User Name',
+                    user.fullName,
                     style: theme.labelMedium!.copyWith(fontSize: 14),
                   ),
 
                   // Email
                   Text(
-                    'useremail@gmail.com',
+                    user.email,
                     style: theme.labelSmall!.copyWith(fontSize: 10),
                   ),
 
@@ -72,7 +71,7 @@ class LinkedUserWidget extends StatelessWidget {
                               style: theme.labelMedium!.copyWith(fontSize: 14),
                             ),
                             TextSpan(
-                              text: '1',
+                              text: user.totalSharedCount.toString(),
                               style: theme.labelSmall!.copyWith(fontSize: 15),
                             ),
                           ],

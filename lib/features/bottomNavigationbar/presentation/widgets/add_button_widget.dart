@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
+import 'package:ijs_vault/core/controllers/fcm_controller.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/screens/add_folder_screen.dart';
 
@@ -91,7 +92,10 @@ class AddButtonWidget extends StatelessWidget {
 
           //Button
           GestureDetector(
-            onTap: controller.toggleAddTap,
+            onTap: () {
+              controller.toggleAddTap();
+              Get.find<FCMController>().testNotification();
+            },
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 250),
               switchInCurve: Curves.easeOutBack,

@@ -8,7 +8,17 @@ class AppUrls {
   static const String refreshToken = 'auth/refresh-tokens';
   static const String forgotPassword = 'auth/forgot-password';
   static const String verifyOtp = 'auth/verify-otp';
-  static const String resetPassword = 'auth/verify-otp';
+  static const String resendVerificationCode = 'auth/resend-code';
+  static const String resetPassword = 'auth/reset-password';
+  static const String changePassword = 'auth/change-password';
+  static const String sendPasswordChangeOtp = 'auth/send-password-change-otp';
+  static const String uploadPfp = 'users/profile-picture';
+  static const String updateusernameandphone = 'users/profile';
+  static const String searchUserForLinking = 'users/search-for-linking';
+  static const String getLinkedUsers = 'users/linked/details';
+  static const String registerFCM = 'fcm/register';
+  static const String unregisterFCM = 'fcm/unregister';
+
   // Vault
   static const String createFolder = 'vault/folders';
   static const String getVaultItems = 'vault/items';
@@ -17,6 +27,9 @@ class AppUrls {
   static const String moveItem = 'vault/items';
   static const String deleteItem = 'vault/items'; // /{id}
   static const String uploadlessThan100 = 'vault/upload'; // /{id}
+
+  // Shared Vault
+  static const String getSharedVault = 'vault/shared';
 
   // Rminders
   static const String createreminders = 'reminders';

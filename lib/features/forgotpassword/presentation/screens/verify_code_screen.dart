@@ -61,7 +61,10 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
   }
 
   void resendOTP() async {
-    controller.sendOTP(email: widget.email); // Use controller
+    controller.sendOTP(
+      email: widget.email,
+      type: widget.verificationType,
+    ); // Use controller
     _startTimer();
   }
 
@@ -140,7 +143,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                     controller.verifyOTP(
                       email: widget.email,
                       otp: otp,
-                      verificationType: widget.verificationType!.value,
+                      // verificationType: 'resetPassword',
                     );
                   }
                 },

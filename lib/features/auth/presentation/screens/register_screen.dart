@@ -1,7 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:get/get_instance/get_instance.dart';
-import 'package:get/route_manager.dart';
+import 'package:get/get.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
@@ -20,31 +21,30 @@ class RegisterScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final RegisterController controller = Get.put(RegisterController());
     final TextTheme theme = Theme.of(context).textTheme;
-    final TextEditingController nameController = .new();
-    final TextEditingController emailController = .new();
-
-    final TextEditingController phoneController = .new();
-
-    final TextEditingController passwordController = .new();
-    final TextEditingController confirmpasswordController = .new();
+    final TextEditingController nameController = TextEditingController();
+    final TextEditingController emailController = TextEditingController();
+    final TextEditingController phoneController = TextEditingController();
+    final TextEditingController passwordController = TextEditingController();
+    final TextEditingController confirmpasswordController =
+        TextEditingController();
     final GlobalKey<FormState> formkey = GlobalKey<FormState>();
 
     return Scaffold(
-      // resizeToAvoidBottomInset: false,
       body: Padding(
         padding: AppSizes.horizontalPadding,
         child: SingleChildScrollView(
           child: Form(
             key: formkey,
-
             child: Column(
               spacing: 0,
-              mainAxisAlignment: .start,
-              crossAxisAlignment: .start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 SizedBox(height: MediaQuery.paddingOf(context).top + 30),
+
+                // Header
                 Column(
-                  crossAxisAlignment: .start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text('Create Account!', style: theme.labelLarge),
                     Text(
@@ -53,8 +53,17 @@ class RegisterScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const Center(child: PfpSelectionWidget()),
-                // Text Field
+
+                // Profile Picture Selection
+                Center(
+                  child: PfpSelectionWidget(
+                    onImageSelected: (File file) {
+                      controller.setProfilePicture(file);
+                    },
+                  ),
+                ),
+
+                // Full Name Field
                 CustomTextField(
                   controller: nameController,
                   title: 'Full Name',
@@ -71,7 +80,7 @@ class RegisterScreen extends StatelessWidget {
                   },
                 ),
 
-                // Text Field
+                // Email Field
                 CustomTextField(
                   validator: InputValidators.email,
                   controller: emailController,
@@ -82,6 +91,8 @@ class RegisterScreen extends StatelessWidget {
                     color: const Color(0xFFB2B2B2),
                   ),
                 ),
+
+                // Phone Field
                 CustomTextField(
                   controller: phoneController,
                   title: 'Phone Number',
@@ -97,8 +108,10 @@ class RegisterScreen extends StatelessWidget {
                     color: const Color(0xFFB2B2B2),
                   ),
                 ),
+
+                // Password Field
                 CustomTextField(
-                  validator: InputValidators.password,
+                  validator: InputValidators.createAccountpassword,
                   controller: passwordController,
                   title: 'Password',
                   hintText: "Enter Password",
@@ -109,7 +122,7 @@ class RegisterScreen extends StatelessWidget {
                   ),
                 ),
 
-                // Text Field
+                // Confirm Password Field
                 CustomTextField(
                   controller: confirmpasswordController,
                   title: 'Confirm Password',
@@ -123,95 +136,106 @@ class RegisterScreen extends StatelessWidget {
                     if (value == null || value.isEmpty) {
                       return 'Confirm password is required';
                     }
-
                     if (value != passwordController.text) {
                       return 'Passwords do not match';
                     }
-
                     return null;
                   },
                 ),
-                // Privacy Policy And Terms
-                Row(
-                  spacing: 10,
-                  children: <Widget>[
-                    // Check Box
-                    Container(
-                      height: 25,
-                      width: 25,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(7),
-                        // gradient: LinearGradient(colors: AppColors.gradient),
-                        border: Border.all(color: const Color(0xFFa4a4a4)),
-                      ),
-                      child: const Icon(Icons.check, color: Color(0xFFd1b243)),
-                    ),
-                    // Text
-                    Expanded(
-                      child: RichText(
-                        text: TextSpan(
-                          style: theme.labelSmall,
-                          children: <InlineSpan>[
-                            const TextSpan(text: 'I agree to the '),
 
-                            TextSpan(
-                              text: 'terms & conditions',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                foreground: Paint()
-                                  ..shader =
-                                      const LinearGradient(
-                                        colors: AppColors.gradient,
-                                      ).createShader(
-                                        const Rect.fromLTWH(0, 0, 200, 20),
-                                      ),
-                              ),
-                            ),
-
-                            const TextSpan(text: ' and '),
-
-                            TextSpan(
-                              text: 'privacy policy',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                foreground: Paint()
-                                  ..shader =
-                                      const LinearGradient(
-                                        colors: AppColors.gradient,
-                                      ).createShader(
-                                        const Rect.fromLTWH(0, 0, 200, 20),
-                                      ),
-                              ),
-                            ),
-                          ],
+                // Terms and Conditions Checkbox
+                Obx(
+                  () => GestureDetector(
+                    onTap: controller.toggleTermsAcceptance,
+                    child: Row(
+                      spacing: 10,
+                      children: <Widget>[
+                        // Checkbox
+                        Container(
+                          height: 25,
+                          width: 25,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(7),
+                            border: Border.all(color: const Color(0xFFa4a4a4)),
+                            color: controller.termsAccepted.value
+                                ? const Color(0xFFd1b243).withOpacity(0.2)
+                                : Colors.transparent,
+                          ),
+                          child: controller.termsAccepted.value
+                              ? const Icon(
+                                  Icons.check,
+                                  color: Color(0xFFd1b243),
+                                  size: 18,
+                                )
+                              : null,
                         ),
-                      ),
+                        // Text
+                        Expanded(
+                          child: RichText(
+                            text: TextSpan(
+                              style: theme.labelSmall,
+                              children: <InlineSpan>[
+                                const TextSpan(text: 'I agree to the '),
+                                TextSpan(
+                                  text: 'terms & conditions',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    foreground: Paint()
+                                      ..shader =
+                                          const LinearGradient(
+                                            colors: AppColors.gradient,
+                                          ).createShader(
+                                            const Rect.fromLTWH(0, 0, 200, 20),
+                                          ),
+                                  ),
+                                ),
+                                const TextSpan(text: ' and '),
+                                TextSpan(
+                                  text: 'privacy policy',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    foreground: Paint()
+                                      ..shader =
+                                          const LinearGradient(
+                                            colors: AppColors.gradient,
+                                          ).createShader(
+                                            const Rect.fromLTWH(0, 0, 200, 20),
+                                          ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
                 ),
+
                 const SizedBox(height: 10),
-                // Button
+
+                // Create Account Button
                 CustomButton(
                   onTap: () {
-                    // Get.to(() => const SetPinScreen());
                     if (formkey.currentState!.validate()) {
                       controller.register(
                         fullname: nameController.text,
                         email: emailController.text,
                         password: passwordController.text,
                       );
-                    } else {}
+                    }
                   },
                   text: 'Create Account',
                 ),
+
                 const SizedBox(height: 10),
 
+                // Sign In Link
                 Row(
-                  mainAxisAlignment: .center,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    // FIrst
                     Text('Already have an account? ', style: theme.labelSmall),
                     GestureDetector(
                       onTap: () {
@@ -222,9 +246,10 @@ class RegisterScreen extends StatelessWidget {
                         fontsize: 15,
                         fontWeight: FontWeight.w600,
                       ),
-                    ), // Register
+                    ),
                   ],
                 ),
+
                 SizedBox(height: MediaQuery.paddingOf(context).bottom + 5),
               ],
             ),

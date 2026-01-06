@@ -12,6 +12,14 @@ class ForgotPasswordRepo {
     );
   }
 
+  // Resend Verification Code
+  Future<ApiResponse> resendVerificationCode({required String email}) async {
+    return await apiService.post(
+      AppUrls.resendVerificationCode,
+      data: <String, String>{'email': email},
+    );
+  }
+
   // Verify OTP
   Future<ApiResponse> verifyOtp({
     required String email,
@@ -32,10 +40,11 @@ class ForgotPasswordRepo {
   Future<ApiResponse> resetPassword({
     required String email,
     required String otp,
+    required String password,
   }) async {
     return await apiService.post(
-      AppUrls.verifyOtp,
-      data: <String, String>{'email': email, 'otp': otp},
+      AppUrls.resetPassword,
+      data: <String, String>{'email': email, 'otp': otp, 'password': password},
     );
   }
 }

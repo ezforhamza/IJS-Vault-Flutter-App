@@ -74,4 +74,19 @@ class MyVaultRepo {
   Future<ApiResponse> deleteItem({required String id}) async {
     return await apiService.delete('${AppUrls.deleteItem}/$id');
   }
+
+  Future<ApiResponse> getUsersForLinking({required String query}) async {
+    return await apiService.get('${AppUrls.searchUserForLinking}?query=$query');
+  }
+
+  // Link User
+  Future<ApiResponse> linkSelectedUsers({
+    required String itemId,
+    required List<Map<String, String>> users,
+  }) async {
+    return await apiService.post(
+      'vault/items/$itemId/share',
+      data: <String, dynamic>{'users': users},
+    );
+  }
 }

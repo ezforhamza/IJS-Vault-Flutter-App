@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "255286904718",
+    "project_id": "ijs-vault",
+    "storage_bucket": "ijs-vault.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:255286904718:android:6208468c5cc68a2d4cc6df",
+        "android_client_info": {
+          "package_name": "com.codecoy.ijs_vault"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "255286904718-rmi37clsblme0nu4n4r7luf5fk12iacf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWsAOLbmyDg1V30Z4KVVEQS8PWie8A4R4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "255286904718-rmi37clsblme0nu4n4r7luf5fk12iacf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

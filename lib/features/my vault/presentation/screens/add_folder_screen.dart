@@ -14,41 +14,100 @@ import 'package:ijs_vault/shared/widgets/custom_button.dart';
 import 'package:ijs_vault/shared/widgets/custom_text_field.dart';
 import 'package:ijs_vault/shared/widgets/gradient_text_widget.dart';
 
-class AddFolderScreen extends StatelessWidget {
+class AddFolderScreen extends StatefulWidget {
   const AddFolderScreen({super.key, this.parentId});
   final String? parentId;
 
   @override
+  State<AddFolderScreen> createState() => _AddFolderScreenState();
+}
+
+class _AddFolderScreenState extends State<AddFolderScreen> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController descriptionController = TextEditingController();
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
+  // List to hold user dropdown widgets (max 5)
+  final List<GlobalKey> userFieldKeys = <GlobalKey<State<StatefulWidget>>>[];
+  int userFieldCount = 1;
+  static const int maxUserFields = 5;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with one user field
+    userFieldKeys.add(GlobalKey());
+  }
+
+  void _addUserField() {
+    if (userFieldCount < maxUserFields) {
+      setState(() {
+        userFieldKeys.add(GlobalKey());
+        userFieldCount++;
+      });
+    }
+  }
+
+  void _removeUserField(int index) {
+    if (userFieldCount > 1) {
+      setState(() {
+        userFieldKeys.removeAt(index);
+        userFieldCount--;
+      });
+    }
+  }
+
+  List<Map<String, String>> _getSelectedUsers() {
+    final List<Map<String, String>> users = <Map<String, String>>[];
+    for (final GlobalKey<State<StatefulWidget>> key in userFieldKeys) {
+      final dynamic state = key.currentState;
+      if (state != null) {
+        try {
+          final String? userId = state.selectedUserId as String?;
+          final String access = state.selectedAccess as String;
+          if (userId != null && access != 'Select Access') {
+            users.add(<String, String>{
+              'userId': userId,
+              'role': access.toLowerCase(),
+            });
+          }
+        } catch (e) {
+          // Skip if state doesn't have the expected properties
+        }
+      }
+    }
+    return users;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final TextTheme theme = Theme.of(context).textTheme;
-    final bool isDarkMode = Get.isDarkMode;
     final MyVaultController controller = Get.find<MyVaultController>();
-    final TextEditingController nameCOntroller = TextEditingController();
-    final TextEditingController descriptionController = TextEditingController();
-    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
     return SafeArea(
       child: Scaffold(
         appBar: const CustomAppBar(text: 'Add Folder'),
         bottomNavigationBar: Padding(
-          padding: const EdgeInsetsGeometry.symmetric(
-            horizontal: 15,
-            vertical: 10,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
           child: CustomButton(
             onTap: () async {
               if (formKey.currentState!.validate()) {
-                if (parentId != null) {
+                final List<Map<String, String>> linkedUsers =
+                    _getSelectedUsers();
+
+                if (widget.parentId != null) {
                   final FolderViewController folderController =
-                      Get.find<FolderViewController>(tag: parentId);
+                      Get.find<FolderViewController>(tag: widget.parentId);
                   await folderController.addNewFolder(
-                    name: nameCOntroller.text,
+                    name: nameController.text,
                     description: descriptionController.text,
                   );
                 } else {
                   await controller.addNewFolder(
-                    name: nameCOntroller.text,
+                    name: nameController.text,
                     description: descriptionController.text,
-                    parentId: parentId,
+                    parentId: widget.parentId,
+                    linkedUsers: linkedUsers,
                   );
                 }
                 Get.back();
@@ -61,14 +120,14 @@ class AddFolderScreen extends StatelessWidget {
           padding: AppSizes.horizontalPadding,
           child: SingleChildScrollView(
             child: Column(
-              crossAxisAlignment: .start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               spacing: 10,
               children: <Widget>[
                 // Folder Name
                 Form(
                   key: formKey,
                   child: CustomTextField(
-                    controller: nameCOntroller,
+                    controller: nameController,
                     title: 'Folder Name',
                     hintText: 'Enter Name',
                     validator: (String? value) {
@@ -87,36 +146,66 @@ class AddFolderScreen extends StatelessWidget {
                   maxLines: 5,
                 ),
                 Row(
-                  mainAxisAlignment: .spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Text(
                       'Linked Users (optional)',
                       style: theme.labelMedium!.copyWith(fontSize: 14),
                     ),
-                    Row(
-                      children: <Widget>[
-                        // Icoon
-                        SvgPicture.asset(AppImages.plusicon),
-                        const TextGradient(
-                          text: 'Add More',
-                          fontsize: 12,
-                          fontWeight: FontWeight.w500,
+                    if (userFieldCount < maxUserFields)
+                      GestureDetector(
+                        onTap: _addUserField,
+                        child: Row(
+                          children: <Widget>[
+                            SvgPicture.asset(AppImages.plusicon),
+                            const TextGradient(
+                              text: 'Add More',
+                              fontsize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
                   ],
                 ),
-                // const SizedBox(height: 8),
                 // Add Linked Users
-                const Column(
+                Column(
                   spacing: 15,
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[CustomTextFieldWithDropdown()],
+                  children: List.generate(
+                    userFieldCount,
+                    (int index) => Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: CustomTextFieldWithDropdown(
+                            key: userFieldKeys[index],
+                          ),
+                        ),
+                        if (userFieldCount > 1)
+                          // IconButton(
+                          //   onPressed: () => _removeUserField(index),
+                          //   icon: const Icon(
+                          //     Icons.delete_outline,
+                          //     color: Colors.red,
+                          //   ),
+                          // ),
+                          GestureDetector(
+                            onTap: () {
+                              _removeUserField(index);
+                            },
+                            child: SvgPicture.asset(
+                              AppImages.delete,
+                              height: 40,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 //
                 Row(
-                  mainAxisAlignment: .spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     // Row
                     Row(
@@ -142,5 +231,12 @@ class AddFolderScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    descriptionController.dispose();
+    super.dispose();
   }
 }

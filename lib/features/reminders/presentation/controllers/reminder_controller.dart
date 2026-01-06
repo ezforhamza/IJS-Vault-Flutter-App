@@ -15,6 +15,12 @@ class ReminderController extends GetxController {
   final RxBool isFetchingReminders = false.obs;
   final RxList<ReminderItemModel> reminders = <ReminderItemModel>[].obs;
 
+  @override
+  void onInit() {
+    super.onInit();
+    getAllReminders(showLoader: false);
+  }
+
   // --------------------------------------------------
   // CREATE REMINDER
   // --------------------------------------------------
@@ -52,8 +58,10 @@ class ReminderController extends GetxController {
   // --------------------------------------------------
   // GET ALL REMINDERS
   // --------------------------------------------------
-  Future<void> getAllReminders() async {
-    isFetchingReminders.value = true;
+  Future<void> getAllReminders({bool showLoader = true}) async {
+    if (showLoader) {
+      isFetchingReminders.value = true;
+    }
 
     try {
       final ApiResponse response = await remindersRepo.getAllReminders();

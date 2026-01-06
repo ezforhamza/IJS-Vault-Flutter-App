@@ -93,10 +93,6 @@ class _ActivityLogScreenState extends State<ActivityLogScreen> {
                   return const Center(child: LoaderWidget());
                 }
 
-                if (controller.error.isNotEmpty) {
-                  return Center(child: Text(controller.error.value));
-                }
-
                 final List<ActivityLogItem> filteredLogs =
                     controller.filteredLogs;
 

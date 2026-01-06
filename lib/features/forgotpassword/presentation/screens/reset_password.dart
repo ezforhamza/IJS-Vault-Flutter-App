@@ -12,7 +12,13 @@ import 'package:ijs_vault/shared/widgets/custom_button.dart';
 import 'package:ijs_vault/shared/widgets/custom_text_field.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key});
+  const ResetPasswordScreen({
+    super.key,
+    required this.otp,
+    required this.email,
+  });
+  final String email;
+  final String otp;
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -116,7 +122,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                       KeyboardHelper.closeKeyboard(context);
                       // Call API or navigate
                       // Get.snackbar('Success', 'Password reset successfully');
-                      // controller.resePassword();
+                      controller.resetPassword(
+                        email: widget.email,
+                        otp: widget.otp,
+                        password: newPasswordController.text,
+                      );
                     }
                   },
                 ),

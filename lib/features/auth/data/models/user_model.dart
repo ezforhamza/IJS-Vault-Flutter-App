@@ -9,12 +9,14 @@ class UserModel {
     required this.notificationPreferences,
     required this.subscription,
     required this.billingHistory,
+    required this.image,
   });
 
   factory UserModel.fromJson(Map<String, dynamic>? json) {
     return UserModel(
       id: json?['id'] ?? '',
       fullName: json?['fullName'] ?? '',
+      image: json?['image'] ?? "",
       email: json?['email'] ?? '',
       role: json?['role'] ?? 'user',
       isEmailVerified: json?['isEmailVerified'] ?? false,
@@ -29,6 +31,7 @@ class UserModel {
   final String id;
   final String fullName;
   final String email;
+  final String image;
   final String role;
   final bool isEmailVerified;
   final String provider;

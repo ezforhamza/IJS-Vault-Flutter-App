@@ -49,6 +49,7 @@ class ApiService {
       final String? refreshToken = prefs.getString(
         LocalStorageService.keyRefreshToken,
       );
+      debugPrint('Message: $refreshToken');
 
       if (refreshToken == null) return false;
 
@@ -180,27 +181,39 @@ class ApiService {
     Response response, {
     required Future<Response> Function() retry,
   }) async {
-    // Unauthorized → try refresh
-    if (response.statusCode == 401) {
-      final bool refreshed = await _refreshToken();
+    final data = response.data;
 
-      if (refreshed) {
-        final Response retryResponse = await retry();
-        return ApiResponse.fromJson(retryResponse.data);
+    if (data is Map<String, dynamic>) {
+      final int? errorCode = data['error'] != null
+          ? data['error']['code']
+          : null;
+      final String? errorMessage = data['error'] != null
+          ? data['error']['message']
+          : null;
+
+      // Trigger refresh token if error code is 401 OR message indicates authentication required
+      if (errorCode == 401 ||
+          (errorMessage != null &&
+              errorMessage.toLowerCase().contains('please authenticate'))) {
+        final bool refreshed = await _refreshToken();
+        if (refreshed) {
+          final Response retryResponse = await retry();
+          return ApiResponse.fromJson(retryResponse.data);
+        }
+
+        // Refresh failed → logout
+        await LocalStorageService().clearAll();
+        return ApiResponse(
+          success: false,
+          message: errorMessage ?? 'Session expired. Please login again.',
+        );
       }
 
-      // Refresh failed → logout
-      await LocalStorageService().clearAll();
-      return ApiResponse(
-        success: false,
-        message: 'Session expired. Please login again.',
-      );
+      // Normal response
+      return ApiResponse.fromJson(data);
     }
 
-    if (response.data is Map<String, dynamic>) {
-      return ApiResponse.fromJson(response.data);
-    }
-
+    // Unexpected format
     return ApiResponse(success: false, message: 'Unexpected response format');
   }
 

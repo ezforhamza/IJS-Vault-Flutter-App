@@ -29,11 +29,9 @@ class _AllRemindersScreenState extends State<AllRemindersScreen> {
   @override
   void initState() {
     super.initState();
-    // Trigger fetch if needed, or rely on existing state
+    // Trigger fetch for seamless refresh
     final ReminderController controller = Get.find<ReminderController>();
-    if (controller.reminders.isEmpty) {
-      controller.getAllReminders();
-    }
+    controller.getAllReminders(showLoader: false);
   }
 
   @override
