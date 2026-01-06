@@ -29,10 +29,19 @@ class AuthRepository {
   Future<ApiResponse> login({
     required String email,
     required String password,
+    required String deviceType,
+    required String deviceName,
+    required String deviceModel,
   }) async {
     return await apiService.post(
       AppUrls.login,
-      data: <String, String>{"email": email, "password": password},
+      data: <String, String>{
+        "email": email,
+        "password": password,
+        "deviceModel": deviceModel,
+        "deviceName": deviceName,
+        'deviceType': deviceType,
+      },
     );
   }
 

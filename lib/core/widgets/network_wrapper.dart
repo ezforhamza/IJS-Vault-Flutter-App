@@ -19,12 +19,15 @@ class NetworkWrapper extends StatelessWidget {
             return const SizedBox.shrink();
           }
 
-          return Material(
-            color: Colors.transparent,
-            child: Center(
+          return Positioned(
+            top: 10,
+            left: 100,
+            right: 100,
+            child: Material(
+              color: Colors.transparent,
               child:
                   Container(
-                        width: 200,
+                        // width: 200,
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
@@ -45,6 +48,7 @@ class NetworkWrapper extends StatelessWidget {
                           ],
                         ),
                         child: Row(
+                          mainAxisAlignment: .center,
                           children: <Widget>[
                             const Icon(
                               Icons.wifi_off_rounded,
@@ -52,16 +56,14 @@ class NetworkWrapper extends StatelessWidget {
                               size: 20,
                             ),
                             const SizedBox(width: 15),
-                            Expanded(
-                              child: Text(
-                                'No Internet Connection',
-                                style: Theme.of(context).textTheme.titleSmall
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                    ),
-                              ),
+                            Text(
+                              'No Internet Connection',
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
                             ),
                           ],
                         ),
