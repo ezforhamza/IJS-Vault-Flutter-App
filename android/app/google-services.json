@@ -45,7 +45,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:255286904718:android:6208468c5cc68a2d4cc6df",
         "android_client_info": {
-          "package_name": "com.codecoy.ijs_vault"
+          "package_name": "com.codecoy.ijs.vault"
         }
       },
       "oauth_client": [
@@ -53,7 +53,7 @@
           "client_id": "255286904718-o8skssfc7lv3i12l1mh0a6irr9m18scd.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.codecoy.ijs_vault",
+            "package_name": "com.codecoy.ijs.vault",
             "certificate_hash": "0c58767c69d6592d17b84ececa09fdc9d20b131e"
           }
         },

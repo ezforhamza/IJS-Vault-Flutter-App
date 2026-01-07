@@ -23,7 +23,7 @@ class ProfileController extends GetxController {
     debugPrint(
       '=========================================================================================================',
     );
-    debugPrint(user!.fullName);
+    // debugPrint(user!.fullName);
   }
 
   /// Update user in local storage and reactive state

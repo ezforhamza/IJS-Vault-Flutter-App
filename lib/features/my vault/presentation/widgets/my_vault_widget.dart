@@ -41,7 +41,7 @@ class _MyVaultState extends State<MyVault> {
           },
           child: controller.isGettingVault.value
               ? const GridShimmer(keyy: 'Shimmer')
-              : _buildGrid(textTheme, const ValueKey('grid')),
+              : _buildGrid(textTheme, const ValueKey('grid'), controller),
         ),
       ),
     );
@@ -51,72 +51,79 @@ class _MyVaultState extends State<MyVault> {
   /*                                   GRID                                     */
   /* -------------------------------------------------------------------------- */
 
-  Widget _buildGrid(TextTheme textTheme, ValueKey key) {
+  Widget _buildGrid(
+    TextTheme textTheme,
+    ValueKey key,
+    MyVaultController controller,
+  ) {
     if (controller.items.isEmpty) {
       return _buildEmptyText(textTheme);
     }
 
-    return LayoutBuilder(
-      builder: (BuildContext context, BoxConstraints constraints) {
-        final double width = constraints.maxWidth;
-        // Calculate childAspectRatio to keep items professional
-        final double itemWidth =
-            (width - 40) / 3; // 10 padding * 2 + 10 spacing * 2
-        final double itemHeight = itemWidth * 1.25; // Base height ratio
-        final double ratio = itemWidth / itemHeight;
+    return RefreshIndicator(
+      onRefresh: controller.getVaultItems,
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final double width = constraints.maxWidth;
+          // Calculate childAspectRatio to keep items professional
+          final double itemWidth =
+              (width - 40) / 3; // 10 padding * 2 + 10 spacing * 2
+          final double itemHeight = itemWidth * 1.25; // Base height ratio
+          final double ratio = itemWidth / itemHeight;
 
-        return GridView.builder(
-          key: key,
-          padding: const EdgeInsets.all(10),
-          itemCount: controller.items.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio: ratio < 0.7 ? 0.7 : ratio,
-          ),
-          itemBuilder: (_, int index) {
-            final ItemModel item = controller.items[index];
-            return VaultItem(
-              type: item.fileType == 'media'
-                  ? VaultItemType.media
-                  : VaultItemType.folder,
-              item: item,
-              onMove: () {
-                DialogHelper.showAnimatedDialog(
-                  context: context,
-                  child: MoveItemDialog(
-                    itemToMove: item,
-                    initialParentId: null, // Root
-                    onMove: (String? newParentId) {
-                      controller.moveItem(item.id, newParentId ?? '', index);
-                    },
-                  ),
-                );
-              },
-              onDelete: () {
-                DialogHelper.showAnimatedDialog(
-                  context: context,
-                  child: Center(
-                    child: ConfirmationDialogue(
-                      onTap: () async {
-                        await controller.deleteItem(item.id, index);
-                        Get.back();
+          return GridView.builder(
+            key: key,
+            padding: const EdgeInsets.all(10),
+            itemCount: controller.items.length,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: ratio < 0.7 ? 0.7 : ratio,
+            ),
+            itemBuilder: (_, int index) {
+              final ItemModel item = controller.items[index];
+              return VaultItem(
+                type: item.fileType == 'media'
+                    ? VaultItemType.media
+                    : VaultItemType.folder,
+                item: item,
+                onMove: () {
+                  DialogHelper.showAnimatedDialog(
+                    context: context,
+                    child: MoveItemDialog(
+                      itemToMove: item,
+                      initialParentId: null, // Root
+                      onMove: (String? newParentId) {
+                        controller.moveItem(item.id, newParentId ?? '', index);
                       },
-                      h: ScreenHelper.height(context),
-                      theme: Theme.of(context).textTheme,
-                      title: 'Delte Item?',
-                      subtitle: 'Do you really want to delete ${item.name}',
-                      image: AppImages.delete,
-                      buttonText: 'Delete',
                     ),
-                  ),
-                );
-              },
-            );
-          },
-        );
-      },
+                  );
+                },
+                onDelete: () {
+                  DialogHelper.showAnimatedDialog(
+                    context: context,
+                    child: Center(
+                      child: ConfirmationDialogue(
+                        onTap: () async {
+                          await controller.deleteItem(item.id, index);
+                          Get.back();
+                        },
+                        h: ScreenHelper.height(context),
+                        theme: Theme.of(context).textTheme,
+                        title: 'Delte Item?',
+                        subtitle: 'Do you really want to delete ${item.name}',
+                        image: AppImages.delete,
+                        buttonText: 'Delete',
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 

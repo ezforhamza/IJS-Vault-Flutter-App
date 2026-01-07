@@ -41,7 +41,10 @@ class _SharedFolderViewScreenState extends State<SharedFolderViewScreen> {
       if (response.success) {
         final List<dynamic> itemsJson = response.data['items'] ?? <dynamic>[];
         items.value = itemsJson
-            .map((dynamic item) => ItemModel.fromJson(item as Map<String, dynamic>))
+            .map(
+              (dynamic item) =>
+                  ItemModel.fromJson(item as Map<String, dynamic>),
+            )
             .toList();
       } else {
         errorMessage.value = response.message;
@@ -77,8 +80,8 @@ class _SharedFolderViewScreenState extends State<SharedFolderViewScreen> {
           child: isLoading.value
               ? const _GridShimmer(keyy: 'SharedFolderShimmer')
               : errorMessage.value != null
-                  ? _buildErrorState(textTheme)
-                  : _buildGrid(textTheme),
+              ? _buildErrorState(textTheme)
+              : _buildGrid(textTheme),
         ),
       ),
     );
@@ -176,11 +179,7 @@ class _SharedFolderViewScreenState extends State<SharedFolderViewScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: Colors.red[400],
-          ),
+          Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
           const SizedBox(height: 16),
           Text(
             errorMessage.value ?? 'Something went wrong',
@@ -210,8 +209,8 @@ class _SharedFolderItem extends StatelessWidget {
       type: item.type == 'folder'
           ? VaultItemType.folder
           : item.fileType == 'media'
-              ? VaultItemType.media
-              : VaultItemType.document,
+          ? VaultItemType.media
+          : VaultItemType.document,
       item: item,
       isSharedItem: true,
       onTap: onTap,

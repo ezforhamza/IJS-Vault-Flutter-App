@@ -1,20 +1,13 @@
-import 'dart:io';
-
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ijs_vault/core/services/local_storage.dart';
-import 'package:ijs_vault/core/services/resumeable_upload_service.dart';
 import 'package:ijs_vault/features/auth/data/models/user_model.dart';
 import 'package:ijs_vault/features/my%20vault/data/models/linkable_user_model.dart';
 import 'package:ijs_vault/features/my%20vault/data/models/vault_item_model.dart';
 import 'package:ijs_vault/features/my%20vault/domain/repositories/my_vault_repo.dart';
-import 'package:ijs_vault/features/my%20vault/presentation/widgets/file_confirmation_widget.dart';
 import 'package:ijs_vault/shared/helpers/loader.dart';
 import 'package:ijs_vault/shared/helpers/toasts.dart';
 import 'package:ijs_vault/shared/models/response_model.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:mime/mime.dart';
 
 class MyVaultController extends GetxController {
   // UI state
@@ -255,132 +248,6 @@ class MyVaultController extends GetxController {
   //   user.value = null;
   //   items.clear();
   // }
-
-  ////////////////////////////////////////////////////////////////////////////////File Upload/////////////////////////////////////////
-  final ImagePicker _picker = ImagePicker();
-  final RxBool isUploading = false.obs;
-
-  Future<void> pickAndConfirmUpload(BuildContext context) async {
-    // Pick any file
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.any, // allows any file type
-      allowMultiple: false,
-    );
-
-    if (result == null || result.files.isEmpty) return;
-
-    final File file = File(result.files.first.path!);
-
-    // Show your upload confirmation dialog
-    _showUploadConfirmationDialog(context: context, file: file);
-  }
-
-  void _showUploadConfirmationDialog({
-    required BuildContext context,
-    required File file,
-  }) {
-    Get.dialog(
-      barrierColor: const Color(0xFF494a51).withValues(alpha: 0.4),
-      UploadConfirmationDialog(
-        file: file,
-        onTap: () {
-          return uploadSelectedFile(file);
-        },
-        isUploading: isUploading,
-      ),
-    );
-  }
-
-  Future<void> uploadSelectedFile(File file) async {
-    const int fileSizeThreshold = 100 * 1024 * 1024; // 100MB in bytes
-
-    try {
-      isUploading.value = true;
-
-      // Get file size
-      final int fileSize = await file.length();
-      final String filename = file.path.split('/').last;
-
-      // Check file size and route to appropriate upload method
-      if (fileSize > fileSizeThreshold) {
-        // Use resumable upload for files > 100MB
-        await _uploadLargeFile(file, filename, fileSize);
-      } else {
-        // Use standard upload for files <= 100MB
-        await _uploadSmallFile(file);
-      }
-    } catch (e) {
-      Get.snackbar('Error', e.toString());
-    } finally {
-      isUploading.value = false;
-      AppLoader.hideLoadingDialog();
-    }
-  }
-
-  /// Upload small files (<= 100MB) using standard method
-  Future<void> _uploadSmallFile(File file) async {
-    AppLoader.showLoadingDialog();
-
-    final ApiResponse response = await repo.uploadFileLessThan100Mb(
-      filePath: file.path,
-      description: 'Uploaded from gallery',
-      parentId: null, // pass folder id if needed
-    );
-
-    if (response.success) {
-      AppToasts.showSuccessToast(message: response.message);
-      final ItemModel newItem = ItemModel.fromJson(response.data['item']);
-      items.add(newItem);
-    } else {
-      AppToasts.showErrorToast(message: response.message);
-    }
-  }
-
-  /// Upload large files (> 100MB) using resumable upload service
-  Future<void> _uploadLargeFile(
-    File file,
-    String filename,
-    int fileSize,
-  ) async {
-    AppLoader.showLoadingDialog();
-
-    try {
-      // Get access token
-      final String? token = await LocalStorageService.getAccessToken();
-      if (token == null) {
-        AppToasts.showErrorToast(message: 'Authentication required');
-        return;
-      }
-
-      // Determine content type
-      final String? mimeType = lookupMimeType(file.path);
-      final String contentType = mimeType ?? 'application/octet-stream';
-
-      // Initialize resumable upload service
-      final ResumableUploadService uploadService = ResumableUploadService();
-
-      // Upload file
-      final bool success = await uploadService.uploadFile(
-        file: file,
-        filename: filename,
-        contentType: contentType,
-        parentId: '', // pass folder id if needed
-        token: token,
-        concurrentUploads: 3, // parallel uploads
-      );
-
-      if (success) {
-        AppToasts.showSuccessToast(message: 'File uploaded successfully');
-        // Refresh vault items to show the new file
-        await getVaultItems();
-      } else {
-        AppToasts.showErrorToast(message: 'Upload failed');
-      }
-    } catch (e) {
-      debugPrint('Large file upload error: $e');
-      AppToasts.showErrorToast(message: 'Failed to upload large file');
-    }
-  }
 
   /* -------------------------------------------------------------------------- */
   /*                            User Linking Search                             */

@@ -68,10 +68,7 @@ class _MyVaultScreenState extends State<MyVaultScreen>
                 child: TabBarView(
                   physics: const NeverScrollableScrollPhysics(),
                   controller: _tabController,
-                  children: const <Widget>[
-                    MyVault(),
-                    SharedWithMe(),
-                  ],
+                  children: const <Widget>[MyVault(), SharedWithMe()],
                 ),
               ),
             ],

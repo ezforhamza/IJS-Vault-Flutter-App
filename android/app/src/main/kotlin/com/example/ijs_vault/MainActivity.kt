@@ -1,4 +1,4 @@
-package com.codecoy.ijs_vault
+package com.codecoy.ijs.vault
 
 import io.flutter.embedding.android.FlutterActivity
 
