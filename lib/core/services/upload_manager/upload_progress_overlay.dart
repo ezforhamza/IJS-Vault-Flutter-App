@@ -13,51 +13,51 @@ class UploadProgressOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GetX<UploadManager>(
-      builder: (UploadManager controller) {
-        debugPrint('📤 UploadProgressOverlay: Building with ${controller.tasks.length} tasks');
-        if (controller.tasks.isEmpty) {
-          return const SizedBox.shrink();
-        }
+    return Obx(() {
+      final UploadManager controller = Get.find<UploadManager>();
+      debugPrint('📤 UploadProgressOverlay: Building with ${controller.tasks.length} tasks, isMinimized: ${controller.isMinimized.value}');
+      
+      if (controller.tasks.isEmpty) {
+        return const SizedBox.shrink();
+      }
 
-        // Show minimized draggable circular button or expanded panel
-        if (controller.isMinimized.value) {
-          return _DraggableUploadButton(controller: controller);
-        }
+      // Show minimized draggable circular button or expanded panel
+      if (controller.isMinimized.value) {
+        return _DraggableUploadButton(controller: controller);
+      }
 
-        return Positioned(
-          bottom: 100,
-          left: 12,
-          right: 12,
-          child: Material(
-            color: Colors.transparent,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              decoration: BoxDecoration(
-                color: Get.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: <BoxShadow>[
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.15),
-                    blurRadius: 20,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  _buildHeader(controller),
-                  if (controller.isPanelExpanded.value)
-                    _buildTaskList(controller),
-                ],
-              ),
+      return Positioned(
+        bottom: 100,
+        left: 12,
+        right: 12,
+        child: Material(
+          color: Colors.transparent,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            decoration: BoxDecoration(
+              color: Get.isDarkMode ? const Color(0xFF1E1E1E) : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: <BoxShadow>[
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.15),
+                  blurRadius: 20,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                _buildHeader(controller),
+                if (controller.isPanelExpanded.value)
+                  _buildTaskList(controller),
+              ],
             ),
           ),
-        );
-      },
-    );
+        ),
+      );
+    });
   }
 
   Widget _buildHeader(UploadManager controller) {
