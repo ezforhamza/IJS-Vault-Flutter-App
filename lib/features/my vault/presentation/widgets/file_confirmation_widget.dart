@@ -156,7 +156,9 @@ class UploadConfirmationDialog extends StatelessWidget {
           ],
         ),
         child: ElevatedButton(
-          onPressed: () => onUpload(files),
+          onPressed: () async {
+            await onUpload(files);
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
