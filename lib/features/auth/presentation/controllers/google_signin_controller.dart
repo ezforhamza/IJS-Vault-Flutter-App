@@ -14,7 +14,7 @@ import 'package:ijs_vault/shared/models/response_model.dart';
 
 class GoogleSignInController extends GetxController {
   final AuthRepository _repository = AuthRepository();
-  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   final RxBool isLoading = false.obs;
@@ -26,10 +26,16 @@ class GoogleSignInController extends GetxController {
       isLoading.value = true;
 
       // Step 1: Trigger Google Sign-In flow
-      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      
+      if (googleUser == null) {
+        AppLoader.hideLoadingDialog();
+        isLoading.value = false;
+        return;
+      }
 
       // Step 2: Get authentication details from Google
-      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
       // Step 3: Create Firebase credential
       final OAuthCredential credential = GoogleAuthProvider.credential(
