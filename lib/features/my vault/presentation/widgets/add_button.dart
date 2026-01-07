@@ -7,7 +7,6 @@ import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/folder_view_controller.dart';
-import 'package:ijs_vault/features/my%20vault/presentation/controllers/vault_upload_controller.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/screens/add_folder_screen.dart';
 
 class FolderAddButtonWidget extends StatelessWidget {
@@ -51,9 +50,9 @@ class FolderAddButtonWidget extends StatelessWidget {
                   // Upload Files
                   GestureDetector(
                     onTap: () {
-                      Get.put(
-                        VaultUploadController(),
-                      ).pickAndConfirmUpload(context, parentId: parentId);
+                      controller.closeMenu();
+                      // Use the modern upload flow with UploadManager
+                      controller.pickAndConfirmUpload(context, parentId);
                     },
                     child: Row(
                       children: <Widget>[
