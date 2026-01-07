@@ -22,8 +22,8 @@ class AddButtonWidget extends StatelessWidget {
       }
 
       return Column(
-        mainAxisSize: .min,
-        crossAxisAlignment: .end,
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end,
 
         children: <Widget>[
           // Menu
@@ -40,7 +40,7 @@ class AddButtonWidget extends StatelessWidget {
               ),
               child: Column(
                 spacing: 10,
-                mainAxisAlignment: .center,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   // Add File
                   GestureDetector(

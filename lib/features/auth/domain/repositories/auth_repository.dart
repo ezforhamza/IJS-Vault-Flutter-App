@@ -6,7 +6,7 @@ import 'package:ijs_vault/core/network/app_urls.dart';
 import 'package:ijs_vault/shared/models/response_model.dart';
 
 class AuthRepository {
-  ApiService apiService = .new();
+  ApiService apiService = ApiService.new();
   // Register User
 
   Future<ApiResponse> register({

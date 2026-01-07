@@ -14,7 +14,7 @@ import 'package:ijs_vault/shared/models/response_model.dart';
 
 class GoogleSignInController extends GetxController {
   final AuthRepository _repository = AuthRepository();
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   final RxBool isLoading = false.obs;
@@ -26,32 +26,23 @@ class GoogleSignInController extends GetxController {
       isLoading.value = true;
 
       // Step 1: Trigger Google Sign-In flow
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-
-      if (googleUser == null) {
-        // User cancelled the sign-in
-        AppLoader.hideLoadingDialog();
-        isLoading.value = false;
-        return;
-      }
+      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
 
       // Step 2: Get authentication details from Google
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
       // Step 3: Create Firebase credential
       final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
+        accessToken: googleAuth.idToken,
         idToken: googleAuth.idToken,
       );
 
       // Step 4: Sign in to Firebase with the credential
-      final UserCredential userCredential =
-          await _firebaseAuth.signInWithCredential(credential);
+      final UserCredential userCredential = await _firebaseAuth
+          .signInWithCredential(credential);
 
       // Step 5: Get Firebase ID token to send to backend
-      final String? firebaseIdToken =
-          await userCredential.user?.getIdToken();
+      final String? firebaseIdToken = await userCredential.user?.getIdToken();
 
       if (firebaseIdToken == null) {
         AppToasts.showErrorToast(message: 'Failed to get authentication token');

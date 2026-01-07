@@ -3,7 +3,7 @@ import 'package:ijs_vault/core/network/app_urls.dart';
 import 'package:ijs_vault/shared/models/response_model.dart';
 
 class ForgotPasswordRepo {
-  ApiService apiService = .new();
+  ApiService apiService = ApiService.new();
   // Send OTP
   Future<ApiResponse> sendOtp({required String email}) async {
     return await apiService.post(

@@ -90,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 // ───── Forgot ─────
                 Row(
-                  mainAxisAlignment: .end,
+                  mainAxisAlignment:MainAxisAlignment.end,
                   children: <Widget>[
                     Align(
                       alignment: Alignment.centerRight,

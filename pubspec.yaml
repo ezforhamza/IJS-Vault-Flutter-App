@@ -8,7 +8,7 @@ publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.10.4
+  sdk: ^3.9.0
 
 dependencies:
   flutter:
@@ -33,13 +33,12 @@ dependencies:
   image_picker: ^1.2.1
   intl: ^0.20.2
   file_icon: ^1.0.0
-  firebase_core: ^3.4.1
-  firebase_messaging: ^15.1.0
-  firebase_auth: ^5.2.0
-  google_sign_in: ^6.2.1
+  firebase_core: ^2.25.4
+  firebase_messaging: ^14.7.10
   device_info_plus: ^10.1.0
-  path_provider: ^2.1.2
-  url_launcher: ^6.2.5
+  google_sign_in: ^7.2.0
+  firebase_auth: ^4.16.0
+
 
 dev_dependencies:
   flutter_test:

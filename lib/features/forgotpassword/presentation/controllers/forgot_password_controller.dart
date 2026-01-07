@@ -10,7 +10,7 @@ import 'package:ijs_vault/shared/helpers/toasts.dart';
 import 'package:ijs_vault/shared/models/response_model.dart';
 
 class ForgotPasswordController extends GetxController {
-  ForgotPasswordRepo repo = .new();
+  ForgotPasswordRepo repo = ForgotPasswordRepo.new();
 
   void sendOTP({required String email, VerificationType? type}) async {
     AppLoader.showLoadingDialog();
