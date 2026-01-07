@@ -9,12 +9,9 @@ import 'package:ijs_vault/features/auth/data/models/user_model.dart';
 import 'package:ijs_vault/features/my%20vault/data/models/linkable_user_model.dart';
 import 'package:ijs_vault/features/my%20vault/data/models/vault_item_model.dart';
 import 'package:ijs_vault/features/my%20vault/domain/repositories/my_vault_repo.dart';
-import 'package:ijs_vault/features/my%20vault/presentation/widgets/file_confirmation_widget.dart';
 import 'package:ijs_vault/shared/helpers/loader.dart';
 import 'package:ijs_vault/shared/helpers/toasts.dart';
 import 'package:ijs_vault/shared/models/response_model.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:mime/mime.dart';
 
 class MyVaultController extends GetxController {
   // UI state
@@ -263,6 +260,7 @@ class MyVaultController extends GetxController {
   //   items.clear();
   // }
 
+<<<<<<< HEAD
   ////////////////////////////////////////////////////////////////////////////////File Upload/////////////////////////////////////////
   final ImagePicker _picker = ImagePicker();
   final RxBool isUploading = false.obs;

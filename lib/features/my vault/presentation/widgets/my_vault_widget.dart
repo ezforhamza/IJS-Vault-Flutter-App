@@ -41,7 +41,7 @@ class _MyVaultState extends State<MyVault> {
           },
           child: controller.isGettingVault.value
               ? const GridShimmer(keyy: 'Shimmer')
-              : _buildGrid(textTheme, const ValueKey('grid')),
+              : _buildGrid(textTheme, const ValueKey('grid'), controller),
         ),
       ),
     );
@@ -51,7 +51,11 @@ class _MyVaultState extends State<MyVault> {
   /*                                   GRID                                     */
   /* -------------------------------------------------------------------------- */
 
-  Widget _buildGrid(TextTheme textTheme, ValueKey key) {
+  Widget _buildGrid(
+    TextTheme textTheme,
+    ValueKey key,
+    MyVaultController controller,
+  ) {
     if (controller.items.isEmpty) {
       return _buildEmptyText(textTheme);
     }

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ijs_vault/features/my%20vault/data/models/vault_item_model.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/shared_vault_controller.dart';
-import 'package:ijs_vault/features/my%20vault/presentation/screens/shared_folder_view_screen.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/screens/item_preview_screen.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/screens/shared_folder_view_screen.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/vault_item.dart';
 import 'package:ijs_vault/features/set%20pin/presentation/screens/verify_pin_screen.dart';
 import 'package:shimmer/shimmer.dart';
@@ -46,8 +46,8 @@ class _SharedWithMeState extends State<SharedWithMe> {
           child: controller.isLoading.value
               ? const _GridShimmer(keyy: 'SharedShimmer')
               : controller.errorMessage.value != null
-                  ? _buildErrorState(textTheme)
-                  : _buildGrid(textTheme, const ValueKey<String>('sharedGrid')),
+              ? _buildErrorState(textTheme)
+              : _buildGrid(textTheme, const ValueKey<String>('sharedGrid')),
         ),
       ),
     );
@@ -115,11 +115,7 @@ class _SharedWithMeState extends State<SharedWithMe> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Icon(
-            Icons.error_outline,
-            size: 64,
-            color: Colors.red[400],
-          ),
+          Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
           const SizedBox(height: 16),
           Text(
             controller.errorMessage.value ?? 'Something went wrong',
@@ -148,8 +144,8 @@ class _SharedVaultItem extends StatelessWidget {
       type: item.type == 'folder'
           ? VaultItemType.folder
           : item.fileType == 'media'
-              ? VaultItemType.media
-              : VaultItemType.document,
+          ? VaultItemType.media
+          : VaultItemType.document,
       item: item,
       isSharedItem: true,
       onTap: () => _handleTap(),
