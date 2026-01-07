@@ -1,0 +1,2943 @@
+{
+	"info": {
+		"_postman_id": "62ce85c6-8cda-44c7-8bea-dbcb338ac4b5",
+		"name": "IJS Vault - App APIs",
+		"description": "Complete API collection for IJS Vault mobile/web application.\n\n## 🚀 Quick Start\n\n1. **Set Environment**: Choose `Production` or `Development` environment\n2. **Login**: Call the Login endpoint - tokens are automatically saved\n3. **Use APIs**: All endpoints inherit the `{{accessToken}}` automatically\n\n## 🔐 Authentication\n\nAll protected endpoints use `Bearer {{accessToken}}` which is automatically set after login.\n\n## 📍 Environments\n\n| Environment | Base URL |\n|-------------|----------|\n| Production | https://ijsvault.codecoytechnologies.live/v1 |\n| Development | http://localhost:3000/v1 |\n\n## 📁 API Sections\n\n- **Authentication**: Register, Login, Social Auth, Password Reset\n- **User Profile**: Profile management, Search users\n- **Linked Users**: View shared files/folders per user with search, filter, sort\n- **Vault**: Files, Folders, Sharing, PIN protection\n- **File Uploads**: Direct, Presigned, Resumable uploads\n- **Reminders**: Task reminders with email notifications\n- **Notifications**: In-app notifications\n- **Audit Logs**: Activity tracking\n\n## 💡 Tips\n\n- Tokens auto-refresh on login/register\n- Use `{{itemId}}` variable for testing item operations\n- Check folder descriptions for detailed API docs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "34645948",
+		"_collection_link": "https://hamza-tanveer.postman.co/workspace/hamza-tanveer-Workspace~f865da96-aa62-4004-8436-a814999b4d42/collection/34645948-62ce85c6-8cda-44c7-8bea-dbcb338ac4b5?action=share&source=collection_link&creator=34645948"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"John Michael Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123\",\n  \"phone\": \"+1234567890\",\n  \"profilePic\": \"https://example.com/profile.jpg\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "**Register New User**\n\nCreate a new account with email and password.\n\n**Automatic Actions:**\n- Sends welcome email with 6-digit OTP code\n- OTP valid for 10 minutes\n- Returns access and refresh tokens\n\n**Request Body:**\n- `fullName` (required): User's full name, min 2 characters\n- `email` (required): Valid email address\n- `password` (required): Min 8 characters, must contain letter and number\n- `phone` (optional): Phone number in E.164 format (e.g., +1234567890)\n- `profilePic` (optional): URL to profile picture (upload via /users/profile-picture first)\n\n**Response:**\n- User object with subscription details\n- Access token (expires in 30 minutes)\n- Refresh token (expires in 30 days)\n\n**Email Sent:**\nBeautiful HTML email with:\n- Welcome message\n- Verification link button\n- 6-digit OTP code in styled box\n- Security tips\n\n**Example Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"user-id\",\n      \"fullName\": \"John Doe\",\n      \"email\": \"john@example.com\",\n      \"phone\": \"+1234567890\",\n      \"image\": \"https://example.com/profile.jpg\",\n      \"role\": \"user\",\n      \"isEmailVerified\": false,\n      \"subscription\": {\n        \"plan\": \"free\",\n        \"storageLimit\": 16106127360,\n        \"storageUsed\": 0\n      }\n    },\n    \"tokens\": {\n      \"access\": { \"token\": \"...\", \"expires\": \"...\" },\n      \"refresh\": { \"token\": \"...\", \"expires\": \"...\" }\n    }\n  },\n  \"message\": \"Registration successful\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "**Login with Email & Password**\n\nAuthenticate user and get access tokens.\n\n**Automatic Actions:**\n- Sends login notification email (async)\n- Includes IP address, device info, timestamp\n- Email sent in background (doesn't slow down login)\n\n**Request Body:**\n- `email` (required): User's email address\n- `password` (required): User's password\n\n**Response:**\n- User object with all details\n- Access token (30 min expiry)\n- Refresh token (30 days expiry)\n\n**Email Notification:**\nSent to user with:\n- Login timestamp\n- IP address\n- Device/browser info\n- Security warning if suspicious\n\n**Error Responses:**\n- 401: Incorrect email or password\n- 400: Validation error\n\n**Example Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"user-id\",\n      \"fullName\": \"John Doe\",\n      \"email\": \"john@example.com\",\n      \"phone\": \"+1234567890\",\n      \"role\": \"user\",\n      \"isEmailVerified\": true,\n      \"image\": \"http://localhost:3000/uploads/profiles/profile-123.jpg\"\n    },\n    \"tokens\": {\n      \"access\": { \"token\": \"...\", \"expires\": \"...\" },\n      \"refresh\": { \"token\": \"...\", \"expires\": \"...\" }\n    }\n  },\n  \"message\": \"Login successful\"\n}\n```\n\n**Security:**\n- Password verified with bcrypt\n- Login activity tracked\n- Email notification for security"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"your-refresh-token\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						},
+						"description": "**Logout User**\n\nInvalidate refresh token and logout.\n\n**Request Body:**\n- `refreshToken` (required): The refresh token to invalidate\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": { \"loggedOut\": true },\n  \"message\": \"Logged out successfully\"\n}\n```\n\n**What Happens:**\n- Refresh token is removed from database\n- Token becomes invalid immediately\n- Access token remains valid until expiry\n- User must login again to get new tokens\n\n**Error Responses:**\n- 404: Token not found (already logged out or invalid)\n\n**Note:** Access tokens cannot be invalidated (JWT stateless). They expire after 30 minutes."
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Tokens",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refreshToken\": \"your-refresh-token\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/refresh-tokens",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"refresh-tokens"
+							]
+						},
+						"description": "**Refresh Access Token**\n\nGet new access and refresh tokens using refresh token.\n\n**Request Body:**\n- `refreshToken` (required): Valid refresh token\n\n**Response:**\n- New access token (30 min expiry)\n- New refresh token (30 days expiry)\n- Old refresh token is invalidated\n\n**Token Rotation:**\n- Old refresh token is deleted\n- New refresh token is generated\n- Prevents token reuse attacks\n\n**Example Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"tokens\": {\n      \"access\": {\n        \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n        \"expires\": \"2026-01-01T12:30:00.000Z\"\n      },\n      \"refresh\": {\n        \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n        \"expires\": \"2026-01-31T12:00:00.000Z\"\n      }\n    }\n  },\n  \"message\": \"Tokens refreshed successfully\"\n}\n```\n\n**Error Responses:**\n- 401: Invalid or expired refresh token"
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/forgot-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"forgot-password"
+							]
+						},
+						"description": "**Request Password Reset OTP**\n\nSend password reset email with 6-digit OTP code.\n\n**Request Body:**\n- `email` (required): User's email address\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"message\": \"Password reset OTP sent successfully\",\n    \"email\": \"john@example.com\",\n    \"otpExpiresIn\": \"10 minutes\"\n  },\n  \"message\": \"Password reset OTP sent\"\n}\n```\n\n**Email Sent:**\nBeautiful HTML email with:\n- 6-digit OTP code in styled box\n- Security warnings\n- Instructions\n\n**OTP Details:**\n- 6-digit numeric code\n- Valid for 10 minutes only\n- Single use (deleted after use)\n\n**Security:**\n- OTP expires after 10 minutes\n- OTP deleted after successful reset\n- Email includes security tips\n\n**Next Step:** Use the Reset Password endpoint with the OTP to set a new password."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify OTP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john@example.com\",\n  \"otp\": \"123456\",\n  \"type\": \"emailVerification\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/verify-otp",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"verify-otp"
+							]
+						},
+						"description": "**Verify OTP (General Purpose)**\n\nVerify any OTP code for different purposes: email verification, password reset confirmation, etc.\n\n**Request Body:**\n- `email` (required): User's email address\n- `otp` (required): 6-digit OTP code from email (exactly 6 digits)\n- `type` (optional): Type of verification - `emailVerification` (default), `resetPassword`, `passwordChange`\n\n**Response for emailVerification:**\n```json\n{\n  \"success\": true,\n  \"data\": { \"verified\": true },\n  \"message\": \"Email verified successfully\"\n}\n```\n\n**Response for other types:**\n```json\n{\n  \"success\": true,\n  \"data\": { \"verified\": true, \"type\": \"resetPassword\" },\n  \"message\": \"OTP verified successfully\"\n}\n```\n\n**What Happens:**\n- OTP is validated against database for the specified type\n- For emailVerification: User's `isEmailVerified` set to true\n- OTP is deleted after successful verification\n\n**OTP Details:**\n- 6-digit numeric code\n- Valid for 10 minutes\n- Single use only\n- Type-specific (emailVerification OTP won't work for resetPassword)\n\n**Error Responses:**\n- 401: Invalid or expired OTP\n- 404: User not found\n- 400: Validation error (OTP must be 6 digits)\n\n**Use Cases:**\n- Email verification after registration\n- Confirming password reset request\n- Any OTP-based verification flow"
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john@example.com\",\n  \"otp\": \"123456\",\n  \"password\": \"NewPassword123\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/reset-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"reset-password"
+							]
+						},
+						"description": "**Reset Password with OTP**\n\nReset user password using OTP from email.\n\n**Request Body:**\n- `email` (required): User's email address\n- `otp` (required): 6-digit OTP code from forgot password email\n- `password` (required): New password (min 8 chars, letter + number)\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"passwordReset\": true,\n    \"message\": \"Password has been reset successfully. You can now login with your new password.\"\n  },\n  \"message\": \"Password reset successful\"\n}\n```\n\n**Automatic Actions:**\n- OTP is verified and deleted\n- Password is hashed with bcrypt\n- Password change notification email sent\n- User can login with new password immediately\n\n**Email Sent:**\nPassword changed notification with:\n- Confirmation message\n- Timestamp of change\n- Security warning if user didn't make change\n- Instructions to secure account\n\n**Error Responses:**\n- 401: Invalid or expired OTP\n- 404: User not found\n- 400: Password validation failed\n\n**Security:**\n- OTP valid for 10 minutes only\n- OTP deleted after use\n- Email notification sent\n\n**Flow:**\n1. Call Forgot Password to receive OTP via email\n2. Call this endpoint with email, OTP, and new password"
+					},
+					"response": []
+				},
+				{
+					"name": "Send Email Verification",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/send-verification-email",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"send-verification-email"
+							]
+						},
+						"description": "**Resend Email Verification OTP**\n\nResend verification email with new OTP.\n\n**Authentication:**\n- Requires: Bearer token in Authorization header\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"message\": \"Verification email sent successfully\",\n    \"email\": \"john@example.com\",\n    \"otpExpiresIn\": \"10 minutes\"\n  },\n  \"message\": \"Verification email sent\"\n}\n```\n\n**Email Sent:**\nBeautiful HTML email with:\n- Welcome message with user's name\n- 6-digit OTP code in styled box\n- Security tips\n- 10-minute expiration notice\n\n**OTP Details:**\n- 6-digit numeric code\n- Valid for 10 minutes\n- Stored in database\n- Single use (deleted after verification)\n\n**Use Cases:**\n- User didn't receive first email\n- OTP expired\n- User lost verification email\n\n**Next Step:** Use the Verify OTP endpoint with type `emailVerification` to verify the email."
+					},
+					"response": []
+				},
+				{
+					"name": "Send Password Change OTP",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"currentPassword\": \"YourCurrentPassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/send-password-change-otp",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"send-password-change-otp"
+							]
+						},
+						"description": "**Send Password Change OTP**\n\nRequest an OTP to change your password. Requires verification of current password first.\n\n**Authentication:**\n- Requires: Bearer token in Authorization header\n\n**Request Body:**\n- `currentPassword` (required): Your current password for verification\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"message\": \"Password change OTP sent successfully\",\n    \"email\": \"john@example.com\",\n    \"otpExpiresIn\": \"10 minutes\"\n  },\n  \"message\": \"Password change OTP sent\"\n}\n```\n\n**Email Sent:**\nBeautiful HTML email with:\n- Password change request notification\n- 6-digit OTP code in styled box\n- Security warning if user didn't request\n- 10-minute expiration notice\n\n**Security Flow:**\n1. User must provide current password (prevents unauthorized changes)\n2. If password is correct, OTP is generated and emailed\n3. User uses OTP with Change Password endpoint\n\n**Error Responses:**\n- 401: Current password is incorrect\n- 401: Please authenticate (invalid/missing token)\n\n**Next Step:** Use the Change Password endpoint with the OTP received via email."
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"otp\": \"123456\",\n  \"newPassword\": \"NewPassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/change-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"change-password"
+							]
+						},
+						"description": "**Change Password with OTP**\n\nChange your password using the OTP received from Send Password Change OTP endpoint.\n\n**Authentication:**\n- Requires: Bearer token in Authorization header\n\n**Request Body:**\n- `otp` (required): 6-digit OTP code from password change email\n- `newPassword` (required): New password (min 8 chars, must contain letter + number)\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"passwordChanged\": true,\n    \"message\": \"Password has been changed successfully.\"\n  },\n  \"message\": \"Password changed successfully\"\n}\n```\n\n**Automatic Actions:**\n- OTP is verified and deleted\n- Password is hashed with bcrypt\n- Password change notification email sent\n- User can login with new password immediately\n\n**Email Sent:**\nPassword changed notification with:\n- Confirmation message\n- Timestamp of change\n- Security warning if user didn't make change\n\n**Error Responses:**\n- 401: Invalid or expired OTP\n- 401: Please authenticate (invalid/missing token)\n- 400: Password validation failed (must be 8+ chars with letter and number)\n\n**Complete Flow:**\n1. Call Send Password Change OTP with current password\n2. Receive OTP via email\n3. Call this endpoint with OTP and new password"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Account",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/account",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"account"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Google Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"idToken\": \"firebase-google-id-token\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/google",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"google"
+							]
+						},
+						"description": "**Google Social Login**\n\nLogin or register using Google account via Firebase.\n\n**Request Body:**\n- `idToken` (required): Firebase Google ID token from client\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"user\": { ... },\n    \"tokens\": { ... },\n    \"isNewUser\": false\n  },\n  \"message\": \"Login successful\"\n}\n```\n\n**How It Works:**\n1. Client authenticates with Google via Firebase\n2. Client sends Firebase ID token to backend\n3. Backend verifies token with Firebase\n4. If user exists: Login\n5. If new user: Auto-register\n\n**Auto-Registration:**\n- Email from Google account\n- Name from Google profile\n- Email pre-verified\n- No password needed\n- Social account linked\n\n**Firebase Setup Required:**\n- Firebase project configured\n- Google sign-in enabled\n- Firebase SDK in client app\n\n**Security:**\n- Token verified with Firebase\n- Email verified by Google\n- Secure OAuth flow"
+					},
+					"response": []
+				},
+				{
+					"name": "Apple Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"idToken\": \"firebase-apple-id-token\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/apple",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"apple"
+							]
+						},
+						"description": "**Apple Social Login**\n\nLogin or register using Apple ID via Firebase.\n\n**Request Body:**\n- `idToken` (required): Firebase Apple ID token from client\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"user\": { ... },\n    \"tokens\": { ... },\n    \"isNewUser\": false\n  },\n  \"message\": \"Login successful\"\n}\n```\n\n**How It Works:**\n1. Client authenticates with Apple via Firebase\n2. Client sends Firebase ID token to backend\n3. Backend verifies token with Firebase\n4. If user exists: Login\n5. If new user: Auto-register\n\n**Auto-Registration:**\n- Email from Apple ID (may be private)\n- Name from Apple account\n- Email pre-verified\n- No password needed\n- Social account linked\n\n**Firebase Setup Required:**\n- Firebase project configured\n- Apple sign-in enabled\n- Apple Developer account\n- Service ID configured\n\n**Security:**\n- Token verified with Firebase\n- Email verified by Apple\n- Secure OAuth flow\n- Privacy-focused"
+					},
+					"response": []
+				},
+				{
+					"name": "Link Social Account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"idToken\": \"firebase-id-token\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/link-social",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"link-social"
+							]
+						},
+						"description": "**Link Social Account**\n\nLink a social account (Google/Apple) to an existing user account.\n\n**Authentication:**\n- Requires: Bearer token\n\n**Request Body:**\n- `idToken` (required): Firebase ID token from social login\n\n**Note:** The provider (google/apple) is automatically detected from the Firebase token. Do NOT send provider in the request body.\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"socialAccount\": {\n      \"userId\": \"user-id\",\n      \"provider\": \"google\",\n      \"providerId\": \"firebase-uid\",\n      \"email\": \"user@gmail.com\"\n    }\n  },\n  \"message\": \"Social account linked successfully\"\n}\n```\n\n**Error Responses:**\n- 400: Cannot link password provider\n- 409: Social account already linked\n- 401: Invalid Firebase token"
+					},
+					"response": []
+				},
+				{
+					"name": "Unlink Social Account",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/unlink-social/:provider",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"unlink-social",
+								":provider"
+							],
+							"variable": [
+								{
+									"key": "provider",
+									"value": "google",
+									"description": "Provider to unlink: google, apple, or facebook"
+								}
+							]
+						},
+						"description": "**Unlink Social Account**\n\nRemove a linked social account from the user's profile.\n\n**Authentication:**\n- Requires: Bearer token\n\n**Path Parameters:**\n- `provider` (required): The provider to unlink - `google`, `apple`, or `facebook`\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {},\n  \"message\": \"Social account unlinked successfully\"\n}\n```\n\n**Error Responses:**\n- 404: Social account not found\n- 400: Cannot unlink - must have at least one login method (password or another social account)\n\n**Note:** You cannot unlink your last login method. If you only have one social account linked and no password set, you must either set a password or link another social account before unlinking."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Social Accounts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/social-accounts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"social-accounts"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Complete authentication system with OTP-based verification, social login, and security features.\n\n**Features:**\n- Email/Password registration and login\n- Email verification with OTP (6-digit code)\n- Password reset with OTP (6-digit code)\n- Social login (Google, Apple) via Firebase\n- JWT-based authentication\n- Refresh token rotation\n- Login notifications via email\n- Password change notifications\n\n**Security:**\n- Passwords hashed with bcrypt\n- JWT tokens with expiration\n- OTP-based verification (no links)\n- Login activity tracking\n- Automatic security notifications"
+		},
+		{
+			"name": "User Profile",
+			"item": [
+				{
+					"name": "Search Users for Linking",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/search-for-linking?query=john",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"search-for-linking"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "john",
+									"description": "Search query (min 2, max 100 characters)"
+								}
+							]
+						},
+						"description": "**Search Users for Linking**\n\nSearch for users by name or email to link/share vault items with.\n\n**Authentication:**\n- Requires: Bearer token\n\n**Query Parameters:**\n- `query` (required): Search term (min 2, max 100 characters)\n  - Searches in: fullName, email\n  - Case-insensitive\n  - Partial match supported\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"users\": [\n      {\n        \"id\": \"user-id\",\n        \"fullName\": \"John Doe\",\n        \"email\": \"john@example.com\",\n        \"image\": \"http://localhost:3000/uploads/profiles/profile-123.jpg\"\n      }\n    ]\n  },\n  \"message\": \"Users found\"\n}\n```\n\n**Features:**\n- Excludes current user from results\n- Returns users with matching name or email\n- Limited to 20 results\n- Returns only: id, fullName, email, image\n\n**Use Cases:**\n- Finding users to share vault items\n- Adding collaborators\n- Linking accounts\n\n**Validation:**\n- Query must be at least 2 characters\n- Query cannot exceed 100 characters\n\n**Error Responses:**\n- 400: Query too short or invalid\n- 401: Unauthorized (invalid token)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"John Michael Updated\",\n  \"phone\": \"+1234567890\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"profile"
+							]
+						},
+						"description": "**Update User Profile**\n\nUpdate current user's profile information.\n\n**Authentication:**\n- Requires: Bearer token\n\n**Request Body (all optional, at least 1 required):**\n```json\n{\n  \"fullName\": \"John Doe\",\n  \"phone\": \"+1234567890\"\n}\n```\n\n**Field Specifications:**\n\n**fullName:**\n- Type: String\n- Min length: 2 characters\n- Max length: 100 characters\n- Example: \"John Michael Doe\"\n\n**phone:**\n- Type: String (E.164 format)\n- Pattern: `^\\+?[1-9]\\d{1,14}$`\n- Optional: Can be empty string or null to remove\n- Examples:\n  - `\"+14155552671\"` (US)\n  - `\"+442071838750\"` (UK)\n  - `\"+919876543210\"` (India)\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"user-id\",\n      \"fullName\": \"John Doe\",\n      \"email\": \"john@example.com\",\n      \"phone\": \"+1234567890\",\n      \"image\": \"http://localhost:3000/uploads/profiles/profile-123.jpg\",\n      \"role\": \"user\",\n      \"isEmailVerified\": true,\n      \"notificationPreferences\": { ... },\n      \"subscription\": { ... }\n    }\n  },\n  \"message\": \"Profile updated successfully\"\n}\n```\n\n**Validation Errors (400):**\n- `fullName` too short (< 2 chars)\n- `fullName` too long (> 100 chars)\n- `phone` invalid format\n- No fields provided\n\n**Example Payloads:**\n\n**Update name only:**\n```json\n{\n  \"fullName\": \"Jane Smith\"\n}\n```\n\n**Update phone only:**\n```json\n{\n  \"phone\": \"+14155552671\"\n}\n```\n\n**Remove phone:**\n```json\n{\n  \"phone\": \"\"\n}\n```\n\n**Update both:**\n```json\n{\n  \"fullName\": \"John Doe\",\n  \"phone\": \"+1234567890\"\n}\n```\n\n**Note:** Email cannot be changed via this endpoint for security reasons."
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Profile Picture",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": "/path/to/image.jpg"
+								},
+								{
+									"key": "userId",
+									"value": "",
+									"description": "Optional: User ID to update profile picture for existing user",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/profile-picture",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"profile-picture"
+							]
+						},
+						"description": "**Upload Profile Picture (No Auth Required)**\n\nUpload profile picture. Can be used during signup flow before user is created.\n\n**No Authentication Required** - This endpoint is public to support signup flow.\n\nUpload or update user's profile picture.\n\n**Authentication:**\n- Requires: Bearer token\n\n**Request:**\n- Method: POST\n- Content-Type: multipart/form-data\n- Body: Form field \"image\" with file\n\n**File Specifications:**\n\n**Allowed Formats:**\n- JPEG (.jpg, .jpeg)\n- PNG (.png)\n- GIF (.gif)\n- WebP (.webp)\n\n**File Size:**\n- Maximum: 5MB\n- Recommended: < 2MB for optimal performance\n\n**Image Dimensions:**\n- Recommended: 400x400px (square)\n- Minimum: 100x100px\n- Aspect ratio: Any (will be displayed as circle)\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"user-id\",\n      \"fullName\": \"John Doe\",\n      \"email\": \"john@example.com\",\n      \"image\": \"http://localhost:3000/uploads/profiles/profile-1234567890.jpg\",\n      ...\n    },\n    \"imageUrl\": \"http://localhost:3000/uploads/profiles/profile-1234567890.jpg\"\n  },\n  \"message\": \"Profile picture uploaded successfully\"\n}\n```\n\n**What Happens:**\n1. Old profile picture is deleted (if exists)\n2. New image is saved to `/uploads/profiles/`\n3. Filename format: `profile-{userId}-{timestamp}.{ext}`\n4. User's `image` field is updated with public URL\n5. Image is accessible via HTTP\n\n**Storage:**\n- Location: Local file system\n- Path: `/uploads/profiles/`\n- Public URL: `http://localhost:3000/uploads/profiles/{filename}`\n\n**Error Responses:**\n\n**400 - No file provided:**\n```json\n{\n  \"code\": 400,\n  \"message\": \"No image file provided\"\n}\n```\n\n**400 - Invalid file type:**\n```json\n{\n  \"code\": 400,\n  \"message\": \"Only image files are allowed\"\n}\n```\n\n**413 - File too large:**\n```json\n{\n  \"code\": 413,\n  \"message\": \"File too large. Maximum size is 5MB\"\n}\n```\n\n**cURL Example:**\n```bash\ncurl -X POST http://localhost:3000/v1/users/profile-picture \\\n  -H \"Authorization: Bearer YOUR_TOKEN\" \\\n  -F \"image=@/path/to/photo.jpg\"\n```\n\n**Postman:**\n1. Select POST method\n2. Add Authorization header with Bearer token\n3. Go to Body tab\n4. Select \"form-data\"\n5. Add key \"image\" with type \"File\"\n6. Choose your image file\n7. Send request\n\n**Best Practices:**\n- Use square images for best display\n- Compress images before upload\n- Use JPEG for photos, PNG for graphics\n- Keep file size under 2MB"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Notification Preferences",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reminders\": true,\n  \"linkedUsersActivity\": true,\n  \"inviteNotifications\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/notification-preferences",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"notification-preferences"
+							]
+						},
+						"description": "**Update Notification Preferences**\n\nConfigure which notifications user wants to receive.\n\n**Authentication:**\n- Requires: Bearer token\n\n**Request Body (all optional, at least 1 required):**\n```json\n{\n  \"reminders\": true,\n  \"linkedUsersActivity\": true,\n  \"inviteNotifications\": false\n}\n```\n\n**Notification Types:**\n\n**reminders** (boolean)\n- Receive reminder notifications\n- Triggers: When vault item reminder is due\n- Channels: Email, Push (if enabled)\n- Default: `true`\n\n**linkedUsersActivity** (boolean)\n- Notifications for linked users' activity\n- Triggers: When linked user shares/updates items\n- Channels: Email, Push\n- Default: `true`\n\n**inviteNotifications** (boolean)\n- Receive invite notifications\n- Triggers: When invited to share vault items\n- Channels: Email, Push\n- Default: `true`\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"preferences\": {\n      \"reminders\": true,\n      \"linkedUsersActivity\": true,\n      \"inviteNotifications\": false\n    }\n  },\n  \"message\": \"Notification preferences updated\"\n}\n```\n\n**Example Payloads:**\n\n**Disable all notifications:**\n```json\n{\n  \"reminders\": false,\n  \"linkedUsersActivity\": false,\n  \"inviteNotifications\": false\n}\n```\n\n**Enable only reminders:**\n```json\n{\n  \"reminders\": true,\n  \"linkedUsersActivity\": false,\n  \"inviteNotifications\": false\n}\n```\n\n**Update single preference:**\n```json\n{\n  \"reminders\": false\n}\n```\n\n**Enable all:**\n```json\n{\n  \"reminders\": true,\n  \"linkedUsersActivity\": true,\n  \"inviteNotifications\": true\n}\n```\n\n**Validation:**\n- All fields must be boolean\n- At least one field required\n- Invalid field names are ignored\n\n**Error Responses:**\n\n**400 - No fields provided:**\n```json\n{\n  \"code\": 400,\n  \"message\": \"At least one preference must be provided\"\n}\n```\n\n**400 - Invalid type:**\n```json\n{\n  \"code\": 400,\n  \"message\": \"reminders must be a boolean\"\n}\n```\n\n**Use Cases:**\n- User wants to reduce notification noise\n- Disable notifications during vacation\n- Enable only critical notifications\n- Customize notification experience\n\n**Note:** These preferences affect both email and push notifications."
+					},
+					"response": []
+				}
+			],
+			"description": "User profile management endpoints for authenticated users.\n\n**Features:**\n- Update profile information (name, phone)\n- Upload and manage profile picture\n- Configure notification preferences\n- Search for users to link/share with\n- View linked users\n\n**Authentication:**\nAll endpoints require Bearer token authentication.\n\n**Profile Fields:**\n- `fullName`: User's full name (2-100 characters)\n- `phone`: Phone number in E.164 format (e.g., +1234567890)\n- `image`: Profile picture URL (auto-generated on upload)\n\n**Notification Preferences:**\n- `reminders`: Receive reminder notifications (boolean)\n- `linkedUsersActivity`: Notifications for linked users' activity (boolean)\n- `inviteNotifications`: Receive invite notifications (boolean)"
+		},
+		{
+			"name": "Linked Users",
+			"item": [
+				{
+					"name": "Get Linked Users (Basic)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/linked",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"linked"
+							]
+						},
+						"description": "**Get Linked Users (Basic List)**\n\nRetrieve a simple list of users linked to your account.\n\n**Authentication:**\n- Requires: Bearer token\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"users\": [\n      {\n        \"id\": \"user-id\",\n        \"fullName\": \"Jane Smith\",\n        \"email\": \"jane@example.com\",\n        \"image\": \"https://example.com/profile.jpg\"\n      }\n    ]\n  },\n  \"message\": \"Linked users retrieved\"\n}\n```\n\n**What are Linked Users?**\n- Users you've shared vault items with\n- Users who have shared items with you\n- Collaborators on shared folders\n\n**Response Fields:**\n- `id`: User's unique identifier\n- `fullName`: User's full name\n- `email`: User's email address\n- `image`: Profile picture URL (if set)\n\n**Use Cases:**\n- Quick list of collaborators\n- Populate user picker for sharing\n- Display linked users count\n\n**Note:** For detailed shared items per user, use `/users/linked/details` instead."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Linked Users with Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/linked/details?search=&role=&sortBy=recent",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"linked",
+								"details"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "",
+									"description": "Search by user name or email (optional)"
+								},
+								{
+									"key": "role",
+									"value": "",
+									"description": "Filter by role: view, edit, or all (optional)"
+								},
+								{
+									"key": "sortBy",
+									"value": "recent",
+									"description": "Sort by: name, recent, or mostShared (default: recent)"
+								}
+							]
+						},
+						"description": "**Get Linked Users with Detailed Shared Items**\n\nRetrieve comprehensive list of linked users with all shared folders and files per user.\n\n**Authentication:**\n- Requires: Bearer token\n\n**Query Parameters:**\n- `search` (optional): Filter by user name or email\n- `role` (optional): Filter by role - `view`, `edit`, or `all`\n- `sortBy` (optional): Sort results - `name`, `recent`, or `mostShared` (default: recent)\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"users\": [\n      {\n        \"userId\": \"user-123\",\n        \"fullName\": \"Jane Smith\",\n        \"email\": \"jane@example.com\",\n        \"image\": \"https://example.com/profile.jpg\",\n        \"primaryRole\": \"edit\",\n        \"roles\": [\"view\", \"edit\"],\n        \"totalSharedCount\": 5,\n        \"lastSharedAt\": \"2026-01-15T10:00:00Z\",\n        \"sharedItems\": {\n          \"folders\": [\n            {\n              \"id\": \"folder-1\",\n              \"name\": \"Work Documents\",\n              \"role\": \"edit\",\n              \"color\": null,\n              \"parentId\": null,\n              \"parentName\": null,\n              \"sharedAt\": \"2026-01-15T10:00:00Z\"\n            }\n          ],\n          \"files\": [\n            {\n              \"id\": \"file-1\",\n              \"name\": \"Report.pdf\",\n              \"role\": \"view\",\n              \"fileType\": \"document\",\n              \"parentId\": \"folder-1\",\n              \"parentName\": \"Work Documents\",\n              \"sharedAt\": \"2026-01-16T12:00:00Z\"\n            }\n          ]\n        }\n      }\n    ],\n    \"summary\": {\n      \"totalLinkedUsers\": 4,\n      \"totalSharedItems\": 12\n    }\n  },\n  \"message\": \"Linked users with details retrieved\"\n}\n```\n\n**Response Fields:**\n\n**Per User:**\n- `userId`: User's unique identifier\n- `fullName`: User's full name\n- `email`: User's email address\n- `image`: Profile picture URL\n- `primaryRole`: Main role - `view`, `edit`, or `mixed` (has both)\n- `roles`: Array of all roles user has across items\n- `totalSharedCount`: Total folders + files shared with this user\n- `lastSharedAt`: Most recent share date\n- `sharedItems`: Object containing folders and files arrays\n\n**Per Shared Folder:**\n- `id`: Folder ID\n- `name`: Folder name\n- `role`: User's role for this folder\n- `color`: Folder color (if set)\n- `parentId`: Parent folder ID (null if root)\n- `parentName`: Parent folder name\n- `sharedAt`: When folder was shared\n\n**Per Shared File:**\n- `id`: File ID\n- `name`: File name\n- `role`: User's role for this file\n- `fileType`: Type - document, media, or note\n- `parentId`: Parent folder ID\n- `parentName`: Parent folder name\n- `sharedAt`: When file was shared\n\n**Summary:**\n- `totalLinkedUsers`: Count of linked users (after filters)\n- `totalSharedItems`: Total shared items across all users\n\n**Sorting Options:**\n- `name`: Alphabetical by user name\n- `recent`: Most recently shared first (default)\n- `mostShared`: Users with most shared items first\n\n**Use Cases:**\n- Display sharing dashboard\n- Show detailed breakdown per collaborator\n- Audit sharing permissions\n- Find specific shared items"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Linked Users - Search Example",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/linked/details?search=jane",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"linked",
+								"details"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "jane",
+									"description": "Search for users named 'jane'"
+								}
+							]
+						},
+						"description": "**Search Linked Users Example**\n\nFilter linked users by name or email.\n\n**Example:** Find all linked users with 'jane' in their name or email.\n\n**Search Features:**\n- Case-insensitive matching\n- Partial match supported\n- Searches both fullName and email fields"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Linked Users - Filter by Role",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/linked/details?role=edit",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"linked",
+								"details"
+							],
+							"query": [
+								{
+									"key": "role",
+									"value": "edit",
+									"description": "Filter users with edit access"
+								}
+							]
+						},
+						"description": "**Filter Linked Users by Role**\n\nGet only users with specific access level.\n\n**Role Options:**\n- `view`: Users with view-only access\n- `edit`: Users with edit access\n- `all`: All users (no filter)\n\n**Note:** Users with mixed roles (some view, some edit) will appear if they have the specified role for any item."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Linked Users - Sort by Most Shared",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/linked/details?sortBy=mostShared",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"linked",
+								"details"
+							],
+							"query": [
+								{
+									"key": "sortBy",
+									"value": "mostShared",
+									"description": "Sort by most shared items"
+								}
+							]
+						},
+						"description": "**Sort Linked Users by Most Shared**\n\nGet linked users sorted by the number of shared items.\n\n**Sort Options:**\n- `name`: Alphabetical by user name\n- `recent`: Most recently shared first (default)\n- `mostShared`: Users with most shared items first\n\n**Use Case:** Identify your most active collaborators."
+					},
+					"response": []
+				}
+			],
+			"description": "APIs for managing linked users and viewing shared files/folders.\n\n**What are Linked Users?**\nLinked users are people you've shared vault items with, or who have shared items with you.\n\n**Available Endpoints:**\n\n| Endpoint | Description |\n|----------|-------------|\n| GET /users/linked | Get basic list of linked users |\n| GET /users/linked/details | Get detailed shared items per user |\n\n**Features:**\n- View all users you've shared with or who shared with you\n- See detailed breakdown of shared folders and files per user\n- Filter by user name/email\n- Filter by role (view/edit)\n- Sort by name, recent activity, or most shared items\n- Aggregated statistics\n\n**Use Cases:**\n- Display linked users in app sidebar\n- Show sharing activity dashboard\n- Manage collaborators\n- Review sharing permissions"
+		},
+		{
+			"name": "Vault",
+			"item": [
+				{
+					"name": "Get Items",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/vault/items?parentId=&sortBy=name&sortOrder=asc&page=1&limit=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items"
+							],
+							"query": [
+								{
+									"key": "parentId",
+									"value": "",
+									"description": "Parent folder ID (empty for root)"
+								},
+								{
+									"key": "type",
+									"value": "folder",
+									"description": "Filter by type: folder or file",
+									"disabled": true
+								},
+								{
+									"key": "fileType",
+									"value": "document",
+									"description": "Filter files: document, media, note",
+									"disabled": true
+								},
+								{
+									"key": "sortBy",
+									"value": "name",
+									"description": "Sort field: name, createdAt, updatedAt, size"
+								},
+								{
+									"key": "sortOrder",
+									"value": "asc",
+									"description": "Sort order: asc or desc"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Items per page (default: 20, max: 100)"
+								}
+							]
+						},
+						"description": "Get all items (folders and files) in a specific folder or root with advanced filtering, sorting, and pagination.\n\n**Query Parameters:**\n\n**Pagination:**\n- `page`: Page number (default: 1, min: 1)\n- `limit`: Items per page (default: 20, min: 1, max: 100)\n\n**Filtering:**\n- `parentId`: Parent folder ID (empty/null for root items)\n- `type`: Filter by item type - `folder` or `file`\n- `fileType`: Filter files by type - `document`, `media`, or `note` (automatically sets type=file)\n\n**Sorting:**\n- `sortBy`: Sort field - `name`, `createdAt`, `updatedAt`, or `size`\n- `sortOrder`: Sort direction - `asc` (ascending) or `desc` (descending)\n- Default: Folders first, then by name ascending\n\n**Example Queries:**\n```\n# Get folders only\n?type=folder\n\n# Get documents only\n?fileType=document\n\n# Sort by newest first\n?sortBy=createdAt&sortOrder=desc\n\n# Paginate with 10 items per page\n?page=2&limit=10\n\n# Combined: Get files sorted by name, page 1\n?type=file&sortBy=name&sortOrder=asc&limit=20\n```\n\n**Response Structure:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"items\": [...],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 20,\n      \"totalCount\": 45,\n      \"totalPages\": 3,\n      \"hasNextPage\": true,\n      \"hasPrevPage\": false,\n      \"nextPage\": 2,\n      \"prevPage\": null\n    }\n  },\n  \"message\": \"Items retrieved successfully\"\n}\n```\n\n**Each item includes:**\n- Basic info: `id`, `name`, `type`, `description`, `isLocked`\n- Ownership: `ownerId` (populated with user details)\n- Sharing: `linkedUsers` array with roles\n- Timestamps: `createdAt`, `updatedAt`\n- Navigation: `breadcrumb` object with full path\n- Files only: `fileType`, `size`, `mimeType`, `extension`\n\n**Important Notes:**\n- File URLs are NOT exposed in listings for security\n- Use `/vault/items/:id/download` endpoint to get secure download URLs\n- Default sorting: Folders appear before files, then sorted by name\n- When `sortBy` is specified, custom sorting overrides the default"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Folder",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"My Documents\",\n  \"parentId\": null,\n  \"description\": \"Personal documents folder\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/folders",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"folders"
+							]
+						},
+						"description": "Create a new folder. Only requires name. parentId is optional (null for root). Description is optional.\n\n**Response includes breadcrumb** showing the folder's location in the hierarchy."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Item by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/vault/items/:itemId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items",
+								":itemId"
+							],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "item-id-here"
+								}
+							]
+						},
+						"description": "Get details of a specific item (folder or file) by ID. Returns full item details including owner, linked users, metadata, and **breadcrumb path**."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Item",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Name\",\n  \"description\": \"Updated description\",\n  \"pin\": \"1234\",\n  \"linkedUsers\": [\n    {\"userId\": \"user-id-1\", \"role\": \"view\"},\n    {\"userId\": \"user-id-2\", \"role\": \"edit\"}\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/items/:itemId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items",
+								":itemId"
+							],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "item-id-here"
+								}
+							]
+						},
+						"description": "**Update Item**\n\nUpdate item properties. Only owner or users with EDIT role can update basic fields.\n\n**Updatable Fields:**\n- `name`: New name (1-255 chars)\n- `description`: New description\n- `pin`: Set 4-digit PIN (owner only) or `null` to remove PIN\n- `linkedUsers`: Array of users with individual roles (owner only)\n\n**PIN Protection:**\n- Set `pin` to 4-digit string to enable PIN protection\n- Set `pin` to `null` to remove PIN protection\n- Only owner can modify PIN\n\n**Linked Users with Individual Roles:**\n```json\n{\n  \"linkedUsers\": [\n    {\"userId\": \"user-id-1\", \"role\": \"view\"},\n    {\"userId\": \"user-id-2\", \"role\": \"edit\"}\n  ]\n}\n```\n\n**Response includes updated breadcrumb** if name changed."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Item",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/vault/items/:itemId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items",
+								":itemId"
+							],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "item-id-here"
+								}
+							]
+						},
+						"description": "Delete an item. Only owner can delete. Deleting a folder recursively deletes all children and their files from storage."
+					},
+					"response": []
+				},
+				{
+					"name": "Move Item",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"newParentId\": \"folder-id-here\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/items/:itemId/move",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items",
+								":itemId",
+								"move"
+							],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "item-id-here"
+								}
+							]
+						},
+						"description": "Move item to a different folder. Only owner can move items. Cannot move folder into itself or its descendants. Use null for root."
+					},
+					"response": []
+				},
+				{
+					"name": "Copy Item",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"newParentId\": \"folder-id-here\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/items/:itemId/copy",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items",
+								":itemId",
+								"copy"
+							],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "item-id-here"
+								}
+							]
+						},
+						"description": "Copy item to a different folder. Only owner can copy items. Creates a duplicate with '(Copy)' appended to the name. Cannot copy folder into itself or its descendants. Use null for root."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Item Path",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/vault/items/:itemId/path",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items",
+								":itemId",
+								"path"
+							],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "item-id-here"
+								}
+							]
+						},
+						"description": "Get breadcrumb path from root to this item. Returns array of parent folders for navigation."
+					},
+					"response": []
+				},
+				{
+					"name": "Check Access",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/vault/items/:itemId/access-check",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items",
+								":itemId",
+								"access-check"
+							],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "item-id-here"
+								}
+							]
+						},
+						"description": "Check user's access level to an item. Returns hasAccess, role (owner/view/edit), and isLocked status."
+					},
+					"response": []
+				},
+				{
+					"name": "Search Items",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/vault/search?query=document&limit=50",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"search"
+							],
+							"query": [
+								{
+									"key": "query",
+									"value": "document",
+									"description": "Search term (searches name and description)"
+								},
+								{
+									"key": "type",
+									"value": "",
+									"description": "Filter: folder or file",
+									"disabled": true
+								},
+								{
+									"key": "fileType",
+									"value": "",
+									"description": "Filter: document, media, note",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "50",
+									"description": "Max results (default 50)"
+								}
+							]
+						},
+						"description": "Search items by name or description. Supports filtering by type and fileType. Returns items user owns or has access to."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Upload URL (Large Files)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/vault/upload-url?filename=video.mp4&contentType=video/mp4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"upload-url"
+							],
+							"query": [
+								{
+									"key": "filename",
+									"value": "video.mp4",
+									"description": "Original filename (required)"
+								},
+								{
+									"key": "contentType",
+									"value": "video/mp4",
+									"description": "MIME type (required)"
+								},
+								{
+									"key": "parentId",
+									"value": "",
+									"description": "Parent folder ID (optional)",
+									"disabled": true
+								},
+								{
+									"key": "description",
+									"value": "",
+									"description": "File description (optional)",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Get presigned URL for large file upload (> 100MB). See 'File Uploads' folder for all upload methods including resumable uploads."
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Delete",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemIds\": [\"item-id-1\", \"item-id-2\", \"item-id-3\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/bulk/delete",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"bulk",
+								"delete"
+							]
+						},
+						"description": "Delete multiple items at once. Only owner can delete items. Folders are recursively deleted."
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Move",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"itemIds\": [\"item-id-1\", \"item-id-2\"],\n  \"newParentId\": \"folder-id-here\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/bulk/move",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"bulk",
+								"move"
+							]
+						},
+						"description": "Move multiple items to a new folder at once. Only owner can move items. Use null for root."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Shared Items",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/vault/shared",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"shared"
+							]
+						},
+						"description": "Get all items shared with current user. Returns items where user is in linkedUsers array."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Shared Folder Items",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/vault/shared/:folderId/items",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"shared",
+								":folderId",
+								"items"
+							],
+							"variable": [
+								{
+									"key": "folderId",
+									"value": "folder-id-here"
+								}
+							]
+						},
+						"description": "Get items inside a shared folder. User must have access to the parent folder."
+					},
+					"response": []
+				},
+				{
+					"name": "Set PIN",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"pin\": \"1234\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/items/:itemId/set-pin",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items",
+								":itemId",
+								"set-pin"
+							],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "item-id-here"
+								}
+							]
+						},
+						"description": "Set 4-digit PIN on item. Only owner can set PIN. PIN is hashed with bcrypt before storage."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify PIN",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"pin\": \"1234\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/items/:itemId/verify-pin",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items",
+								":itemId",
+								"verify-pin"
+							],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "item-id-here"
+								}
+							]
+						},
+						"description": "**Verify PIN to Access Locked Item**\n\nVerify PIN to access a locked item. Both owner and shared users must verify PIN.\n\n**Security: 3-Attempt Lockout**\n- User has 3 attempts to enter correct PIN\n- After 3 failed attempts, user is locked out\n- Locked out user must log in again to reset attempts\n- Security email is sent on lockout\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"verified\": true,\n    \"sessionExpiresIn\": 900\n  },\n  \"message\": \"PIN verified successfully...\"\n}\n```\n\n**Wrong PIN - Attempts Remaining (401):**\n```json\n{\n  \"success\": false,\n  \"error\": \"Unauthorized\",\n  \"message\": \"Invalid PIN. 2 attempts remaining.\",\n  \"data\": {\n    \"lockedOut\": false,\n    \"remainingAttempts\": 2\n  }\n}\n```\n\n**Lockout - 3rd Failed Attempt (403):**\n```json\n{\n  \"success\": false,\n  \"error\": \"Forbidden\",\n  \"message\": \"Too many failed PIN attempts. You have been logged out for security. Please log in again.\",\n  \"data\": {\n    \"lockedOut\": true,\n    \"requiresRelogin\": true,\n    \"remainingAttempts\": 0\n  }\n}\n```\n\n**Frontend Action on Lockout:**\n1. Clear local tokens (access + refresh)\n2. Show security message to user\n3. Redirect to login screen"
+					},
+					"response": []
+				},
+				{
+					"name": "Remove PIN",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/items/:itemId/remove-pin",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items",
+								":itemId",
+								"remove-pin"
+							],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "item-id-here"
+								}
+							]
+						},
+						"description": "Remove PIN from item. Only owner can remove PIN."
+					},
+					"response": []
+				},
+				{
+					"name": "Lock Item (Revoke PIN Session)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/items/:itemId/lock",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items",
+								":itemId",
+								"lock"
+							],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "item-id-here"
+								}
+							]
+						},
+						"description": "**Lock Item (Revoke PIN Session)**\n\nManually lock an item before the 15-minute unlock session expires.\n\n**Use Case:**\n- User wants to immediately lock an item after viewing\n- User is leaving their device and wants to secure items\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"locked\": true,\n    \"itemId\": \"item-id\"\n  },\n  \"message\": \"Item locked successfully. PIN verification required for next access.\"\n}\n```\n\n**Note:** This only revokes the PIN session. The item still has PIN protection enabled."
+					},
+					"response": []
+				},
+				{
+					"name": "Get PIN Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/vault/items/:itemId/pin-status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items",
+								":itemId",
+								"pin-status"
+							],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "item-id-here"
+								}
+							]
+						},
+						"description": "**Get PIN Session Status**\n\nCheck if item is currently unlocked and how much time remains.\n\n**Use for:**\n- Displaying unlock timer on frontend\n- Checking if PIN verification is needed before download\n\n**Response (Item Unlocked):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"isLocked\": true,\n    \"hasPinProtection\": true,\n    \"sessionActive\": true,\n    \"remainingSeconds\": 720\n  },\n  \"message\": \"Item unlocked for 720 more seconds\"\n}\n```\n\n**Response (Item Locked):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"isLocked\": true,\n    \"hasPinProtection\": true,\n    \"sessionActive\": false,\n    \"remainingSeconds\": 0\n  },\n  \"message\": \"Item is locked. PIN verification required.\"\n}\n```\n\n**Response (No PIN Protection):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"isLocked\": false,\n    \"hasPinProtection\": false,\n    \"sessionActive\": false,\n    \"remainingSeconds\": 0\n  },\n  \"message\": \"Item is not PIN protected\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Share Item",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"users\": [\n    {\"userId\": \"user-id-1\", \"role\": \"view\"},\n    {\"userId\": \"user-id-2\", \"role\": \"edit\"}\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/items/:itemId/share",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items",
+								":itemId",
+								"share"
+							],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "item-id-here"
+								}
+							]
+						},
+						"description": "**Share Item with Users**\n\nShare item with other users. Only owner can share.\n\n**Two Formats Supported:**\n\n**Option 1 - Individual Roles (Recommended):**\n```json\n{\n  \"users\": [\n    {\"userId\": \"user-id-1\", \"role\": \"view\"},\n    {\"userId\": \"user-id-2\", \"role\": \"edit\"}\n  ]\n}\n```\n\n**Option 2 - Same Role for All (Backward Compatible):**\n```json\n{\n  \"userIds\": [\"user-id-1\", \"user-id-2\"],\n  \"role\": \"view\"\n}\n```\n\n**Roles:**\n- `view`: Read-only access\n- `edit`: Can modify but not delete/share\n\n**Actions:**\n- Sends notification to shared users\n- If user already shared, updates their role"
+					},
+					"response": []
+				},
+				{
+					"name": "Unshare Item",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/vault/items/:itemId/share/:userId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items",
+								":itemId",
+								"share",
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "item-id-here"
+								},
+								{
+									"key": "userId",
+									"value": "user-id-here"
+								}
+							]
+						},
+						"description": "Remove user's access to item. Only owner can unshare."
+					},
+					"response": []
+				},
+				{
+					"name": "Download File (Secure)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/vault/items/:itemId/download",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items",
+								":itemId",
+								"download"
+							],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "item-id-here"
+								}
+							]
+						},
+						"description": "Secure file download. Checks access permissions and PIN verification before returning short-lived download URL (5 min expiry). For locked items, PIN must be verified first via /verify-pin endpoint."
+					},
+					"response": []
+				}
+			],
+			"description": "Secure file and folder management system (Google Drive-like).\n\n**Features:**\n- Create folders and files with unlimited nesting\n- Protect items with 4-digit PIN codes (hashed with bcrypt)\n- Share items with other users (VIEW or EDIT roles)\n- Sort and filter items\n- Move items between folders\n- Search functionality\n- **Breadcrumb navigation** - All item responses include breadcrumb path\n\n**Breadcrumb Response:**\nAll item responses now include a `breadcrumb` object:\n```json\n{\n  \"breadcrumb\": {\n    \"path\": [\n      { \"id\": null, \"name\": \"Root\" },\n      { \"id\": \"folder-id-1\", \"name\": \"Documents\" },\n      { \"id\": \"folder-id-2\", \"name\": \"Work\" }\n    ],\n    \"pathString\": \"Root / Documents / Work\"\n  }\n}\n```\n\n**Secure File Access:**\n- File URLs are NOT exposed in item listings\n- Use `/vault/items/:id/download` to get a short-lived (5 min) download URL\n- PIN-protected files require PIN verification first\n\n**Sharing Roles:**\n- `view`: Can view and download items, verify PIN, but cannot edit or delete\n- `edit`: Can view, edit, create files in shared folders, but cannot delete or share (owner only)\n\n**PIN Protection:**\n- 4-digit numeric PIN\n- Hashed with bcrypt before storage\n- Required for accessing locked items\n- Shared users must also verify PIN\n\n**Important Notes:**\n- Folders no longer require `icon`, `color`, or `type` fields (simplified)\n- Only owners can delete or share items\n- Users with EDIT role can modify but not delete\n- Deleting a folder recursively deletes all children"
+		},
+		{
+			"name": "File Uploads",
+			"item": [
+				{
+					"name": "Direct Upload (< 100MB)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"value": "",
+									"description": "File to upload (required)",
+									"type": "file"
+								},
+								{
+									"key": "parentId",
+									"value": "",
+									"description": "Parent folder ID (optional, null for root)",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "My uploaded file",
+									"description": "File description (optional)",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/upload",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"upload"
+							]
+						},
+						"description": "**Direct File Upload (Small Files < 100MB)**\n\nSimplest upload method. File is uploaded directly through the server.\n\n**Use for:** Files under 100MB\n\n**Request:**\n- Content-Type: multipart/form-data\n- file: The file to upload\n- parentId: Optional folder ID\n- description: Optional description\n\n**Response includes:**\n- Created item with breadcrumb\n- File metadata (size, type, etc.)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Presigned Upload URL",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/vault/upload-url?filename=video.mp4&contentType=video/mp4&parentId=&description=My video",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"upload-url"
+							],
+							"query": [
+								{
+									"key": "filename",
+									"value": "video.mp4",
+									"description": "Original filename (required)"
+								},
+								{
+									"key": "contentType",
+									"value": "video/mp4",
+									"description": "MIME type (required)"
+								},
+								{
+									"key": "parentId",
+									"value": "",
+									"description": "Parent folder ID (optional)"
+								},
+								{
+									"key": "description",
+									"value": "My video",
+									"description": "File description (optional)"
+								}
+							]
+						},
+						"description": "**Get Presigned Upload URL (Medium Files)**\n\nStep 1 of 2-step upload for files up to 5GB.\n\n**Flow:**\n1. Call this endpoint to get presigned URL\n2. Upload file directly to the URL using PUT\n3. Call /confirm-upload to create the item\n\n**Response:**\n```json\n{\n  \"uploadUrl\": \"https://...\",\n  \"key\": \"vault/userId/timestamp-filename\",\n  \"expiresIn\": 3600\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Confirm Presigned Upload",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"vault/user-123/1234567890-video.mp4\",\n  \"filename\": \"video.mp4\",\n  \"size\": 104857600,\n  \"contentType\": \"video/mp4\",\n  \"parentId\": null,\n  \"description\": \"My video file\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/confirm-upload",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"confirm-upload"
+							]
+						},
+						"description": "**Confirm Presigned Upload**\n\nStep 2 of 2-step upload. Call after uploading to presigned URL.\n\nCreates the item record in database."
+					},
+					"response": []
+				},
+				{
+					"name": "Resumable - 1. Initiate",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"filename\": \"large-video.mp4\",\n  \"contentType\": \"video/mp4\",\n  \"size\": 5368709120,\n  \"parentId\": null,\n  \"description\": \"Large video file\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/resumable/initiate",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"resumable",
+								"initiate"
+							]
+						},
+						"description": "**Initiate Resumable Upload (Large Files >100MB)**\n\nStarts a multipart upload session. Use for files larger than 100MB.\n\n**Request Body:**\n- filename: Original filename\n- contentType: MIME type\n- size: File size in bytes (required for calculating parts)\n- parentId: Optional folder ID\n- description: Optional description\n\n**Response:**\n```json\n{\n  \"uploadId\": \"abc123\",\n  \"key\": \"vault/userId/timestamp-filename\",\n  \"partSize\": 5242880,\n  \"totalParts\": 1024,\n  \"filename\": \"large-video.mp4\"\n}\n```\n\n**Next Step:** Use uploadId to get part URLs"
+					},
+					"response": []
+				},
+				{
+					"name": "Resumable - 2. Get Part URLs",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"uploadId\": \"your-upload-id\",\n  \"key\": \"vault/userId/timestamp-filename\",\n  \"partNumbers\": [1, 2, 3, 4, 5]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/resumable/part-urls",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"resumable",
+								"part-urls"
+							]
+						},
+						"description": "**Get Presigned URLs for Parts**\n\nRequest up to 100 part URLs at once for parallel uploads.\n\n**Request:**\n- uploadId: From initiate response\n- key: From initiate response\n- partNumbers: Array of part numbers to get URLs for\n\n**Response:**\n```json\n{\n  \"parts\": [\n    { \"partNumber\": 1, \"uploadUrl\": \"https://...\", \"expiresIn\": 3600 },\n    { \"partNumber\": 2, \"uploadUrl\": \"https://...\", \"expiresIn\": 3600 }\n  ]\n}\n```\n\n**Upload each part:**\n```\nPUT {uploadUrl}\nBody: <file chunk bytes>\n```\n\n**IMPORTANT:** Save the ETag from each response header!"
+					},
+					"response": []
+				},
+				{
+					"name": "Resumable - 3. Check Progress",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/vault/resumable/progress?uploadId=your-upload-id&key=vault/userId/timestamp-filename",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"resumable",
+								"progress"
+							],
+							"query": [
+								{
+									"key": "uploadId",
+									"value": "your-upload-id"
+								},
+								{
+									"key": "key",
+									"value": "vault/userId/timestamp-filename"
+								}
+							]
+						},
+						"description": "**Check Upload Progress (for Resuming)**\n\nReturns list of already uploaded parts.\n\n**Use this to:**\n- Resume an interrupted upload\n- Track upload progress\n- Identify missing parts\n\n**Response:**\n```json\n{\n  \"uploadedParts\": [\n    { \"partNumber\": 1, \"etag\": \"\\\"abc123\\\"\", \"size\": 5242880 },\n    { \"partNumber\": 2, \"etag\": \"\\\"def456\\\"\", \"size\": 5242880 }\n  ],\n  \"uploadedPartsCount\": 2,\n  \"totalUploadedBytes\": 10485760\n}\n```\n\n**To resume:** Only upload parts not in this list"
+					},
+					"response": []
+				},
+				{
+					"name": "Resumable - 4. Complete",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"uploadId\": \"your-upload-id\",\n  \"key\": \"vault/userId/timestamp-filename\",\n  \"parts\": [\n    { \"partNumber\": 1, \"etag\": \"\\\"abc123\\\"\" },\n    { \"partNumber\": 2, \"etag\": \"\\\"def456\\\"\" }\n  ],\n  \"filename\": \"large-video.mp4\",\n  \"contentType\": \"video/mp4\",\n  \"size\": 5368709120,\n  \"parentId\": null,\n  \"description\": \"Large video file\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/resumable/complete",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"resumable",
+								"complete"
+							]
+						},
+						"description": "**Complete Resumable Upload**\n\nCall after ALL parts are uploaded successfully.\n\n**Request:**\n- uploadId, key: From initiate response\n- parts: Array of {partNumber, etag} for each part\n- filename, contentType, size: Original file info\n- parentId, description: Optional\n\n**IMPORTANT:** The etag must include quotes!\n\n**Response:**\n- Created item with breadcrumb\n- File is now available in vault"
+					},
+					"response": []
+				},
+				{
+					"name": "Resumable - Abort/Cancel",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"uploadId\": \"your-upload-id\",\n  \"key\": \"vault/userId/timestamp-filename\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/resumable/abort",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"resumable",
+								"abort"
+							]
+						},
+						"description": "**Abort/Cancel Resumable Upload**\n\nCleans up incomplete upload from storage.\n\n**Use when:**\n- User cancels upload\n- Upload is no longer needed\n- Want to start fresh\n\n**Note:** Incomplete uploads are automatically cleaned up after 7 days"
+					},
+					"response": []
+				}
+			],
+			"description": "File upload APIs for the Vault system.\n\n**Three Upload Methods:**\n\n| Method | Use Case | Max Size | Resumable |\n|--------|----------|----------|----------|\n| Direct Upload | Small files | ~100MB | No |\n| Presigned URL | Medium files | ~5GB | No |\n| **Resumable Upload** | **Large files** | **Unlimited** | **Yes** |\n\n**Recommended Usage:**\n- Files < 100MB: Use Direct Upload\n- Files 100MB - 1GB: Use Presigned URL\n- Files > 1GB: Use Resumable Upload\n\n**Resumable Upload Flow (like Google Drive):**\n1. `POST /resumable/initiate` - Start upload session\n2. `POST /resumable/part-urls` - Get URLs for chunks\n3. Upload chunks directly to presigned URLs\n4. If error: `GET /resumable/progress` to check what uploaded\n5. Resume by uploading only missing parts\n6. `POST /resumable/complete` - Finalize upload\n\n**Benefits of Resumable Upload:**\n- Resume interrupted uploads\n- Parallel chunk uploads for speed\n- No data loss on network errors\n- Progress tracking built-in"
+		},
+		{
+			"name": "Reminders",
+			"item": [
+				{
+					"name": "Get All Reminders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reminders?status=&page=1&limit=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reminders"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "",
+									"description": "Filter by status: pending, completed, overdue, snoozed"
+								},
+								{
+									"key": "itemId",
+									"value": "",
+									"description": "Filter by item ID",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Items per page (default: 20, max: 100)"
+								}
+							]
+						},
+						"description": "**Get All Reminders**\n\nRetrieve all reminders for the authenticated user with pagination.\n\n**Query Parameters:**\n- `status` (optional): Filter by status (pending, completed, overdue, snoozed)\n- `itemId` (optional): Filter by vault item ID\n- `page` (optional): Page number (default: 1)\n- `limit` (optional): Items per page (default: 20, max: 100)\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"reminders\": [...],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 20,\n      \"totalCount\": 45,\n      \"totalPages\": 3,\n      \"hasNextPage\": true,\n      \"hasPrevPage\": false,\n      \"nextPage\": 2,\n      \"prevPage\": null\n    }\n  },\n  \"message\": \"Reminders retrieved successfully\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Reminder",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Review Document\",\n  \"description\": \"Review the quarterly report\",\n  \"date\": \"2026-12-31\",\n  \"time\": \"14:30\",\n  \"itemId\": \"item-id-here\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/reminders",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reminders"
+							]
+						},
+						"description": "**Create Reminder**\n\nCreate a new reminder linked to a vault item.\n\n**Request Body:**\n- `title` (required): Reminder title (1-255 chars)\n- `description` (optional): Detailed description\n- `date` (required): Due date in YYYY-MM-DD format\n- `time` (required): Due time in HH:MM 24-hour format\n- `itemId` (required): ID of the vault item (file/folder)\n\n**Example:**\n```json\n{\n  \"title\": \"Review Document\",\n  \"description\": \"Check the quarterly report\",\n  \"date\": \"2026-01-15\",\n  \"time\": \"14:30\",\n  \"itemId\": \"6956daf969aedf2bd90667d3\"\n}\n```\n\n**Note:** User must have access to the item to create a reminder for it."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Reminder Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reminders/stats",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reminders",
+								"stats"
+							]
+						},
+						"description": "**Get Reminder Statistics**\n\nGet count of reminders by status.\n\n**Response:**\n```json\n{\n  \"total\": 10,\n  \"pending\": 5,\n  \"completed\": 3,\n  \"overdue\": 1,\n  \"snoozed\": 1\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Reminder by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reminders/:reminderId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reminders",
+								":reminderId"
+							],
+							"variable": [
+								{
+									"key": "reminderId",
+									"value": "reminder-id-here"
+								}
+							]
+						},
+						"description": "**Get Reminder by ID**\n\nRetrieve a specific reminder by its ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Reminder",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Updated Title\",\n  \"description\": \"Updated description\",\n  \"date\": \"2027-01-15\",\n  \"time\": \"10:00\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/reminders/:reminderId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reminders",
+								":reminderId"
+							],
+							"variable": [
+								{
+									"key": "reminderId",
+									"value": "reminder-id-here"
+								}
+							]
+						},
+						"description": "**Update Reminder**\n\nUpdate reminder details. At least one field required.\n\n**Updatable Fields:**\n- `title`: New title (1-255 chars)\n- `description`: New description\n- `date`: New date (YYYY-MM-DD)\n- `time`: New time (HH:MM)\n\n**Note:** Cannot change itemId or userId."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Reminder",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reminders/:reminderId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reminders",
+								":reminderId"
+							],
+							"variable": [
+								{
+									"key": "reminderId",
+									"value": "reminder-id-here"
+								}
+							]
+						},
+						"description": "**Delete Reminder**\n\nPermanently delete a reminder. Only the reminder owner can delete."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Item Reminders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reminders/item/:itemId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reminders",
+								"item",
+								":itemId"
+							],
+							"variable": [
+								{
+									"key": "itemId",
+									"value": "item-id-here"
+								}
+							]
+						},
+						"description": "**Get Reminders for Item**\n\nGet all reminders associated with a specific vault item."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Reminder Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"completed\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/reminders/:reminderId/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reminders",
+								":reminderId",
+								"status"
+							],
+							"variable": [
+								{
+									"key": "reminderId",
+									"value": "reminder-id-here"
+								}
+							]
+						},
+						"description": "**Update Reminder Status**\n\nChange the status of a reminder.\n\n**Valid Statuses:**\n- `pending`: Mark as active/waiting\n- `completed`: Mark as done (sets completedAt timestamp)\n- `overdue`: Mark as past due\n- `snoozed`: Mark as snoozed (use snooze endpoint instead)"
+					},
+					"response": []
+				},
+				{
+					"name": "Snooze Reminder",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"snoozedUntil\": \"2026-12-31T15:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/reminders/:reminderId/snooze",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reminders",
+								":reminderId",
+								"snooze"
+							],
+							"variable": [
+								{
+									"key": "reminderId",
+									"value": "reminder-id-here"
+								}
+							]
+						},
+						"description": "**Snooze Reminder**\n\nPostpone a reminder until a specified time.\n\n**Request Body:**\n- `snoozedUntil` (required): ISO 8601 datetime when reminder should reactivate\n\n**What happens:**\n- Status changes to 'snoozed'\n- When snoozedUntil time passes, status returns to 'pending'\n- Checked by the check-overdue endpoint"
+					},
+					"response": []
+				},
+				{
+					"name": "Check Overdue Reminders",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/reminders/check-overdue",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"reminders",
+								"check-overdue"
+							]
+						},
+						"description": "**Check Overdue Reminders**\n\nManually trigger check for overdue reminders. Typically called by a cron job.\n\n**Actions performed:**\n1. Find all pending reminders past their due time\n2. Update status to 'overdue'\n3. Send email notifications (if enabled)\n4. Send push notifications (if FCM registered)\n5. Create in-app notifications\n6. Unsnooze reminders past their snooze time\n\n**Response:**\n```json\n{\n  \"overdueCount\": 3,\n  \"notifiedCount\": 2,\n  \"unsnoozedCount\": 1\n}\n```"
+					},
+					"response": []
+				}
+			],
+			"description": "Reminder management for vault items.\n\n**Features:**\n- Create reminders linked to vault items (files/folders)\n- Automatic status tracking (pending, completed, overdue, snoozed)\n- Email notifications when reminders become due\n- Push notifications via FCM\n- Snooze functionality\n\n**Reminder Statuses:**\n- `pending`: Active reminder waiting for due time\n- `overdue`: Past due time, notification sent\n- `completed`: Marked as done by user\n- `snoozed`: Temporarily postponed\n\n**Automatic Actions:**\n- When a reminder becomes overdue:\n  - Status changes to 'overdue'\n  - Email notification sent (if enabled)\n  - Push notification sent (if FCM registered)\n  - In-app notification created\n\n**Date/Time Format:**\n- date: `YYYY-MM-DD` (e.g., '2026-01-15')\n- time: `HH:MM` 24-hour format (e.g., '14:30')"
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "Get All Notifications",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/notifications?isRead=&page=1&limit=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"notifications"
+							],
+							"query": [
+								{
+									"key": "isRead",
+									"value": "",
+									"description": "Filter by read status: true, false"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Items per page (default: 20, max: 100)"
+								}
+							]
+						},
+						"description": "**Get All Notifications**\n\nRetrieve all notifications for the authenticated user with pagination.\n\n**Query Parameters:**\n- `isRead` (optional): Filter by read status (true/false)\n- `page` (optional): Page number (default: 1)\n- `limit` (optional): Items per page (default: 20, max: 100)\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"notifications\": [...],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 20,\n      \"totalCount\": 45,\n      \"totalPages\": 3,\n      \"hasNextPage\": true,\n      \"hasPrevPage\": false,\n      \"nextPage\": 2,\n      \"prevPage\": null\n    }\n  },\n  \"message\": \"Notifications retrieved successfully\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Unread Count",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/unread-count",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"notifications",
+								"unread-count"
+							]
+						},
+						"description": "**Get Unread Notification Count**\n\nGet the count of unread notifications. Useful for badge display.\n\n**Response:**\n```json\n{\n  \"count\": 5\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Mark as Read",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/:notificationId/read",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"notifications",
+								":notificationId",
+								"read"
+							],
+							"variable": [
+								{
+									"key": "notificationId",
+									"value": "notification-id-here"
+								}
+							]
+						},
+						"description": "**Mark Notification as Read**\n\nMark a single notification as read."
+					},
+					"response": []
+				},
+				{
+					"name": "Mark All as Read",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/read-all",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"notifications",
+								"read-all"
+							]
+						},
+						"description": "**Mark All Notifications as Read**\n\nMark all unread notifications as read in one action."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Notification",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/:notificationId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"notifications",
+								":notificationId"
+							],
+							"variable": [
+								{
+									"key": "notificationId",
+									"value": "notification-id-here"
+								}
+							]
+						},
+						"description": "**Delete Notification**\n\nPermanently delete a notification."
+					},
+					"response": []
+				}
+			],
+			"description": "In-app notification management.\n\n**Notification Types:**\n- `share`: Someone shared an item with you\n- `reminder`: Reminder is due/overdue\n- `system`: System announcements\n\n**Features:**\n- Automatic creation when events occur\n- Read/unread status tracking\n- Bulk mark as read\n- Linked to vault items when applicable\n\n**Notification Sources:**\n- Item shared with user → share notification\n- Reminder becomes overdue → reminder notification\n- System updates → system notification"
+		},
+		{
+			"name": "Audit Logs",
+			"item": [
+				{
+					"name": "Get Audit Logs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/audit-logs?action=&itemId=&page=1&limit=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"audit-logs"
+							],
+							"query": [
+								{
+									"key": "action",
+									"value": "",
+									"description": "Filter by action: create, edit, delete, share, unshare, move, upload, download, pin_change, reminder_set"
+								},
+								{
+									"key": "itemId",
+									"value": "",
+									"description": "Filter by item ID"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Items per page (default: 20, max: 100)"
+								}
+							]
+						},
+						"description": "**Get Audit Logs**\n\nRetrieve audit trail for the user's vault items with pagination.\n\n**Query Parameters:**\n- `action` (optional): Filter by action type\n- `itemId` (optional): Filter by specific item\n- `page` (optional): Page number (default: 1)\n- `limit` (optional): Items per page (default: 20, max: 100)\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"logs\": [...],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 20,\n      \"totalCount\": 45,\n      \"totalPages\": 3,\n      \"hasNextPage\": true,\n      \"hasPrevPage\": false,\n      \"nextPage\": 2,\n      \"prevPage\": null\n    }\n  },\n  \"message\": \"Audit logs retrieved successfully\"\n}\n```\n\n**Action Details:**\n- `create`: parentId\n- `edit`: changes made\n- `share`: sharedWith user, role\n- `unshare`: removedUser\n- `move`: fromParent, toParent\n- `pin_change`: action (set/remove)\n- `download`: (no extra details)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Audit Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/audit-logs/stats",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"audit-logs",
+								"stats"
+							]
+						},
+						"description": "**Get Audit Statistics**\n\nGet summary statistics of audit logs.\n\n**Response:**\n```json\n{\n  \"total\": 42,\n  \"byAction\": {\n    \"create\": 15,\n    \"edit\": 10,\n    \"delete\": 5,\n    \"share\": 8,\n    \"upload\": 4\n  }\n}\n```"
+					},
+					"response": []
+				}
+			],
+			"description": "Activity audit trail for vault items.\n\n**Tracked Actions:**\n- `create`: Item created (folder/file)\n- `edit`: Item updated (name, description)\n- `delete`: Item deleted\n- `share`: Item shared with user\n- `unshare`: User access removed\n- `move`: Item moved to different folder\n- `upload`: File uploaded\n- `download`: File downloaded\n- `pin_change`: PIN set/removed\n- `reminder_set`: Reminder created for item\n\n**Audit Log Entry Contains:**\n- Who performed the action\n- What action was performed\n- Which item was affected\n- When it happened\n- Additional details (changes made, target user, etc.)\n\n**Use Cases:**\n- Security monitoring\n- Activity tracking\n- Compliance reporting\n- Troubleshooting"
+		},
+		{
+			"name": "Test",
+			"item": [
+				{
+					"name": "Send Test Email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/test/send-test-email?to=user@example.com&subject=Test Email&text=This is a test message",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"test",
+								"send-test-email"
+							],
+							"query": [
+								{
+									"key": "to",
+									"value": "user@example.com",
+									"description": "Recipient email address (required)"
+								},
+								{
+									"key": "subject",
+									"value": "Test Email",
+									"description": "Email subject (optional)"
+								},
+								{
+									"key": "text",
+									"value": "This is a test message",
+									"description": "Email body text (optional)"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "FCM Tokens",
+			"item": [
+				{
+					"name": "Register FCM Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"fcm-device-token\",\n  \"deviceType\": \"ios\",\n  \"deviceName\": \"iPhone 13 Pro\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/fcm/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"fcm",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unregister FCM Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"fcm-device-token\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/fcm/unregister",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"fcm",
+								"unregister"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Devices",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/fcm/devices",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"fcm",
+								"devices"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update FCM Preferences",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"enabled\": true,\n  \"reminders\": true,\n  \"sharing\": true,\n  \"system\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/fcm/preferences",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"fcm",
+								"preferences"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test Notification",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Test Notification\",\n  \"body\": \"This is a test notification\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/fcm/test",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"fcm",
+								"test"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Legal Pages",
+			"item": [
+				{
+					"name": "Get All Legal Pages",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/legal",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"legal"
+							]
+						},
+						"description": "**Get All Published Legal Pages (No Auth)**\n\nRetrieve all published legal pages in a single request.\n\n**Authentication:** Not required\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"pages\": [\n      {\n        \"type\": \"privacy_policy\",\n        \"title\": \"Privacy Policy\",\n        \"content\": \"<h1>Privacy Policy</h1><p>Your privacy matters...</p>\",\n        \"version\": \"1.0\",\n        \"updatedAt\": \"2026-01-06T12:00:00.000Z\"\n      },\n      {\n        \"type\": \"terms_of_service\",\n        \"title\": \"Terms of Service\",\n        \"content\": \"<h1>Terms</h1><p>Welcome to IJS Vault...</p>\",\n        \"version\": \"1.0\",\n        \"updatedAt\": \"2026-01-06T12:00:00.000Z\"\n      }\n    ]\n  },\n  \"message\": \"Legal pages retrieved successfully\"\n}\n```\n\n**Response Fields:**\n- `type`: Page type identifier\n- `title`: Display title\n- `content`: HTML content (can be rendered in WebView)\n- `version`: Version number\n- `updatedAt`: Last update timestamp\n\n**Use Cases:**\n- Display legal pages in app settings\n- Show during onboarding/registration\n- Legal compliance screens"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Legal Page by Type",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/legal/:type",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"legal",
+								":type"
+							],
+							"variable": [
+								{
+									"key": "type",
+									"value": "terms_of_service",
+									"description": "Legal page type: terms_of_service, privacy_policy, cookie_policy, disclaimer, refund_policy"
+								}
+							]
+						},
+						"description": "**Get Legal Page by Type (No Auth)**\n\nRetrieve a specific legal page by its type.\n\n**Authentication:** Not required\n\n**Path Parameters:**\n\n| Parameter | Type | Required | Description |\n|-----------|------|----------|-------------|\n| `type` | string | Yes | Legal page type |\n\n**type Enum Values:**\n- `terms_of_service` - Terms of Service\n- `privacy_policy` - Privacy Policy\n- `cookie_policy` - Cookie Policy\n- `disclaimer` - Disclaimer\n- `refund_policy` - Refund Policy\n\n**Success Response (200):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"page\": {\n      \"type\": \"terms_of_service\",\n      \"title\": \"Terms of Service\",\n      \"content\": \"<h1>Terms of Service</h1><p>Welcome to IJS Vault...</p>\",\n      \"version\": \"1.0\",\n      \"updatedAt\": \"2026-01-06T12:00:00.000Z\"\n    }\n  },\n  \"message\": \"Legal page retrieved successfully\"\n}\n```\n\n**Error Responses:**\n- `404`: Legal page not found or not published\n\n**Note:** Only returns published pages. Unpublished pages return 404."
+					},
+					"response": []
+				}
+			],
+			"description": "Public legal pages endpoints (no authentication required).\n\n**Available Page Types:**\n- `terms_of_service` - Terms of Service\n- `privacy_policy` - Privacy Policy\n- `cookie_policy` - Cookie Policy\n- `disclaimer` - Disclaimer\n- `refund_policy` - Refund Policy\n\n**Features:**\n- Get all published legal pages at once\n- Get individual legal page by type\n- HTML content support\n- Version tracking"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{accessToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Pre-request script runs before every request",
+					"// You can add common logic here"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-save tokens from auth responses",
+					"if (pm.response.code === 200 || pm.response.code === 201) {",
+					"    try {",
+					"        const jsonData = pm.response.json();",
+					"        if (jsonData.data && jsonData.data.tokens) {",
+					"            if (jsonData.data.tokens.access) {",
+					"                pm.collectionVariables.set('accessToken', jsonData.data.tokens.access.token);",
+					"                console.log('✅ Access token saved');",
+					"            }",
+					"            if (jsonData.data.tokens.refresh) {",
+					"                pm.collectionVariables.set('refreshToken', jsonData.data.tokens.refresh.token);",
+					"                console.log('✅ Refresh token saved');",
+					"            }",
+					"        }",
+					"        if (jsonData.data && jsonData.data.user && jsonData.data.user.id) {",
+					"            pm.collectionVariables.set('userId', jsonData.data.user.id);",
+					"            console.log('✅ User ID saved');",
+					"        }",
+					"    } catch (e) {",
+					"        // Not a JSON response or no tokens",
+					"    }",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "https://ijsvault.codecoytechnologies.live/v1",
+			"type": "string",
+			"description": {
+				"content": "API Base URL - Change to http://localhost:3000/v1 for local development",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "localUrl",
+			"value": "http://localhost:3000/v1",
+			"type": "string",
+			"description": {
+				"content": "Local development URL",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "productionUrl",
+			"value": "https://ijsvault.codecoytechnologies.live/v1",
+			"type": "string",
+			"description": {
+				"content": "Production server URL",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "JWT Access Token - Auto-populated after login",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "JWT Refresh Token - Auto-populated after login",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "Current user ID - Auto-populated after login",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "itemId",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "Vault item ID for testing",
+				"type": "text/plain"
+			}
+		}
+	]
+}
