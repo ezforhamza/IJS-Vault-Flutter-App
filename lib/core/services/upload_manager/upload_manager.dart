@@ -92,6 +92,8 @@ class UploadManager extends GetxController {
   static const int _maxRetries = 3;
 
   /// Add a new file to the upload queue and start uploading
+  /// Returns the task ID immediately after adding to queue
+  /// The actual upload runs in the background
   Future<String> addUpload({
     required File file,
     required String filename,
@@ -101,6 +103,8 @@ class UploadManager extends GetxController {
   }) async {
     final int fileSize = await file.length();
     final String taskId = _uuid.v4();
+
+    debugPrint('📤 UploadManager: Adding upload task $taskId for $filename (${fileSize} bytes)');
 
     final UploadTask task = UploadTask(
       id: taskId,
@@ -113,9 +117,10 @@ class UploadManager extends GetxController {
     );
 
     tasks.add(task);
+    debugPrint('📤 UploadManager: Task added. Total tasks: ${tasks.length}');
 
-    // Start upload in background
-    _startUpload(taskId);
+    // Start upload in background (don't await - fire and forget)
+    unawaited(_startUpload(taskId));
 
     return taskId;
   }

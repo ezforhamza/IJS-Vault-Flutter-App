@@ -15,6 +15,7 @@ class UploadProgressOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetX<UploadManager>(
       builder: (UploadManager controller) {
+        debugPrint('📤 UploadProgressOverlay: Building with ${controller.tasks.length} tasks');
         if (controller.tasks.isEmpty) {
           return const SizedBox.shrink();
         }
