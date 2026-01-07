@@ -84,16 +84,19 @@ class _LinkedUsersScreenState extends State<LinkedUsersScreen> {
                     return Center(child: buildEmptyText(textTheme));
                   }
 
-                  return ListView.separated(
-                    itemCount: controller.users.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 10),
-                    itemBuilder: (BuildContext context, int index) {
-                      final LinkedUserModel user = controller.users[index];
-                      return LinkedUserWidget(
-                        // pass model here
-                        user: user,
-                      );
-                    },
+                  return RefreshIndicator(
+                    onRefresh: controller.refresh,
+                    child: ListView.separated(
+                      itemCount: controller.users.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      itemBuilder: (BuildContext context, int index) {
+                        final LinkedUserModel user = controller.users[index];
+                        return LinkedUserWidget(
+                          // pass model here
+                          user: user,
+                        );
+                      },
+                    ),
                   );
                 }),
               ),

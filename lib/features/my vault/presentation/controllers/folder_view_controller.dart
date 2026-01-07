@@ -1,10 +1,17 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:ijs_vault/core/services/upload_manager/upload_manager.dart';
 import 'package:ijs_vault/features/my%20vault/data/models/vault_item_model.dart';
 import 'package:ijs_vault/features/my%20vault/domain/repositories/my_vault_repo.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/widgets/file_confirmation_widget.dart';
 import 'package:ijs_vault/shared/helpers/loader.dart';
 import 'package:ijs_vault/shared/helpers/toasts.dart';
 import 'package:ijs_vault/shared/models/response_model.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mime/mime.dart';
 
 /// =======================================================
 /// Folder View Controller
@@ -37,10 +44,12 @@ class FolderViewController extends GetxController {
 
   // API Operations
 
-  Future<void> getVaultItems() async {
+  Future<void> getVaultItems({bool refresh = false}) async {
     if (parentId == null) return;
 
-    isLoading.value = true;
+    if (!refresh) {
+      isLoading.value = true;
+    }
     try {
       final ApiResponse response = await repo.getVaultItems(parentId: parentId);
 
@@ -57,6 +66,11 @@ class FolderViewController extends GetxController {
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// Refresh folder items (for pull-to-refresh)
+  Future<void> refresh() async {
+    await getVaultItems(refresh: true);
   }
 
   Future<ItemModel?> addNewFolder({
@@ -173,6 +187,116 @@ class FolderViewController extends GetxController {
       debugPrint('Delete error: $e');
     } finally {
       AppLoader.hideLoadingDialog();
+    }
+  }
+
+  ////////////////////////////////////////////////////////////////////////////////File Upload/////////////////////////////////////////
+  final ImagePicker _picker = ImagePicker();
+  final RxBool isUploading = false.obs;
+
+  @override
+  void onReady() {
+    super.onReady();
+    _setupUploadManager();
+  }
+
+  /// Setup upload manager callbacks for this folder
+  void _setupUploadManager() {
+    final UploadManager uploadManager = Get.find<UploadManager>();
+    
+    // When upload completes, add the item to the list if it belongs to this folder
+    uploadManager.onUploadComplete = (ItemModel item) {
+      // Only add if the item belongs to this folder
+      if (item.parentId == parentId) {
+        items.add(item);
+      }
+      AppToasts.showSuccessToast(message: '${item.name} uploaded successfully');
+    };
+    
+    // When upload fails, show error
+    uploadManager.onUploadError = (String taskId, String error) {
+      debugPrint('Upload failed: $error');
+    };
+  }
+
+  Future<void> pickAndConfirmUpload(
+    BuildContext context,
+    String parentId,
+  ) async {
+    // Pick multiple files
+    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.any,
+      allowMultiple: true,
+    );
+
+    if (result == null || result.files.isEmpty) return;
+
+    // Convert to File objects
+    final List<File> files = result.files
+        .where((PlatformFile f) => f.path != null)
+        .map((PlatformFile f) => File(f.path!))
+        .toList();
+
+    if (files.isEmpty) return;
+
+    // Show upload confirmation dialog with file info
+    _showUploadConfirmationDialog(
+      context: context,
+      files: files,
+      parentId: parentId,
+    );
+  }
+
+  void _showUploadConfirmationDialog({
+    required BuildContext context,
+    required List<File> files,
+    required String parentId,
+  }) {
+    Get.dialog(
+      barrierColor: const Color(0xFF494a51).withValues(alpha: 0.4),
+      UploadConfirmationDialog(
+        files: files,
+        onUpload: (List<File> filesToUpload) => uploadSelectedFiles(filesToUpload, parentId),
+      ),
+    );
+  }
+
+  /// Upload multiple files using the background upload manager (non-blocking)
+  Future<void> uploadSelectedFiles(List<File> files, String parentId) async {
+    // Close the confirmation dialog immediately
+    Get.back();
+
+    final UploadManager uploadManager = Get.find<UploadManager>();
+    int successCount = 0;
+
+    for (final File file in files) {
+      try {
+        // Get file info
+        final String filename = file.path.split('/').last;
+        final String? mimeType = lookupMimeType(file.path);
+        final String contentType = mimeType ?? 'application/octet-stream';
+
+        // Add to upload manager (runs in background)
+        await uploadManager.addUpload(
+          file: file,
+          filename: filename,
+          contentType: contentType,
+          parentId: parentId,
+          description: 'Uploaded file',
+        );
+        successCount++;
+      } catch (e) {
+        debugPrint('Upload error for ${file.path}: $e');
+      }
+    }
+
+    // Show toast
+    if (successCount > 0) {
+      AppToasts.showSuccessToast(
+        message: successCount == 1
+            ? 'Upload started'
+            : '$successCount uploads started',
+      );
     }
   }
 }

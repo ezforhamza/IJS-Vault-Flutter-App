@@ -61,7 +61,7 @@ class _MyVaultState extends State<MyVault> {
     }
 
     return RefreshIndicator(
-      onRefresh: controller.getVaultItems,
+      onRefresh: controller.refresh,
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           final double width = constraints.maxWidth;

@@ -46,11 +46,13 @@ class VaultUploadController extends GetxController {
     Get.dialog(
       barrierColor: const Color(0xFF494a51).withValues(alpha: 0.4),
       UploadConfirmationDialog(
-        file: file,
-        onTap: () {
-          return uploadSelectedFile(file, parentId: parentId);
+        files: <File>[file],
+        onUpload: (List<File> files) async {
+          if (files.isNotEmpty) {
+            await uploadSelectedFile(files.first, parentId: parentId);
+          }
         },
-        isUploading: isUploading,
+        parentId: parentId,
       ),
     );
   }

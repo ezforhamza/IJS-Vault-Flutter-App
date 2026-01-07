@@ -153,14 +153,17 @@ class _AllRemindersScreenState extends State<AllRemindersScreen> {
                 );
               }
 
-              return ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemCount: displayedList.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final ReminderItemModel reminder = displayedList[index];
-                  return ReminderWidget(reminder: reminder);
-                },
+              return RefreshIndicator(
+                onRefresh: controller.refresh,
+                child: ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  itemCount: displayedList.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final ReminderItemModel reminder = displayedList[index];
+                    return ReminderWidget(reminder: reminder);
+                  },
+                ),
               );
             }),
           ),

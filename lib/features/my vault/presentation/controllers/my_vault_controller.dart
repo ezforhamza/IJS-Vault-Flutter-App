@@ -1,13 +1,20 @@
+import 'dart:io';
+
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ijs_vault/core/services/local_storage.dart';
+import 'package:ijs_vault/core/services/upload_manager/upload_manager.dart';
 import 'package:ijs_vault/features/auth/data/models/user_model.dart';
 import 'package:ijs_vault/features/my%20vault/data/models/linkable_user_model.dart';
 import 'package:ijs_vault/features/my%20vault/data/models/vault_item_model.dart';
 import 'package:ijs_vault/features/my%20vault/domain/repositories/my_vault_repo.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/widgets/file_confirmation_widget.dart';
 import 'package:ijs_vault/shared/helpers/loader.dart';
 import 'package:ijs_vault/shared/helpers/toasts.dart';
 import 'package:ijs_vault/shared/models/response_model.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mime/mime.dart';
 
 class MyVaultController extends GetxController {
   // UI state
@@ -150,7 +157,9 @@ class MyVaultController extends GetxController {
 
   /// Fetch vault items
   Future<void> getVaultItems({bool refresh = false}) async {
-    isGettingVault.value = true;
+    if (!refresh) {
+      isGettingVault.value = true;
+    }
     try {
       final ApiResponse response = await repo.getVaultItems(
         // page: pagination.value?.page ?? 1,
@@ -171,6 +180,11 @@ class MyVaultController extends GetxController {
     } finally {
       isGettingVault.value = false;
     }
+  }
+
+  /// Refresh vault items (for pull-to-refresh)
+  Future<void> refresh() async {
+    await getVaultItems(refresh: true);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -248,6 +262,133 @@ class MyVaultController extends GetxController {
   //   user.value = null;
   //   items.clear();
   // }
+
+  ////////////////////////////////////////////////////////////////////////////////File Upload/////////////////////////////////////////
+  final ImagePicker _picker = ImagePicker();
+  final RxBool isUploading = false.obs;
+  final RxBool isLoadingFiles = false.obs; // Loading state for file picker
+  final RxList<File> selectedFiles = <File>[].obs; // Selected files for upload
+
+  @override
+  void onReady() {
+    super.onReady();
+    _setupUploadManager();
+  }
+
+  /// Setup upload manager callbacks
+  void _setupUploadManager() {
+    final UploadManager uploadManager = Get.find<UploadManager>();
+    
+    // When upload completes, add the item to the list
+    uploadManager.onUploadComplete = (ItemModel item) {
+      items.add(item);
+      AppToasts.showSuccessToast(message: '${item.name} uploaded successfully');
+    };
+    
+    // When upload fails, show error
+    uploadManager.onUploadError = (String taskId, String error) {
+      debugPrint('Upload failed: $error');
+    };
+  }
+
+  Future<void> pickAndConfirmUpload(BuildContext context) async {
+    // Show loading indicator while picking files
+    isLoadingFiles.value = true;
+    
+    try {
+      // Pick multiple files
+      final FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.any,
+        allowMultiple: true, // Allow multiple file selection
+      );
+
+      if (result == null || result.files.isEmpty) {
+        isLoadingFiles.value = false;
+        return;
+      }
+
+      // Convert to File objects
+      final List<File> files = result.files
+          .where((PlatformFile f) => f.path != null)
+          .map((PlatformFile f) => File(f.path!))
+          .toList();
+
+      if (files.isEmpty) {
+        isLoadingFiles.value = false;
+        return;
+      }
+
+      isLoadingFiles.value = false;
+      selectedFiles.value = files;
+
+      // Show upload confirmation dialog with file info
+      _showUploadConfirmationDialog(context: context, files: files);
+    } catch (e) {
+      isLoadingFiles.value = false;
+      debugPrint('File picker error: $e');
+      AppToasts.showErrorToast(message: 'Failed to select files');
+    }
+  }
+
+  void _showUploadConfirmationDialog({
+    required BuildContext context,
+    required List<File> files,
+  }) {
+    Get.dialog(
+      barrierColor: const Color(0xFF494a51).withValues(alpha: 0.4),
+      UploadConfirmationDialog(
+        files: files,
+        onUpload: uploadSelectedFiles,
+        onRemoveFile: (int index) {
+          selectedFiles.removeAt(index);
+          if (selectedFiles.isEmpty) {
+            Get.back();
+          }
+        },
+      ),
+    );
+  }
+
+  /// Upload multiple files using the background upload manager (non-blocking)
+  Future<void> uploadSelectedFiles(List<File> files) async {
+    // Close the confirmation dialog immediately
+    Get.back();
+
+    final UploadManager uploadManager = Get.find<UploadManager>();
+    int successCount = 0;
+
+    for (final File file in files) {
+      try {
+        // Get file info
+        final String filename = file.path.split('/').last;
+        final String? mimeType = lookupMimeType(file.path);
+        final String contentType = mimeType ?? 'application/octet-stream';
+
+        // Add to upload manager (runs in background)
+        await uploadManager.addUpload(
+          file: file,
+          filename: filename,
+          contentType: contentType,
+          parentId: null, // pass folder id if needed
+          description: 'Uploaded file',
+        );
+        successCount++;
+      } catch (e) {
+        debugPrint('Upload error for ${file.path}: $e');
+      }
+    }
+
+    // Show toast
+    if (successCount > 0) {
+      AppToasts.showSuccessToast(
+        message: successCount == 1
+            ? 'Upload started'
+            : '$successCount uploads started',
+      );
+    }
+    
+    selectedFiles.clear();
+  }
 
   /* -------------------------------------------------------------------------- */
   /*                            User Linking Search                             */
