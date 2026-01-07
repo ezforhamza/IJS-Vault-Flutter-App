@@ -4,7 +4,7 @@ import 'package:ijs_vault/core/network/app_urls.dart';
 import 'package:ijs_vault/shared/models/response_model.dart';
 
 class MyVaultRepo {
-  ApiService apiService = .new();
+  ApiService apiService = ApiService.new();
 
   // Create New FOlder
 
