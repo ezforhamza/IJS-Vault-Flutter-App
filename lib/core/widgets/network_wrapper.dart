@@ -48,7 +48,7 @@ class NetworkWrapper extends StatelessWidget {
                           ],
                         ),
                         child: Row(
-                          mainAxisAlignment: .center,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             const Icon(
                               Icons.wifi_off_rounded,

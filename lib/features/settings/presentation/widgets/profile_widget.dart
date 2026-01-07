@@ -35,7 +35,7 @@ class ProfileWIdget extends StatelessWidget {
             ),
             // Name Email
             Column(
-              crossAxisAlignment: .start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 // Name
                 Text(
