@@ -19,8 +19,8 @@ class LinkedUsersController extends GetxController {
     getLinkedUsers(showLoader: false);
   }
 
-  Future<void> getLinkedUsers({bool showLoader = true}) async {
-    if (showLoader) {
+  Future<void> getLinkedUsers({bool showLoader = true, bool refresh = false}) async {
+    if (showLoader && !refresh) {
       isLoading.value = true;
     }
     try {
@@ -42,6 +42,11 @@ class LinkedUsersController extends GetxController {
         isLoading.value = false;
       }
     }
+  }
+
+  /// Refresh linked users (for pull-to-refresh)
+  Future<void> refresh() async {
+    await getLinkedUsers(showLoader: false, refresh: true);
   }
 
   // Helper getters

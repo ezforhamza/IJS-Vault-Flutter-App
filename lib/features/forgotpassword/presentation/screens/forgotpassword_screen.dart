@@ -22,7 +22,7 @@ class ForgotpasswordScreen extends StatefulWidget {
 class _ForgotpasswordScreenState extends State<ForgotpasswordScreen> {
   bool isButtonDisabled = true;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-  TextEditingController emailController = .new();
+  TextEditingController emailController = TextEditingController.new();
 
   @override
   void dispose() {
@@ -47,12 +47,12 @@ class _ForgotpasswordScreenState extends State<ForgotpasswordScreen> {
           child: Column(
             spacing: 20,
             // mainAxisAlignment: .start,
-            crossAxisAlignment: .start,
-            mainAxisSize: .max,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.max,
             children: <Widget>[
               // SizedBox(height: MediaQuery.paddingOf(context).top + 30),
               Column(
-                crossAxisAlignment: .start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Center(
                     child: Image.asset(

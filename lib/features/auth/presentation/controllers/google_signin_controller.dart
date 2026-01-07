@@ -27,31 +27,28 @@ class GoogleSignInController extends GetxController {
 
       // Step 1: Trigger Google Sign-In flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-
+      
       if (googleUser == null) {
-        // User cancelled the sign-in
         AppLoader.hideLoadingDialog();
         isLoading.value = false;
         return;
       }
 
       // Step 2: Get authentication details from Google
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
       // Step 3: Create Firebase credential
       final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
+        accessToken: googleAuth.idToken,
         idToken: googleAuth.idToken,
       );
 
       // Step 4: Sign in to Firebase with the credential
-      final UserCredential userCredential =
-          await _firebaseAuth.signInWithCredential(credential);
+      final UserCredential userCredential = await _firebaseAuth
+          .signInWithCredential(credential);
 
       // Step 5: Get Firebase ID token to send to backend
-      final String? firebaseIdToken =
-          await userCredential.user?.getIdToken();
+      final String? firebaseIdToken = await userCredential.user?.getIdToken();
 
       if (firebaseIdToken == null) {
         AppToasts.showErrorToast(message: 'Failed to get authentication token');

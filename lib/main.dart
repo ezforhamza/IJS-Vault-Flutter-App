@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:ijs_vault/core/controllers/fcm_controller.dart';
 import 'package:ijs_vault/core/controllers/network_controller.dart';
 import 'package:ijs_vault/core/controllers/profile_controller.dart';
+import 'package:ijs_vault/core/services/upload_manager/upload_manager.dart';
 import 'package:ijs_vault/core/themes/app_theme.dart';
 import 'package:ijs_vault/core/widgets/network_wrapper.dart';
 import 'package:ijs_vault/features/linked_users/presentation/controllers/linked_users_controller.dart';
@@ -11,19 +12,16 @@ import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_
 import 'package:ijs_vault/features/reminders/presentation/controllers/reminder_controller.dart';
 import 'package:ijs_vault/features/settings/presentation/controllers/theme_controller.dart';
 import 'package:ijs_vault/features/splash/presentation/screen/splash_screen.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  // SystemChrome.setSystemUIOverlayStyle(
-  //   const SystemUiOverlayStyle(
-  //     statusBarColor: Colors.transparent, // make status bar transparent
-  //     statusBarIconBrightness: Brightness.dark, // dark icons for light theme
-  //     statusBarBrightness: Brightness.light, // iOS status bar brightness
-  //   ),
-  // );
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   Get.put(NetworkController());
+  Get.put(UploadManager());
   Get.put(MyVaultController());
   Get.put(ReminderController());
   Get.put(ProfileController());

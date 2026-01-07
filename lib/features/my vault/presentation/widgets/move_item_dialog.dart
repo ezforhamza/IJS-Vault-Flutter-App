@@ -125,11 +125,11 @@ class _MoveItemDialogState extends State<MoveItemDialog> {
         height: 300,
         child: Column(
           // crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: .min,
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             // Header
             Row(
-              mainAxisAlignment: .spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 const SizedBox(),
                 Expanded(

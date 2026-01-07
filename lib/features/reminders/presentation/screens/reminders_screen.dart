@@ -34,17 +34,20 @@ class RemindersScreen extends StatelessWidget {
         isCentre: true,
         title: 'Reminders',
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.only(
-            left: 15,
-            right: 15,
-            bottom: 40,
-            top: 10,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
+      body: RefreshIndicator(
+        onRefresh: controller.refresh,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.only(
+              left: 15,
+              right: 15,
+              bottom: 40,
+              top: 10,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
               // Search
               // CustomSearchField(isDarkMode: isDarkMode),
               // const SizedBox(height: 10),
@@ -114,8 +117,9 @@ class RemindersScreen extends StatelessWidget {
                   },
                 );
               }),
-              Container(height: 100),
-            ],
+                Container(height: 100),
+              ],
+            ),
           ),
         ),
       ),
