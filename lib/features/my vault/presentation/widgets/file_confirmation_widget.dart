@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:mime/mime.dart';
 
-class UploadConfirmationDialog extends StatelessWidget {
+class UploadConfirmationDialog extends StatefulWidget {
   const UploadConfirmationDialog({
     super.key,
     required this.files,
@@ -16,7 +16,7 @@ class UploadConfirmationDialog extends StatelessWidget {
 
   final List<File> files;
 
-  /// Callback when user taps Upload
+  /// Callback when user taps Upload - should NOT close dialog, we handle that
   final Future<void> Function(List<File> files) onUpload;
 
   /// Callback to remove a file from the list
@@ -24,6 +24,13 @@ class UploadConfirmationDialog extends StatelessWidget {
 
   /// Optional parent ID if needed
   final String? parentId;
+
+  @override
+  State<UploadConfirmationDialog> createState() => _UploadConfirmationDialogState();
+}
+
+class _UploadConfirmationDialogState extends State<UploadConfirmationDialog> {
+  bool _isUploading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -47,8 +54,22 @@ class UploadConfirmationDialog extends StatelessWidget {
     );
   }
 
+  Future<void> _handleUpload() async {
+    if (_isUploading) return;
+    
+    setState(() {
+      _isUploading = true;
+    });
+
+    // Close dialog FIRST
+    Get.back();
+
+    // Then start upload (runs in background)
+    await widget.onUpload(widget.files);
+  }
+
   Widget _buildHeader() {
-    final int totalSize = files.fold(0, (int sum, File f) {
+    final int totalSize = widget.files.fold(0, (int sum, File f) {
       try {
         return sum + f.lengthSync();
       } catch (_) {
@@ -86,7 +107,7 @@ class UploadConfirmationDialog extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  files.length == 1 ? 'Upload File' : 'Upload ${files.length} Files',
+                  widget.files.length == 1 ? 'Upload File' : 'Upload ${widget.files.length} Files',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -120,12 +141,12 @@ class UploadConfirmationDialog extends StatelessWidget {
     return ListView.separated(
       shrinkWrap: true,
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-      itemCount: files.length,
+      itemCount: widget.files.length,
       separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (BuildContext context, int index) {
         return _FileInfoTile(
-          file: files[index],
-          onRemove: onRemoveFile != null ? () => onRemoveFile!(index) : null,
+          file: widget.files[index],
+          onRemove: widget.onRemoveFile != null ? () => widget.onRemoveFile!(index) : null,
         );
       },
     );
@@ -156,9 +177,7 @@ class UploadConfirmationDialog extends StatelessWidget {
           ],
         ),
         child: ElevatedButton(
-          onPressed: () async {
-            await onUpload(files);
-          },
+          onPressed: _isUploading ? null : _handleUpload,
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
@@ -170,10 +189,22 @@ class UploadConfirmationDialog extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              const Icon(Icons.cloud_upload, color: Colors.white, size: 22),
+              if (_isUploading)
+                const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              else
+                const Icon(Icons.cloud_upload, color: Colors.white, size: 22),
               const SizedBox(width: 10),
               Text(
-                files.length == 1 ? 'Upload File' : 'Upload ${files.length} Files',
+                _isUploading 
+                    ? 'Starting Upload...' 
+                    : (widget.files.length == 1 ? 'Upload File' : 'Upload ${widget.files.length} Files'),
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,

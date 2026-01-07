@@ -262,12 +262,12 @@ class FolderViewController extends GetxController {
   }
 
   /// Upload multiple files using the background upload manager (non-blocking)
+  /// Note: Dialog closes itself before calling this
   Future<void> uploadSelectedFiles(List<File> files, String parentId) async {
-    // Close the confirmation dialog immediately
-    Get.back();
-
     final UploadManager uploadManager = Get.find<UploadManager>();
     int successCount = 0;
+
+    debugPrint('📤 FolderViewController: Starting upload of ${files.length} files');
 
     for (final File file in files) {
       try {
@@ -275,6 +275,8 @@ class FolderViewController extends GetxController {
         final String filename = file.path.split('/').last;
         final String? mimeType = lookupMimeType(file.path);
         final String contentType = mimeType ?? 'application/octet-stream';
+
+        debugPrint('📤 FolderViewController: Adding file $filename to upload queue');
 
         // Add to upload manager - await to ensure task is added to queue
         // The actual upload runs in background via unawaited
@@ -286,8 +288,9 @@ class FolderViewController extends GetxController {
           description: 'Uploaded file',
         );
         successCount++;
+        debugPrint('📤 FolderViewController: File $filename added to queue');
       } catch (e) {
-        debugPrint('Upload error for ${file.path}: $e');
+        debugPrint('❌ Upload error for ${file.path}: $e');
       }
     }
 
@@ -299,5 +302,6 @@ class FolderViewController extends GetxController {
             : '$successCount uploads started',
       );
     }
+    debugPrint('📤 FolderViewController: Upload queue complete. $successCount files queued.');
   }
 }
