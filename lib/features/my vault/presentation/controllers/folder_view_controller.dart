@@ -276,8 +276,8 @@ class FolderViewController extends GetxController {
         final String? mimeType = lookupMimeType(file.path);
         final String contentType = mimeType ?? 'application/octet-stream';
 
-        // Add to upload manager (runs in background)
-        await uploadManager.addUpload(
+        // Add to upload manager (runs in background) - don't await
+        uploadManager.addUpload(
           file: file,
           filename: filename,
           contentType: contentType,
