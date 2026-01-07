@@ -4,7 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ijs_vault/core/services/local_storage.dart';
-import 'package:ijs_vault/core/services/resumeable_upload_service.dart';
+import 'package:ijs_vault/core/services/upload_manager/upload_manager.dart';
 import 'package:ijs_vault/features/auth/data/models/user_model.dart';
 import 'package:ijs_vault/features/my%20vault/data/models/linkable_user_model.dart';
 import 'package:ijs_vault/features/my%20vault/data/models/vault_item_model.dart';
@@ -157,7 +157,9 @@ class MyVaultController extends GetxController {
 
   /// Fetch vault items
   Future<void> getVaultItems({bool refresh = false}) async {
-    isGettingVault.value = true;
+    if (!refresh) {
+      isGettingVault.value = true;
+    }
     try {
       final ApiResponse response = await repo.getVaultItems(
         // page: pagination.value?.page ?? 1,
@@ -178,6 +180,11 @@ class MyVaultController extends GetxController {
     } finally {
       isGettingVault.value = false;
     }
+  }
+
+  /// Refresh vault items (for pull-to-refresh)
+  Future<void> refresh() async {
+    await getVaultItems(refresh: true);
   }
 
   /* -------------------------------------------------------------------------- */
@@ -259,127 +266,128 @@ class MyVaultController extends GetxController {
   ////////////////////////////////////////////////////////////////////////////////File Upload/////////////////////////////////////////
   final ImagePicker _picker = ImagePicker();
   final RxBool isUploading = false.obs;
+  final RxBool isLoadingFiles = false.obs; // Loading state for file picker
+  final RxList<File> selectedFiles = <File>[].obs; // Selected files for upload
+
+  @override
+  void onReady() {
+    super.onReady();
+    _setupUploadManager();
+  }
+
+  /// Setup upload manager callbacks
+  void _setupUploadManager() {
+    final UploadManager uploadManager = Get.find<UploadManager>();
+    
+    // When upload completes, add the item to the list
+    uploadManager.onUploadComplete = (ItemModel item) {
+      items.add(item);
+      AppToasts.showSuccessToast(message: '${item.name} uploaded successfully');
+    };
+    
+    // When upload fails, show error
+    uploadManager.onUploadError = (String taskId, String error) {
+      debugPrint('Upload failed: $error');
+    };
+  }
 
   Future<void> pickAndConfirmUpload(BuildContext context) async {
-    // Pick any file
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.any, // allows any file type
-      allowMultiple: false,
-    );
+    // Show loading indicator while picking files
+    isLoadingFiles.value = true;
+    
+    try {
+      // Pick multiple files
+      final FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.any,
+        allowMultiple: true, // Allow multiple file selection
+      );
 
-    if (result == null || result.files.isEmpty) return;
+      if (result == null || result.files.isEmpty) {
+        isLoadingFiles.value = false;
+        return;
+      }
 
-    final File file = File(result.files.first.path!);
+      // Convert to File objects
+      final List<File> files = result.files
+          .where((PlatformFile f) => f.path != null)
+          .map((PlatformFile f) => File(f.path!))
+          .toList();
 
-    // Show your upload confirmation dialog
-    _showUploadConfirmationDialog(context: context, file: file);
+      if (files.isEmpty) {
+        isLoadingFiles.value = false;
+        return;
+      }
+
+      isLoadingFiles.value = false;
+      selectedFiles.value = files;
+
+      // Show upload confirmation dialog with file info
+      _showUploadConfirmationDialog(context: context, files: files);
+    } catch (e) {
+      isLoadingFiles.value = false;
+      debugPrint('File picker error: $e');
+      AppToasts.showErrorToast(message: 'Failed to select files');
+    }
   }
 
   void _showUploadConfirmationDialog({
     required BuildContext context,
-    required File file,
+    required List<File> files,
   }) {
     Get.dialog(
       barrierColor: const Color(0xFF494a51).withValues(alpha: 0.4),
       UploadConfirmationDialog(
-        file: file,
-        onTap: () {
-          return uploadSelectedFile(file);
+        files: files,
+        onUpload: uploadSelectedFiles,
+        onRemoveFile: (int index) {
+          selectedFiles.removeAt(index);
+          if (selectedFiles.isEmpty) {
+            Get.back();
+          }
         },
-        isUploading: isUploading,
       ),
     );
   }
 
-  Future<void> uploadSelectedFile(File file) async {
-    const int fileSizeThreshold = 100 * 1024 * 1024; // 100MB in bytes
+  /// Upload multiple files using the background upload manager (non-blocking)
+  Future<void> uploadSelectedFiles(List<File> files) async {
+    // Close the confirmation dialog immediately
+    Get.back();
 
-    try {
-      isUploading.value = true;
+    final UploadManager uploadManager = Get.find<UploadManager>();
+    int successCount = 0;
 
-      // Get file size
-      final int fileSize = await file.length();
-      final String filename = file.path.split('/').last;
+    for (final File file in files) {
+      try {
+        // Get file info
+        final String filename = file.path.split('/').last;
+        final String? mimeType = lookupMimeType(file.path);
+        final String contentType = mimeType ?? 'application/octet-stream';
 
-      // Check file size and route to appropriate upload method
-      if (fileSize > fileSizeThreshold) {
-        // Use resumable upload for files > 100MB
-        await _uploadLargeFile(file, filename, fileSize);
-      } else {
-        // Use standard upload for files <= 100MB
-        await _uploadSmallFile(file);
+        // Add to upload manager (runs in background)
+        await uploadManager.addUpload(
+          file: file,
+          filename: filename,
+          contentType: contentType,
+          parentId: null, // pass folder id if needed
+          description: 'Uploaded file',
+        );
+        successCount++;
+      } catch (e) {
+        debugPrint('Upload error for ${file.path}: $e');
       }
-    } catch (e) {
-      Get.snackbar('Error', e.toString());
-    } finally {
-      isUploading.value = false;
-      AppLoader.hideLoadingDialog();
     }
-  }
 
-  /// Upload small files (<= 100MB) using standard method
-  Future<void> _uploadSmallFile(File file) async {
-    AppLoader.showLoadingDialog();
-
-    final ApiResponse response = await repo.uploadFileLessThan100Mb(
-      filePath: file.path,
-      description: 'Uploaded from gallery',
-      parentId: null, // pass folder id if needed
-    );
-
-    if (response.success) {
-      AppToasts.showSuccessToast(message: response.message);
-      final ItemModel newItem = ItemModel.fromJson(response.data['item']);
-      items.add(newItem);
-    } else {
-      AppToasts.showErrorToast(message: response.message);
-    }
-  }
-
-  /// Upload large files (> 100MB) using resumable upload service
-  Future<void> _uploadLargeFile(
-    File file,
-    String filename,
-    int fileSize,
-  ) async {
-    AppLoader.showLoadingDialog();
-
-    try {
-      // Get access token
-      final String? token = await LocalStorageService.getAccessToken();
-      if (token == null) {
-        AppToasts.showErrorToast(message: 'Authentication required');
-        return;
-      }
-
-      // Determine content type
-      final String? mimeType = lookupMimeType(file.path);
-      final String contentType = mimeType ?? 'application/octet-stream';
-
-      // Initialize resumable upload service
-      final ResumableUploadService uploadService = ResumableUploadService();
-
-      // Upload file
-      final bool success = await uploadService.uploadFile(
-        file: file,
-        filename: filename,
-        contentType: contentType,
-        parentId: '', // pass folder id if needed
-        token: token,
-        concurrentUploads: 3, // parallel uploads
+    // Show toast
+    if (successCount > 0) {
+      AppToasts.showSuccessToast(
+        message: successCount == 1
+            ? 'Upload started'
+            : '$successCount uploads started',
       );
-
-      if (success) {
-        AppToasts.showSuccessToast(message: 'File uploaded successfully');
-        // Refresh vault items to show the new file
-        await getVaultItems();
-      } else {
-        AppToasts.showErrorToast(message: 'Upload failed');
-      }
-    } catch (e) {
-      debugPrint('Large file upload error: $e');
-      AppToasts.showErrorToast(message: 'Failed to upload large file');
     }
+    
+    selectedFiles.clear();
   }
 
   /* -------------------------------------------------------------------------- */

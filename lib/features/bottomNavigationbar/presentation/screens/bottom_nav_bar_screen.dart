@@ -8,6 +8,7 @@ import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
+import 'package:ijs_vault/core/services/upload_manager/upload_progress_overlay.dart';
 import 'package:ijs_vault/features/bottomNavigationbar/presentation/widgets/add_button_widget.dart';
 import 'package:ijs_vault/features/linked_users/presentation/screens/linked_users_screen.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
@@ -116,6 +117,9 @@ class _HomeWithBottomNavScreenState extends State<HomeWithBottomNavScreen> {
               right: 20,
               child: const AddButtonWidget(),
             ),
+
+          // Upload Progress Overlay
+          const UploadProgressOverlay(),
         ],
       ),
       // bottomNavigationBar:

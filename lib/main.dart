@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:ijs_vault/core/controllers/fcm_controller.dart';
 import 'package:ijs_vault/core/controllers/network_controller.dart';
 import 'package:ijs_vault/core/controllers/profile_controller.dart';
+import 'package:ijs_vault/core/services/upload_manager/upload_manager.dart';
 import 'package:ijs_vault/core/themes/app_theme.dart';
 import 'package:ijs_vault/core/widgets/network_wrapper.dart';
 import 'package:ijs_vault/features/linked_users/presentation/controllers/linked_users_controller.dart';
@@ -20,6 +21,7 @@ void main() async {
   );
 
   Get.put(NetworkController());
+  Get.put(UploadManager());
   Get.put(MyVaultController());
   Get.put(ReminderController());
   Get.put(ProfileController());

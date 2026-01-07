@@ -58,8 +58,8 @@ class ReminderController extends GetxController {
   // --------------------------------------------------
   // GET ALL REMINDERS
   // --------------------------------------------------
-  Future<void> getAllReminders({bool showLoader = true}) async {
-    if (showLoader) {
+  Future<void> getAllReminders({bool showLoader = true, bool refresh = false}) async {
+    if (showLoader && !refresh) {
       isFetchingReminders.value = true;
     }
 
@@ -85,6 +85,11 @@ class ReminderController extends GetxController {
     } finally {
       isFetchingReminders.value = false;
     }
+  }
+
+  /// Refresh reminders (for pull-to-refresh)
+  Future<void> refresh() async {
+    await getAllReminders(showLoader: false, refresh: true);
   }
 
   // --------------------------------------------------
