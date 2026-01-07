@@ -94,7 +94,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       ),
       child: Center(
         child: Column(
-          mainAxisAlignment: .center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             // Header with month and year selectors
             Row(
@@ -103,7 +103,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 // Month selector
                 Expanded(
                   child: Row(
-                    mainAxisAlignment: .center,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
                       GestureDetector(
                         onTap: () {

@@ -11,17 +11,13 @@ import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_
 import 'package:ijs_vault/features/reminders/presentation/controllers/reminder_controller.dart';
 import 'package:ijs_vault/features/settings/presentation/controllers/theme_controller.dart';
 import 'package:ijs_vault/features/splash/presentation/screen/splash_screen.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  // SystemChrome.setSystemUIOverlayStyle(
-  //   const SystemUiOverlayStyle(
-  //     statusBarColor: Colors.transparent, // make status bar transparent
-  //     statusBarIconBrightness: Brightness.dark, // dark icons for light theme
-  //     statusBarBrightness: Brightness.light, // iOS status bar brightness
-  //   ),
-  // );
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   Get.put(NetworkController());
   Get.put(MyVaultController());
