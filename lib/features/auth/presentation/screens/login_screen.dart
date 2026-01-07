@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/core/utils/input_validators.dart';
+import 'package:ijs_vault/features/auth/presentation/controllers/google_signin_controller.dart';
 import 'package:ijs_vault/features/auth/presentation/controllers/signin_controller.dart';
 import 'package:ijs_vault/features/auth/presentation/screens/register_screen.dart';
 import 'package:ijs_vault/features/forgotpassword/presentation/screens/forgotpassword_screen.dart';
@@ -22,6 +23,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   bool forceError = false;
   final SigninController controller = Get.put(SigninController());
+  final GoogleSignInController googleController = Get.put(GoogleSignInController());
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   final TextEditingController emailController = TextEditingController();
@@ -156,25 +158,30 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
 
                 // ───── Google ─────
-                Container(
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(100),
-                        border: Border.all(
-                          color: isDarkMode
-                              ? Colors.white
-                              : const Color(0xFFd9d9d9),
-                        ),
+                GestureDetector(
+                  onTap: () {
+                    googleController.signInWithGoogle();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(100),
+                      border: Border.all(
+                        color: isDarkMode
+                            ? Colors.white
+                            : const Color(0xFFd9d9d9),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          SvgPicture.asset(AppImages.google),
-                          const SizedBox(width: 15),
-                          Text("Continue with Google", style: theme.bodySmall),
-                        ],
-                      ),
-                    )
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        SvgPicture.asset(AppImages.google),
+                        const SizedBox(width: 15),
+                        Text("Continue with Google", style: theme.bodySmall),
+                      ],
+                    ),
+                  ),
+                )
                     .animate()
                     .fadeIn(delay: 600.ms)
                     .scale(begin: const Offset(0.95, 0.95)),

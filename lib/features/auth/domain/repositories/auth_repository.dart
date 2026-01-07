@@ -81,4 +81,12 @@ class AuthRepository {
   Future<ApiResponse> deleteAccount() async {
     return await apiService.delete(AppUrls.deleteAccount);
   }
+
+  // Google Login - sends Firebase ID token to backend
+  Future<ApiResponse> googleLogin({required String idToken}) async {
+    return await apiService.post(
+      AppUrls.googleLogin,
+      data: <String, String>{"idToken": idToken},
+    );
+  }
 }

@@ -30,6 +30,9 @@ class ItemModel {
     required this.updatedAt,
     required this.breadcrumb,
     required this.fileType,
+    this.mimeType,
+    this.size,
+    this.extension,
   });
 
   factory ItemModel.fromJson(Map<String, dynamic>? json) {
@@ -46,6 +49,9 @@ class ItemModel {
       createdAt: json?['createdAt'] ?? '',
       updatedAt: json?['updatedAt'] ?? '',
       breadcrumb: BreadcrumbModel.fromJson(json?['breadcrumb']),
+      mimeType: json?['mimeType'],
+      size: json?['size'],
+      extension: json?['extension'],
     );
   }
 
@@ -60,8 +66,46 @@ class ItemModel {
   final List<dynamic> linkedUsers;
   final String createdAt;
   final String updatedAt;
-
   final BreadcrumbModel breadcrumb;
+  final String? mimeType;
+  final int? size;
+  final String? extension;
+
+  bool get isImage {
+    if (mimeType != null) return mimeType!.startsWith('image/');
+    final ext = extension?.toLowerCase() ?? name.split('.').last.toLowerCase();
+    return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].contains(ext);
+  }
+
+  bool get isVideo {
+    if (mimeType != null) return mimeType!.startsWith('video/');
+    final ext = extension?.toLowerCase() ?? name.split('.').last.toLowerCase();
+    return ['mp4', 'mov', 'avi', 'mkv', 'webm', 'flv', 'm4v'].contains(ext);
+  }
+
+  bool get isAudio {
+    if (mimeType != null) return mimeType!.startsWith('audio/');
+    final ext = extension?.toLowerCase() ?? name.split('.').last.toLowerCase();
+    return ['mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a', 'wma'].contains(ext);
+  }
+
+  bool get isPdf {
+    if (mimeType != null) return mimeType == 'application/pdf';
+    final ext = extension?.toLowerCase() ?? name.split('.').last.toLowerCase();
+    return ext == 'pdf';
+  }
+
+  bool get isPreviewable => isImage || isVideo || isAudio || isPdf;
+
+  String get formattedSize {
+    if (size == null) return '';
+    if (size! < 1024) return '$size B';
+    if (size! < 1024 * 1024) return '${(size! / 1024).toStringAsFixed(1)} KB';
+    if (size! < 1024 * 1024 * 1024) {
+      return '${(size! / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
+    return '${(size! / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
+  }
 }
 
 /* -------------------------------------------------------------------------- */

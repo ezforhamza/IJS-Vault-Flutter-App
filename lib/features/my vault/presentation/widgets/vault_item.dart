@@ -45,6 +45,8 @@ class VaultItem extends StatefulWidget {
     this.onEdit,
     this.onMove,
     this.onDelete,
+    this.onTap,
+    this.isSharedItem = false,
   });
 
   final ItemModel item;
@@ -52,6 +54,8 @@ class VaultItem extends StatefulWidget {
   final VoidCallback? onEdit;
   final VoidCallback? onMove;
   final VoidCallback? onDelete;
+  final VoidCallback? onTap;
+  final bool isSharedItem;
 
   @override
   State<VaultItem> createState() => _VaultItemState();
@@ -176,6 +180,11 @@ class _VaultItemState extends State<VaultItem> {
   // ---------------------------------------------------------------------------
 
   List<VaultMenuAction> _getMenuActions() {
+    // For shared items, show limited actions
+    if (widget.isSharedItem) {
+      return _getSharedItemActions();
+    }
+
     if (widget.item.type == 'folder') {
       // Case: folder
       return <VaultMenuAction>[
@@ -202,25 +211,17 @@ class _VaultItemState extends State<VaultItem> {
         VaultMenuAction(
           title: 'Preview',
           icon: AppImages.preview,
-          onTap: widget.onEdit,
+          onTap: () => _navigateToPreview(),
         ),
         VaultMenuAction(
           title: 'Download',
           icon: AppImages.download,
-          onTap: widget.onEdit,
+          onTap: () => _navigateToPreview(),
         ),
         VaultMenuAction(
           title: 'Set Reminder',
           icon: AppImages.setreminder,
           onTap: () {
-            // showCupertinoDialog(
-            //   barrierColor: const Color(0xFF494a51).withAlpha(100),
-            //   context: context,
-            //   builder: (_) => SetReminderWidget(
-            //     title: "Set Reminder",
-            //     itemId: widget.item.id,
-            //   ),
-            // );
             DialogHelper.showAnimatedDialog(
               context: context,
               child: SetReminderWidget(
@@ -235,6 +236,31 @@ class _VaultItemState extends State<VaultItem> {
     }
   }
 
+  List<VaultMenuAction> _getSharedItemActions() {
+    if (widget.item.type == 'folder') {
+      return <VaultMenuAction>[
+        VaultMenuAction(
+          title: 'Open',
+          icon: AppImages.folder,
+          onTap: widget.onTap,
+        ),
+      ];
+    } else {
+      return <VaultMenuAction>[
+        VaultMenuAction(
+          title: 'Preview',
+          icon: AppImages.preview,
+          onTap: widget.onTap ?? () => _navigateToPreview(),
+        ),
+        VaultMenuAction(
+          title: 'Download',
+          icon: AppImages.download,
+          onTap: widget.onTap ?? () => _navigateToPreview(),
+        ),
+      ];
+    }
+  }
+
   List<VaultMenuAction> _commonActions() => <VaultMenuAction>[
     VaultMenuAction(title: 'Edit', icon: AppImages.edit, onTap: widget.onEdit),
     VaultMenuAction(title: 'Move', icon: AppImages.move, onTap: widget.onMove),
@@ -245,6 +271,21 @@ class _VaultItemState extends State<VaultItem> {
       onTap: widget.onDelete,
     ),
   ];
+
+  void _navigateToPreview() {
+    if (widget.item.isLocked) {
+      Get.to(
+        () => VerifyPinScreen(
+          itemId: widget.item.id,
+          onSuccess: () {
+            Get.off(() => ItemPreviewScreen(item: widget.item));
+          },
+        ),
+      );
+    } else {
+      Get.to(() => ItemPreviewScreen(item: widget.item));
+    }
+  }
 
   // ---------------------------------------------------------------------------
   // MENU ITEM WIDGET
@@ -305,6 +346,12 @@ class _VaultItemState extends State<VaultItem> {
 
     return GestureDetector(
       onTap: () {
+        // Use custom onTap if provided (for shared items)
+        if (widget.onTap != null) {
+          widget.onTap!();
+          return;
+        }
+
         if (widget.item.isLocked) {
           Get.to(
             () => VerifyPinScreen(
