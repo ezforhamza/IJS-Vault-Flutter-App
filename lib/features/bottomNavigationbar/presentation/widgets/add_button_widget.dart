@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
-import 'package:ijs_vault/features/my%20vault/presentation/controllers/vault_upload_controller.dart';
-import 'package:ijs_vault/features/my%20vault/presentation/screens/add_folder_screen.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/screens/edit_item_screen.dart';
 
 class AddButtonWidget extends StatelessWidget {
   const AddButtonWidget({super.key});
@@ -54,9 +53,8 @@ class AddButtonWidget extends StatelessWidget {
                     isLoading: controller.isLoadingFiles.value,
                     onTap: () {
                       controller.isAddButtonTapped.value = false;
-                      Get.put(
-                        VaultUploadController(),
-                      ).pickAndConfirmUpload(context);
+                      // Use the modern upload flow with UploadManager
+                      controller.pickAndConfirmUpload(context);
                     },
                   ),
                   Padding(
@@ -74,7 +72,7 @@ class AddButtonWidget extends StatelessWidget {
                     subtitle: 'Organize your files',
                     onTap: () {
                       controller.isAddButtonTapped.value = false;
-                      Get.to(() => const AddFolderScreen());
+                      Get.to(() => const EditItemScreen(isFolder: true));
                     },
                   ),
                 ],

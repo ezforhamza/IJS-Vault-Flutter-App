@@ -124,8 +124,11 @@ class _SharedFolderViewScreenState extends State<SharedFolderViewScreen> {
   }
 
   void _handleItemTap(ItemModel item) {
+    debugPrint('📂 SharedFolderView: Tapped item: ${item.name}, type: ${item.type}, isLocked: ${item.isLocked}');
+    
     if (item.type == 'folder') {
       if (item.isLocked) {
+        debugPrint('📂 SharedFolderView: Opening locked folder with PIN verification');
         Get.to(
           () => VerifyPinScreen(
             itemId: item.id,
@@ -133,12 +136,19 @@ class _SharedFolderViewScreenState extends State<SharedFolderViewScreen> {
               Get.off(() => SharedFolderViewScreen(item: item));
             },
           ),
+          preventDuplicates: false,
         );
       } else {
-        Get.to(() => SharedFolderViewScreen(item: item));
+        debugPrint('📂 SharedFolderView: Opening unlocked folder - calling Get.to()');
+        Get.to(
+          () => SharedFolderViewScreen(item: item),
+          preventDuplicates: false,
+        );
+        debugPrint('📂 SharedFolderView: Get.to() called successfully');
       }
     } else {
       if (item.isLocked) {
+        debugPrint('📂 SharedFolderView: Opening locked file with PIN verification');
         Get.to(
           () => VerifyPinScreen(
             itemId: item.id,
@@ -146,9 +156,14 @@ class _SharedFolderViewScreenState extends State<SharedFolderViewScreen> {
               Get.off(() => ItemPreviewScreen(item: item));
             },
           ),
+          preventDuplicates: false,
         );
       } else {
-        Get.to(() => ItemPreviewScreen(item: item));
+        debugPrint('📂 SharedFolderView: Opening unlocked file');
+        Get.to(
+          () => ItemPreviewScreen(item: item),
+          preventDuplicates: false,
+        );
       }
     }
   }

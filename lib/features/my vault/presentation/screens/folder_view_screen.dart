@@ -13,6 +13,7 @@ import 'package:ijs_vault/core/constants/app_sizes.dart';
 
 import 'package:ijs_vault/features/my%20vault/data/models/vault_item_model.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/folder_view_controller.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/screens/edit_item_screen.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/add_button.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/move_item_dialog.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/my_vault_widget.dart';
@@ -105,62 +106,60 @@ class FolderViewScreen extends StatelessWidget {
                                               : ratio,
                                         ),
                                     itemBuilder: (_, int index) {
-                                      final ItemModel item =
+                                      final ItemModel subItem =
                                           controller.items[index];
-                                      return GestureDetector(
-                                        onTap: () {
-                                          Get.to(
-                                            () => FolderViewScreen(item: item),
-                                            preventDuplicates: false,
+                                      return VaultItem(
+                                        type: subItem.type == 'folder'
+                                            ? VaultItemType.folder
+                                            : (subItem.fileType == 'media' ? VaultItemType.media : VaultItemType.document),
+                                        item: subItem,
+                                        onEdit: () {
+                                          Get.to(() => EditItemScreen(
+                                            item: subItem,
+                                            isFolder: subItem.type == 'folder',
+                                          ));
+                                        },
+                                        onMove: () {
+                                          showDialog(
+                                            context: context,
+                                            builder: (_) => MoveItemDialog(
+                                              itemToMove: subItem,
+                                              initialParentId: null, // Root
+                                              onMove: (String? newParentId) {
+                                                controller.moveItem(
+                                                  subItem.id,
+                                                  newParentId ?? '',
+                                                  index,
+                                                );
+                                              },
+                                            ),
                                           );
                                         },
-                                        child: VaultItem(
-                                          onMove: () {
-                                            showDialog(
-                                              context: context,
-                                              builder: (_) => MoveItemDialog(
-                                                itemToMove: item,
-                                                initialParentId: null, // Root
-                                                onMove: (String? newParentId) {
-                                                  controller.moveItem(
-                                                    item.id,
-                                                    newParentId ?? '',
+                                        onDelete: () {
+                                          DialogHelper.showAnimatedDialog(
+                                            context: context,
+                                            child: Center(
+                                              child: ConfirmationDialogue(
+                                                onTap: () async {
+                                                  await controller.deleteItem(
+                                                    subItem.id,
                                                     index,
                                                   );
+                                                  Get.back();
                                                 },
+                                                h: ScreenHelper.height(context),
+                                                theme: Theme.of(
+                                                  context,
+                                                ).textTheme,
+                                                title: 'Delete Item?',
+                                                subtitle:
+                                                    'Do you really want to delete ${subItem.name}',
+                                                image: AppImages.delete,
+                                                buttonText: 'Delete',
                                               ),
-                                            );
-                                          },
-                                          type: item.fileType == 'media'
-                                              ? VaultItemType.media
-                                              : VaultItemType.folder,
-                                          item: item,
-                                          onDelete: () {
-                                            DialogHelper.showAnimatedDialog(
-                                              context: context,
-                                              child: Center(
-                                                child: ConfirmationDialogue(
-                                                  onTap: () async {
-                                                    await controller.deleteItem(
-                                                      item.id,
-                                                      index,
-                                                    );
-                                                    Get.back();
-                                                  },
-                                                  h: ScreenHelper.height(context),
-                                                  theme: Theme.of(
-                                                    context,
-                                                  ).textTheme,
-                                                  title: 'Delte Item?',
-                                                  subtitle:
-                                                      'Do you really want to delete ${item.name}',
-                                                  image: AppImages.delete,
-                                                  buttonText: 'Delete',
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
+                                            ),
+                                          );
+                                        },
                                       );
                                     },
                                   );

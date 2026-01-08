@@ -350,12 +350,12 @@ class MyVaultController extends GetxController {
   }
 
   /// Upload multiple files using the background upload manager (non-blocking)
+  /// Note: Dialog closes itself before calling this
   Future<void> uploadSelectedFiles(List<File> files) async {
-    // Close the confirmation dialog immediately
-    Get.back();
-
     final UploadManager uploadManager = Get.find<UploadManager>();
     int successCount = 0;
+
+    debugPrint('📤 MyVaultController: Starting upload of ${files.length} files');
 
     for (final File file in files) {
       try {
@@ -364,7 +364,10 @@ class MyVaultController extends GetxController {
         final String? mimeType = lookupMimeType(file.path);
         final String contentType = mimeType ?? 'application/octet-stream';
 
-        // Add to upload manager (runs in background)
+        debugPrint('📤 MyVaultController: Adding file $filename to upload queue');
+
+        // Add to upload manager - await to ensure task is added to queue
+        // The actual upload runs in background via unawaited
         await uploadManager.addUpload(
           file: file,
           filename: filename,
@@ -373,8 +376,9 @@ class MyVaultController extends GetxController {
           description: 'Uploaded file',
         );
         successCount++;
+        debugPrint('📤 MyVaultController: File $filename added to queue');
       } catch (e) {
-        debugPrint('Upload error for ${file.path}: $e');
+        debugPrint('❌ Upload error for ${file.path}: $e');
       }
     }
 
@@ -388,6 +392,7 @@ class MyVaultController extends GetxController {
     }
     
     selectedFiles.clear();
+    debugPrint('📤 MyVaultController: Upload queue complete. $successCount files queued.');
   }
 
   /* -------------------------------------------------------------------------- */

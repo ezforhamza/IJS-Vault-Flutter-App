@@ -33,6 +33,7 @@ class ItemModel {
     this.mimeType,
     this.size,
     this.extension,
+    this.itemImage,
   });
 
   factory ItemModel.fromJson(Map<String, dynamic>? json) {
@@ -52,6 +53,7 @@ class ItemModel {
       mimeType: json?['mimeType'],
       size: json?['size'],
       extension: json?['extension'],
+      itemImage: json?['itemImage'],
     );
   }
 
@@ -70,6 +72,7 @@ class ItemModel {
   final String? mimeType;
   final int? size;
   final String? extension;
+  final String? itemImage;
 
   bool get isImage {
     if (mimeType != null) return mimeType!.startsWith('image/');
