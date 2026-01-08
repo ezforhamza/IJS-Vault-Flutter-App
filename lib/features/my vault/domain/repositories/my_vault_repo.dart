@@ -111,4 +111,29 @@ class MyVaultRepo {
       data: <String, dynamic>{'pin': pin},
     );
   }
+
+  // Get Download URL
+  Future<ApiResponse> getDownloadUrl({required String itemId}) async {
+    return await apiService.get('${AppUrls.downloadFile}/$itemId/download');
+  }
+
+  // Get PIN Status
+  Future<ApiResponse> getPinStatus({required String itemId}) async {
+    return await apiService.get('${AppUrls.pinStatus}/$itemId/pin-status');
+  }
+
+  // Lock Item (Revoke PIN Session)
+  Future<ApiResponse> lockItem({required String itemId}) async {
+    return await apiService.post('${AppUrls.lockItem}/$itemId/lock');
+  }
+
+  // Get Shared Items (items shared with current user)
+  Future<ApiResponse> getSharedItems() async {
+    return await apiService.get(AppUrls.getSharedVault);
+  }
+
+  // Get Shared Folder Items (items inside a shared folder)
+  Future<ApiResponse> getSharedFolderItems({required String folderId}) async {
+    return await apiService.get('${AppUrls.getSharedVault}/$folderId/items');
+  }
 }

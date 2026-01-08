@@ -7,6 +7,7 @@ class AppUrls {
   static const String logout = 'auth/logout';
   static const String refreshToken = 'auth/refresh-tokens';
   static const String deleteAccount = 'auth/account';
+  static const String googleLogin = 'auth/google';
   static const String forgotPassword = 'auth/forgot-password';
   static const String verifyOtp = 'auth/verify-otp';
   static const String resendVerificationCode = 'auth/resend-code';
@@ -34,6 +35,11 @@ class AppUrls {
 
   // Shared Vault
   static const String getSharedVault = 'vault/shared';
+
+  // File Preview/Download
+  static const String downloadFile = 'vault/items'; // /{id}/download
+  static const String pinStatus = 'vault/items'; // /{id}/pin-status
+  static const String lockItem = 'vault/items'; // /{id}/lock
 
   // Rminders
   static const String createreminders = 'reminders';

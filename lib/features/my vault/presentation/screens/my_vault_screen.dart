@@ -6,6 +6,7 @@ import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/my_vault_widget.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/widgets/shared_with_me.dart';
 import 'package:ijs_vault/features/reminders/presentation/screens/reminders_screen.dart';
 import 'package:ijs_vault/shared/widgets/search_field.dart';
 
@@ -67,10 +68,7 @@ class _MyVaultScreenState extends State<MyVaultScreen>
                 child: TabBarView(
                   physics: const NeverScrollableScrollPhysics(),
                   controller: _tabController,
-                  children: const <Widget>[
-                    MyVault(),
-                    Center(child: Text('Shared with me')),
-                  ],
+                  children: const <Widget>[MyVault(), SharedWithMe()],
                 ),
               ),
             ],

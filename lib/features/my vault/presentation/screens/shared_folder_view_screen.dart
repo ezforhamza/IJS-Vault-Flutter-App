@@ -1,27 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:ijs_vault/features/my%20vault/data/models/vault_item_model.dart';
-import 'package:ijs_vault/features/my%20vault/presentation/controllers/shared_vault_controller.dart';
+import 'package:ijs_vault/features/my%20vault/domain/repositories/my_vault_repo.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/screens/item_preview_screen.dart';
-import 'package:ijs_vault/features/my%20vault/presentation/screens/shared_folder_view_screen.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/vault_item.dart';
 import 'package:ijs_vault/features/set%20pin/presentation/screens/verify_pin_screen.dart';
+import 'package:ijs_vault/shared/models/response_model.dart';
+import 'package:ijs_vault/shared/widgets/app_bar.dart';
 import 'package:shimmer/shimmer.dart';
 
-class SharedWithMe extends StatefulWidget {
-  const SharedWithMe({super.key});
+class SharedFolderViewScreen extends StatefulWidget {
+  const SharedFolderViewScreen({super.key, required this.item});
+  final ItemModel item;
 
   @override
-  State<SharedWithMe> createState() => _SharedWithMeState();
+  State<SharedFolderViewScreen> createState() => _SharedFolderViewScreenState();
 }
 
-class _SharedWithMeState extends State<SharedWithMe> {
-  late SharedVaultController controller;
+class _SharedFolderViewScreenState extends State<SharedFolderViewScreen> {
+  final MyVaultRepo _repo = MyVaultRepo();
+  final RxBool isLoading = true.obs;
+  final RxList<ItemModel> items = <ItemModel>[].obs;
+  final Rxn<String> errorMessage = Rxn<String>();
 
   @override
   void initState() {
     super.initState();
-    controller = Get.put(SharedVaultController());
+    _loadItems();
+  }
+
+  Future<void> _loadItems() async {
+    isLoading.value = true;
+    errorMessage.value = null;
+
+    try {
+      final ApiResponse response = await _repo.getSharedFolderItems(
+        folderId: widget.item.id,
+      );
+
+      if (response.success) {
+        final List<dynamic> itemsJson = response.data['items'] ?? <dynamic>[];
+        items.value = itemsJson
+            .map(
+              (dynamic item) =>
+                  ItemModel.fromJson(item as Map<String, dynamic>),
+            )
+            .toList();
+      } else {
+        errorMessage.value = response.message;
+      }
+    } catch (e) {
+      debugPrint('Get shared folder items error: $e');
+      errorMessage.value = 'Failed to load folder contents';
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   @override
@@ -29,6 +62,7 @@ class _SharedWithMeState extends State<SharedWithMe> {
     final TextTheme textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
+      appBar: CustomAppBar(text: widget.item.name),
       body: Obx(
         () => AnimatedSwitcher(
           duration: const Duration(milliseconds: 400),
@@ -43,23 +77,23 @@ class _SharedWithMeState extends State<SharedWithMe> {
               ),
             );
           },
-          child: controller.isLoading.value
-              ? const _GridShimmer(keyy: 'SharedShimmer')
-              : controller.errorMessage.value != null
+          child: isLoading.value
+              ? const _GridShimmer(keyy: 'SharedFolderShimmer')
+              : errorMessage.value != null
               ? _buildErrorState(textTheme)
-              : _buildGrid(textTheme, const ValueKey<String>('sharedGrid')),
+              : _buildGrid(textTheme),
         ),
       ),
     );
   }
 
-  Widget _buildGrid(TextTheme textTheme, ValueKey<String> key) {
-    if (controller.sharedItems.isEmpty) {
+  Widget _buildGrid(TextTheme textTheme) {
+    if (items.isEmpty) {
       return _buildEmptyState(textTheme);
     }
 
     return RefreshIndicator(
-      onRefresh: controller.refresh,
+      onRefresh: _loadItems,
       child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           final double width = constraints.maxWidth;
@@ -68,9 +102,8 @@ class _SharedWithMeState extends State<SharedWithMe> {
           final double ratio = itemWidth / itemHeight;
 
           return GridView.builder(
-            key: key,
             padding: const EdgeInsets.all(10),
-            itemCount: controller.sharedItems.length,
+            itemCount: items.length,
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
               crossAxisSpacing: 10,
@@ -78,8 +111,11 @@ class _SharedWithMeState extends State<SharedWithMe> {
               childAspectRatio: ratio < 0.7 ? 0.7 : ratio,
             ),
             itemBuilder: (_, int index) {
-              final ItemModel item = controller.sharedItems[index];
-              return _SharedVaultItem(item: item);
+              final ItemModel item = items[index];
+              return _SharedFolderItem(
+                item: item,
+                onTap: () => _handleItemTap(item),
+              );
             },
           );
         },
@@ -87,75 +123,7 @@ class _SharedWithMeState extends State<SharedWithMe> {
     );
   }
 
-  Widget _buildEmptyState(TextTheme textTheme) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Icon(
-            Icons.folder_shared_outlined,
-            size: 64,
-            color: Get.isDarkMode ? Colors.white38 : Colors.black26,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No Shared Items Yet\n'
-            'Items shared with you will\n'
-            'appear here.',
-            textAlign: TextAlign.center,
-            style: textTheme.labelSmall,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildErrorState(TextTheme textTheme) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
-          const SizedBox(height: 16),
-          Text(
-            controller.errorMessage.value ?? 'Something went wrong',
-            textAlign: TextAlign.center,
-            style: textTheme.labelSmall,
-          ),
-          const SizedBox(height: 16),
-          TextButton.icon(
-            onPressed: controller.refresh,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SharedVaultItem extends StatelessWidget {
-  const _SharedVaultItem({required this.item});
-  final ItemModel item;
-
-  @override
-  Widget build(BuildContext context) {
-    return VaultItem(
-      type: item.type == 'folder'
-          ? VaultItemType.folder
-          : item.fileType == 'media'
-          ? VaultItemType.media
-          : VaultItemType.document,
-      item: item,
-      isSharedItem: true,
-      onTap: () => _handleTap(),
-      onMove: null,
-      onDelete: null,
-      onEdit: null,
-    );
-  }
-
-  void _handleTap() {
+  void _handleItemTap(ItemModel item) {
     if (item.type == 'folder') {
       if (item.isLocked) {
         Get.to(
@@ -183,6 +151,73 @@ class _SharedVaultItem extends StatelessWidget {
         Get.to(() => ItemPreviewScreen(item: item));
       }
     }
+  }
+
+  Widget _buildEmptyState(TextTheme textTheme) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Icon(
+            Icons.folder_open_outlined,
+            size: 64,
+            color: Get.isDarkMode ? Colors.white38 : Colors.black26,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'This folder is empty',
+            textAlign: TextAlign.center,
+            style: textTheme.labelSmall,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(TextTheme textTheme) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+          const SizedBox(height: 16),
+          Text(
+            errorMessage.value ?? 'Something went wrong',
+            textAlign: TextAlign.center,
+            style: textTheme.labelSmall,
+          ),
+          const SizedBox(height: 16),
+          TextButton.icon(
+            onPressed: _loadItems,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SharedFolderItem extends StatelessWidget {
+  const _SharedFolderItem({required this.item, required this.onTap});
+  final ItemModel item;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return VaultItem(
+      type: item.type == 'folder'
+          ? VaultItemType.folder
+          : item.fileType == 'media'
+          ? VaultItemType.media
+          : VaultItemType.document,
+      item: item,
+      isSharedItem: true,
+      onTap: onTap,
+      onMove: null,
+      onDelete: null,
+      onEdit: null,
+    );
   }
 }
 
