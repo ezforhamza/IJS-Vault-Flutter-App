@@ -136,10 +136,15 @@ class _SharedFolderViewScreenState extends State<SharedFolderViewScreen> {
               Get.off(() => SharedFolderViewScreen(item: item));
             },
           ),
+          preventDuplicates: false,
         );
       } else {
-        debugPrint('📂 SharedFolderView: Opening unlocked folder');
-        Get.to(() => SharedFolderViewScreen(item: item));
+        debugPrint('📂 SharedFolderView: Opening unlocked folder - calling Get.to()');
+        Get.to(
+          () => SharedFolderViewScreen(item: item),
+          preventDuplicates: false,
+        );
+        debugPrint('📂 SharedFolderView: Get.to() called successfully');
       }
     } else {
       if (item.isLocked) {
@@ -151,10 +156,14 @@ class _SharedFolderViewScreenState extends State<SharedFolderViewScreen> {
               Get.off(() => ItemPreviewScreen(item: item));
             },
           ),
+          preventDuplicates: false,
         );
       } else {
         debugPrint('📂 SharedFolderView: Opening unlocked file');
-        Get.to(() => ItemPreviewScreen(item: item));
+        Get.to(
+          () => ItemPreviewScreen(item: item),
+          preventDuplicates: false,
+        );
       }
     }
   }
