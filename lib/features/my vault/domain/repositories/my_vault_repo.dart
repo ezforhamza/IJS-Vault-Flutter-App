@@ -174,4 +174,16 @@ class MyVaultRepo {
   Future<ApiResponse> getItemById({required String itemId}) async {
     return await apiService.get('${AppUrls.getVaultItems}/$itemId');
   }
+
+  // Upload item image (custom folder/file icon)
+  Future<ApiResponse> uploadItemImage({
+    required String filePath,
+    String? itemId,
+  }) async {
+    final FormData formData = FormData.fromMap(<String, dynamic>{
+      'image': await MultipartFile.fromFile(filePath),
+      if (itemId != null) 'itemId': itemId,
+    });
+    return await apiService.post('vault/items/upload-image', data: formData);
+  }
 }

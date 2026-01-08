@@ -373,7 +373,7 @@ class _VaultItemState extends State<VaultItem> {
               Expanded(
                 child: Container(
                   key: _itemKey,
-                  padding: const EdgeInsets.all(12),
+                  padding: widget.item.itemImage != null ? EdgeInsets.zero : const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: isDarkMode
                         ? const Color(0xFF292416)
@@ -383,9 +383,22 @@ class _VaultItemState extends State<VaultItem> {
                       gradient: LinearGradient(colors: AppColors.gradient),
                     ),
                   ),
-                  child: Center(
-                    child: FileTypeImageWidget(type: widget.item.name),
-                  ),
+                  child: widget.item.itemImage != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(11),
+                          child: Image.network(
+                            widget.item.itemImage!,
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Center(
+                              child: FileTypeImageWidget(type: widget.item.name),
+                            ),
+                          ),
+                        )
+                      : Center(
+                          child: FileTypeImageWidget(type: widget.item.name),
+                        ),
                 ),
               ),
               const SizedBox(height: 6),

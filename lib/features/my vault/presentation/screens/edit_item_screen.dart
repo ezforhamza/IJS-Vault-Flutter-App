@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
@@ -53,6 +56,11 @@ class _EditItemScreenState extends State<EditItemScreen> {
   
   // Search state
   bool isSearching = false;
+  
+  // Image state
+  File? selectedImage;
+  String? currentImageUrl;
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
@@ -66,6 +74,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
       descriptionController.text = widget.item!.description;
       isPinEnabled = widget.item!.isLocked;
       hadPinBefore = widget.item!.isLocked;
+      currentImageUrl = widget.item!.itemImage;
       
       // Parse existing linked users
       for (final dynamic user in widget.item!.linkedUsers) {
@@ -74,6 +83,139 @@ class _EditItemScreenState extends State<EditItemScreen> {
         }
       }
     }
+  }
+
+  Future<void> _pickImage() async {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        final bool isDark = Get.isDarkMode;
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1a1c24) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(top: 12),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white24 : Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Choose Image Source',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    _buildImageSourceOption(
+                      icon: Icons.camera_alt_rounded,
+                      label: 'Camera',
+                      onTap: () => _getImage(ImageSource.camera),
+                      isDark: isDark,
+                    ),
+                    _buildImageSourceOption(
+                      icon: Icons.photo_library_rounded,
+                      label: 'Gallery',
+                      onTap: () => _getImage(ImageSource.gallery),
+                      isDark: isDark,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildImageSourceOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required bool isDark,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 100,
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: AppColors.gradient.map((Color c) => c.withValues(alpha: 0.1)).toList(),
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: AppColors.gradient[0].withValues(alpha: 0.3),
+          ),
+        ),
+        child: Column(
+          children: <Widget>[
+            ShaderMask(
+              shaderCallback: (Rect bounds) => LinearGradient(
+                colors: AppColors.gradient,
+              ).createShader(bounds),
+              child: Icon(
+                icon,
+                size: 32,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _getImage(ImageSource source) async {
+    Navigator.pop(context);
+    try {
+      final XFile? pickedFile = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
+      );
+      if (pickedFile != null) {
+        setState(() {
+          selectedImage = File(pickedFile.path);
+        });
+      }
+    } catch (e) {
+      AppToasts.showErrorToast(message: 'Failed to pick image');
+    }
+  }
+
+  void _removeImage() {
+    setState(() {
+      selectedImage = null;
+      currentImageUrl = null;
+    });
   }
 
   String get _title {
@@ -171,6 +313,19 @@ class _EditItemScreenState extends State<EditItemScreen> {
     AppLoader.showLoadingDialog();
     try {
       if (widget.isEditMode) {
+        // Upload image first if selected
+        if (selectedImage != null) {
+          final imageResponse = await controller.repo.uploadItemImage(
+            filePath: selectedImage!.path,
+            itemId: widget.item!.id,
+          );
+          if (!imageResponse.success) {
+            AppLoader.hideLoadingDialog();
+            AppToasts.showErrorToast(message: imageResponse.message);
+            return;
+          }
+        }
+
         // Update existing item
         final response = await controller.repo.updateItem(
           id: widget.item!.id,
@@ -207,14 +362,24 @@ class _EditItemScreenState extends State<EditItemScreen> {
           linkedUsers: _getLinkedUsersPayload(),
         );
 
-        AppLoader.hideLoadingDialog();
-
         if (newItem != null) {
+          // Upload image for new folder if selected
+          if (selectedImage != null) {
+            await controller.repo.uploadItemImage(
+              filePath: selectedImage!.path,
+              itemId: newItem.id,
+            );
+          }
+
+          AppLoader.hideLoadingDialog();
+
           if (isPinEnabled) {
             Get.off(() => SetPinScreen(itemId: newItem.id));
           } else {
             Get.back();
           }
+        } else {
+          AppLoader.hideLoadingDialog();
         }
         return;
       }
@@ -270,6 +435,10 @@ class _EditItemScreenState extends State<EditItemScreen> {
                   minLines: 4,
                   maxLines: 4,
                 ),
+                const SizedBox(height: 20),
+
+                // Item Image Section
+                _buildItemImageSection(theme, isDarkMode),
                 const SizedBox(height: 20),
 
                 // Linked Users Section Header
@@ -378,6 +547,183 @@ class _EditItemScreenState extends State<EditItemScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItemImageSection(TextTheme theme, bool isDarkMode) {
+    final bool hasImage = selectedImage != null || currentImageUrl != null;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          'Custom Icon (optional)',
+          style: theme.labelMedium!.copyWith(fontSize: 14),
+        ),
+        const SizedBox(height: 12),
+        GestureDetector(
+          onTap: _pickImage,
+          child: Container(
+            width: double.infinity,
+            height: 140,
+            decoration: BoxDecoration(
+              color: isDarkMode ? const Color(0xFF20222b) : const Color(0xFFfdfbf5),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: hasImage 
+                    ? AppColors.gradient[0].withValues(alpha: 0.5)
+                    : (isDarkMode ? Colors.white12 : Colors.grey.shade300),
+                width: hasImage ? 2 : 1,
+              ),
+            ),
+            child: hasImage
+                ? Stack(
+                    children: <Widget>[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: selectedImage != null
+                            ? Image.file(
+                                selectedImage!,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.network(
+                                currentImageUrl!,
+                                width: double.infinity,
+                                height: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => _buildImagePlaceholder(isDarkMode),
+                              ),
+                      ),
+                      // Overlay gradient
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: <Color>[
+                                Colors.transparent,
+                                Colors.black.withValues(alpha: 0.6),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      // Action buttons
+                      Positioned(
+                        bottom: 12,
+                        left: 12,
+                        right: 12,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            _buildImageActionButton(
+                              icon: Icons.edit_rounded,
+                              label: 'Change',
+                              onTap: _pickImage,
+                            ),
+                            const SizedBox(width: 12),
+                            _buildImageActionButton(
+                              icon: Icons.delete_outline_rounded,
+                              label: 'Remove',
+                              onTap: _removeImage,
+                              isDestructive: true,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                : _buildImagePlaceholder(isDarkMode),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImagePlaceholder(bool isDarkMode) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: AppColors.gradient.map((Color c) => c.withValues(alpha: 0.15)).toList(),
+            ),
+            shape: BoxShape.circle,
+          ),
+          child: ShaderMask(
+            shaderCallback: (Rect bounds) => LinearGradient(
+              colors: AppColors.gradient,
+            ).createShader(bounds),
+            child: const Icon(
+              Icons.add_photo_alternate_rounded,
+              size: 32,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          'Tap to add custom icon',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: isDarkMode ? Colors.white70 : Colors.black54,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Personalize your ${widget.isFolder ? 'folder' : 'file'} with an image',
+          style: TextStyle(
+            fontSize: 12,
+            color: isDarkMode ? Colors.white38 : Colors.black38,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildImageActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isDestructive 
+              ? Colors.red.withValues(alpha: 0.9)
+              : Colors.white.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Icon(
+              icon,
+              size: 18,
+              color: isDestructive ? Colors.white : Colors.black87,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: isDestructive ? Colors.white : Colors.black87,
+              ),
+            ),
+          ],
         ),
       ),
     );
