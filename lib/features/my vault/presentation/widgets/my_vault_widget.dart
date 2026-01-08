@@ -87,13 +87,17 @@ class _MyVaultState extends State<MyVault> {
               return VaultItem(
                 type: item.type == 'folder'
                     ? VaultItemType.folder
-                    : (item.fileType == 'media' ? VaultItemType.media : VaultItemType.document),
+                    : (item.fileType == 'media'
+                          ? VaultItemType.media
+                          : VaultItemType.document),
                 item: item,
                 onEdit: () {
-                  Get.to(() => EditItemScreen(
-                    item: item,
-                    isFolder: item.type == 'folder',
-                  ));
+                  Get.to(
+                    () => EditItemScreen(
+                      item: item,
+                      isFolder: item.type == 'folder',
+                    ),
+                  );
                 },
                 onMove: () {
                   DialogHelper.showAnimatedDialog(

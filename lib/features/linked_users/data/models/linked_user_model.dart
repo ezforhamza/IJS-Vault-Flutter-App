@@ -36,7 +36,7 @@ class LinkedUsersDataModel {
 
 class LinkedUserModel {
   LinkedUserModel({
-    required this.userId,
+    required this.id,
     required this.fullName,
     required this.email,
     required this.image,
@@ -49,7 +49,7 @@ class LinkedUserModel {
 
   factory LinkedUserModel.fromJson(Map<String, dynamic> json) {
     return LinkedUserModel(
-      userId: json['userId'] ?? '',
+      id: json['id'] ?? json['userId'] ?? '',
       fullName: json['fullName'] ?? '',
       email: json['email'] ?? '',
       image: json['image'] ?? "",
@@ -64,7 +64,7 @@ class LinkedUserModel {
       ),
     );
   }
-  final String userId;
+  final String id;
   final String fullName;
   final String email;
   final String image;
@@ -133,6 +133,7 @@ class SharedFileModel {
     this.sharedAt,
     this.parentId,
     this.parentName,
+    this.fileType,
   });
 
   factory SharedFileModel.fromJson(Map<String, dynamic> json) {
@@ -145,6 +146,7 @@ class SharedFileModel {
           : null,
       parentId: json['parentId'],
       parentName: json['parentName'],
+      fileType: json['fileType'],
     );
   }
   final String id;
@@ -153,6 +155,7 @@ class SharedFileModel {
   final DateTime? sharedAt;
   final String? parentId;
   final String? parentName;
+  final String? fileType;
 }
 
 class LinkedUsersSummaryModel {

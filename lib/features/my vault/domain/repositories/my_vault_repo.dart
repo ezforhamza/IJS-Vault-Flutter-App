@@ -4,7 +4,7 @@ import 'package:ijs_vault/core/network/app_urls.dart';
 import 'package:ijs_vault/shared/models/response_model.dart';
 
 class MyVaultRepo {
-  ApiService apiService = ApiService.new();
+  ApiService apiService = ApiService();
 
   // Create New FOlder
 
@@ -150,11 +150,8 @@ class MyVaultRepo {
     if (description != null) data['description'] = description;
     if (pin != null) data['pin'] = pin;
     if (linkedUsers != null) data['linkedUsers'] = linkedUsers;
-    
-    return await apiService.put(
-      '${AppUrls.renameItem}/$id',
-      data: data,
-    );
+
+    return await apiService.put('${AppUrls.renameItem}/$id', data: data);
   }
 
   // Remove PIN from item

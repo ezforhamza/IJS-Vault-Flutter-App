@@ -111,12 +111,6 @@ class NotificationController extends GetxController {
       );
 
       if (response.success) {
-        // final NotificationResponseModel data =
-        // NotificationResponseModel.fromJson(response.data);
-        // final List<NotificationModel> noti =
-        //     (response.data['notifications'] as List)
-        //         .map((e) => NotificationModel.fromJson(e))
-        //         .toList();
         final NotificationsData data = NotificationsData.fromJson(
           response.data,
         );
@@ -126,7 +120,7 @@ class NotificationController extends GetxController {
         } else {
           notifications.addAll(data.notifications);
         }
-        // pagination.value = noti.pagination;
+        pagination.value = data.pagination;
       } else {
         AppToasts.showErrorToast(message: response.message);
       }
@@ -135,6 +129,77 @@ class NotificationController extends GetxController {
     } finally {
       isLoading.value = false;
       isFetchingMore.value = false;
+    }
+  }
+
+  Future<void> markAsRead(String id) async {
+    try {
+      final ApiResponse response = await _repository.markAsRead(id);
+      if (response.success) {
+        final int index = notifications.indexWhere(
+          (NotificationModel n) => n.id == id,
+        );
+        if (index != -1) {
+          notifications[index] = NotificationModel(
+            fromUser: notifications[index].fromUser,
+            isRead: true,
+            type: notifications[index].type,
+            title: notifications[index].title,
+            message: notifications[index].message,
+            userId: notifications[index].userId,
+            itemId: notifications[index].itemId,
+            itemName: notifications[index].itemName,
+            id: notifications[index].id,
+          );
+        }
+      } else {
+        AppToasts.showErrorToast(message: response.message);
+      }
+    } catch (e) {
+      debugPrint('Mark as read error: $e');
+    }
+  }
+
+  Future<void> markAllAsRead() async {
+    AppLoader.showLoadingDialog();
+    try {
+      final ApiResponse response = await _repository.markAllAsRead();
+      if (response.success) {
+        for (int i = 0; i < notifications.length; i++) {
+          notifications[i] = NotificationModel(
+            fromUser: notifications[i].fromUser,
+            isRead: true,
+            type: notifications[i].type,
+            title: notifications[i].title,
+            message: notifications[i].message,
+            userId: notifications[i].userId,
+            itemId: notifications[i].itemId,
+            itemName: notifications[i].itemName,
+            id: notifications[i].id,
+          );
+        }
+        AppToasts.showSuccessToast(message: 'All notifications marked as read');
+      } else {
+        AppToasts.showErrorToast(message: response.message);
+      }
+    } catch (e) {
+      debugPrint('Mark all as read error: $e');
+    } finally {
+      AppLoader.hideLoadingDialog();
+    }
+  }
+
+  Future<void> deleteNotification(String id) async {
+    try {
+      final ApiResponse response = await _repository.deleteNotification(id);
+      if (response.success) {
+        notifications.removeWhere((NotificationModel n) => n.id == id);
+        AppToasts.showSuccessToast(message: 'Notification deleted');
+      } else {
+        AppToasts.showErrorToast(message: response.message);
+      }
+    } catch (e) {
+      debugPrint('Delete notification error: $e');
     }
   }
 }

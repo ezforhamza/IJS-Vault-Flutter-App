@@ -24,8 +24,23 @@ class NotificationRepo {
   // Get All Notifications
   Future<ApiResponse> getNotifications({int page = 1}) async {
     return await _apiService.get(
-      'notifications',
+      AppUrls.getAllNotifications,
       queryParams: <String, dynamic>{'page': page},
     );
+  }
+
+  // Mark As Read
+  Future<ApiResponse> markAsRead(String id) async {
+    return await _apiService.put('${AppUrls.markNotificationAsRead}/$id/read');
+  }
+
+  // Mark All As Read
+  Future<ApiResponse> markAllAsRead() async {
+    return await _apiService.put(AppUrls.markAllNotificationsAsRead);
+  }
+
+  // Delete Notification
+  Future<ApiResponse> deleteNotification(String id) async {
+    return await _apiService.delete('${AppUrls.deleteNotification}/$id');
   }
 }

@@ -5,7 +5,7 @@ import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/features/linked_users/data/models/linked_user_model.dart';
-import 'package:ijs_vault/features/linked_users/presentation/screens/shared_vault_scrren.dart';
+import 'package:ijs_vault/features/linked_users/presentation/screens/shared_vault_screen.dart';
 import 'package:ijs_vault/shared/widgets/gradient_text_widget.dart';
 import 'package:ijs_vault/shared/widgets/profile_picture_widget.dart';
 
@@ -21,7 +21,7 @@ class LinkedUserWidget extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
-        Get.to(() => const SharedVaultScrren());
+        Get.to(() => SharedVaultScreen(user: user));
       },
       child: Container(
         padding: const EdgeInsets.all(10),

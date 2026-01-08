@@ -71,6 +71,7 @@ class _MyVaultScreenState extends State<MyVaultScreen>
                   children: const <Widget>[MyVault(), SharedWithMe()],
                 ),
               ),
+              const SizedBox(height: 70),
             ],
           ),
         ),

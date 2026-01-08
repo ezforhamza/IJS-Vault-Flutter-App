@@ -21,6 +21,9 @@ class AppUrls {
   static const String registerFCM = 'fcm/register';
   static const String unregisterFCM = 'fcm/unregister';
   static const String getAllNotifications = 'notifications';
+  static const String markNotificationAsRead = 'notifications'; // /{id}/read
+  static const String markAllNotificationsAsRead = 'notifications/read-all';
+  static const String deleteNotification = 'notifications'; // /{id}
   static const String updateNotificationPrefs =
       'users/notification-preferences';
 
