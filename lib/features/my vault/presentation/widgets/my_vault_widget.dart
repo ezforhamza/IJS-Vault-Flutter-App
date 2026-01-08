@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/features/my%20vault/data/models/vault_item_model.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/my_vault_controller.dart';
+import 'package:ijs_vault/features/my%20vault/presentation/screens/edit_item_screen.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/move_item_dialog.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/vault_item.dart';
 import 'package:ijs_vault/features/settings/presentation/widgets/dialoge.dart';
@@ -84,10 +85,16 @@ class _MyVaultState extends State<MyVault> {
             itemBuilder: (_, int index) {
               final ItemModel item = controller.items[index];
               return VaultItem(
-                type: item.fileType == 'media'
-                    ? VaultItemType.media
-                    : VaultItemType.folder,
+                type: item.type == 'folder'
+                    ? VaultItemType.folder
+                    : (item.fileType == 'media' ? VaultItemType.media : VaultItemType.document),
                 item: item,
+                onEdit: () {
+                  Get.to(() => EditItemScreen(
+                    item: item,
+                    isFolder: item.type == 'folder',
+                  ));
+                },
                 onMove: () {
                   DialogHelper.showAnimatedDialog(
                     context: context,

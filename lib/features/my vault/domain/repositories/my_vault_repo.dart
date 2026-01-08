@@ -136,4 +136,42 @@ class MyVaultRepo {
   Future<ApiResponse> getSharedFolderItems({required String folderId}) async {
     return await apiService.get('${AppUrls.getSharedVault}/$folderId/items');
   }
+
+  // Update Item (name, description, pin, linkedUsers)
+  Future<ApiResponse> updateItem({
+    required String id,
+    String? name,
+    String? description,
+    String? pin,
+    List<Map<String, String>>? linkedUsers,
+  }) async {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    if (name != null) data['name'] = name;
+    if (description != null) data['description'] = description;
+    if (pin != null) data['pin'] = pin;
+    if (linkedUsers != null) data['linkedUsers'] = linkedUsers;
+    
+    return await apiService.put(
+      '${AppUrls.renameItem}/$id',
+      data: data,
+    );
+  }
+
+  // Remove PIN from item
+  Future<ApiResponse> removePin({required String itemId}) async {
+    return await apiService.post('vault/items/$itemId/remove-pin');
+  }
+
+  // Unshare item (remove user access)
+  Future<ApiResponse> unshareItem({
+    required String itemId,
+    required String userId,
+  }) async {
+    return await apiService.delete('vault/items/$itemId/share/$userId');
+  }
+
+  // Get item by ID
+  Future<ApiResponse> getItemById({required String itemId}) async {
+    return await apiService.get('${AppUrls.getVaultItems}/$itemId');
+  }
 }

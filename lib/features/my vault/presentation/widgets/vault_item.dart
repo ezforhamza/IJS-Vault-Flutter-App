@@ -189,7 +189,7 @@ class _VaultItemState extends State<VaultItem> {
       // Case: folder
       return <VaultMenuAction>[
         VaultMenuAction(
-          title: 'Rename',
+          title: 'Edit',
           icon: AppImages.edit,
           onTap: widget.onEdit,
         ),
