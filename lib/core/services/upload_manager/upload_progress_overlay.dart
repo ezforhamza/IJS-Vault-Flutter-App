@@ -69,7 +69,7 @@ class UploadProgressOverlay extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             colors: AppColors.gradient,
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -95,8 +95,8 @@ class UploadProgressOverlay extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    activeCount > 0 
-                        ? 'Uploading $activeCount file${activeCount > 1 ? 's' : ''}' 
+                    activeCount > 0
+                        ? 'Uploading $activeCount file${activeCount > 1 ? 's' : ''}'
                         : 'Uploads Complete',
                     style: const TextStyle(
                       color: Colors.white,
@@ -131,8 +131,7 @@ class UploadProgressOverlay extends StatelessWidget {
                 onPressed: controller.clearCompletedTasks,
                 tooltip: 'Clear all',
               ),
-            if (activeCount == 0)
-              const SizedBox(width: 6),
+            if (activeCount == 0) const SizedBox(width: 6),
             // Expand/collapse icon
             AnimatedRotation(
               turns: controller.isPanelExpanded.value ? 0.5 : 0,
@@ -226,7 +225,7 @@ class _DraggableUploadButtonState extends State<_DraggableUploadButton>
   bool _initialized = false;
   bool _isDragging = false;
   bool _isNearDismiss = false;
-  
+
   // Dismiss button position (top center)
   static const double _dismissButtonTop = 80;
   static const double _dismissButtonSize = 56;
@@ -251,13 +250,14 @@ class _DraggableUploadButtonState extends State<_DraggableUploadButton>
   bool _checkNearDismiss(Size screenSize) {
     final double dismissCenterX = screenSize.width / 2;
     const double dismissCenterY = _dismissButtonTop + _dismissButtonSize / 2;
-    
+
     final double buttonCenterX = _position.dx + 28;
     final double buttonCenterY = _position.dy + 28;
-    
-    final double distance = ((buttonCenterX - dismissCenterX) * (buttonCenterX - dismissCenterX) +
+
+    final double distance =
+        ((buttonCenterX - dismissCenterX) * (buttonCenterX - dismissCenterX) +
         (buttonCenterY - dismissCenterY) * (buttonCenterY - dismissCenterY));
-    
+
     // Within 60px radius
     return distance < 3600;
   }
@@ -265,7 +265,7 @@ class _DraggableUploadButtonState extends State<_DraggableUploadButton>
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
-    
+
     // Initialize position on first build
     if (!_initialized) {
       _position = Offset(screenSize.width - 76, screenSize.height - 200);
@@ -288,13 +288,10 @@ class _DraggableUploadButtonState extends State<_DraggableUploadButton>
               height: _dismissButtonSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: _isNearDismiss 
-                    ? Colors.red 
+                color: _isNearDismiss
+                    ? Colors.red
                     : Colors.red.withOpacity(0.2),
-                border: Border.all(
-                  color: Colors.red,
-                  width: 2,
-                ),
+                border: Border.all(color: Colors.red, width: 2),
                 boxShadow: _isNearDismiss
                     ? <BoxShadow>[
                         BoxShadow(
@@ -330,8 +327,14 @@ class _DraggableUploadButtonState extends State<_DraggableUploadButton>
             onPanUpdate: (DragUpdateDetails details) {
               setState(() {
                 _position = Offset(
-                  (_position.dx + details.delta.dx).clamp(0, screenSize.width - 56),
-                  (_position.dy + details.delta.dy).clamp(0, screenSize.height - 56),
+                  (_position.dx + details.delta.dx).clamp(
+                    0,
+                    screenSize.width - 56,
+                  ),
+                  (_position.dy + details.delta.dy).clamp(
+                    0,
+                    screenSize.height - 56,
+                  ),
                 );
                 // Check if near dismiss button
                 if (allComplete) {
@@ -356,7 +359,7 @@ class _DraggableUploadButtonState extends State<_DraggableUploadButton>
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
-                  colors: allComplete 
+                  colors: allComplete
                       ? <Color>[Colors.green.shade400, Colors.green.shade600]
                       : AppColors.gradient,
                   begin: Alignment.topLeft,
@@ -364,7 +367,8 @@ class _DraggableUploadButtonState extends State<_DraggableUploadButton>
                 ),
                 boxShadow: <BoxShadow>[
                   BoxShadow(
-                    color: (allComplete ? Colors.green : AppColors.gradient[0]).withOpacity(0.4),
+                    color: (allComplete ? Colors.green : AppColors.gradient[0])
+                        .withOpacity(0.4),
                     blurRadius: _isDragging ? 16 : 12,
                     offset: const Offset(0, 4),
                   ),
@@ -382,7 +386,9 @@ class _DraggableUploadButtonState extends State<_DraggableUploadButton>
                         value: widget.controller.totalProgress,
                         strokeWidth: 3,
                         backgroundColor: Colors.white.withOpacity(0.3),
-                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Colors.white,
+                        ),
                       ),
                     ),
                   // Icon and count
@@ -417,10 +423,7 @@ class _DraggableUploadButtonState extends State<_DraggableUploadButton>
 
 /// Circular progress icon for header
 class _CircularProgressIcon extends StatefulWidget {
-  const _CircularProgressIcon({
-    required this.progress,
-    required this.isActive,
-  });
+  const _CircularProgressIcon({required this.progress, required this.isActive});
 
   final double progress;
   final bool isActive;
@@ -551,15 +554,15 @@ class _UploadTaskTile extends StatelessWidget {
                       ),
                     ),
                     // Percentage (compact)
-                    if (task.status == UploadStatus.uploading || 
+                    if (task.status == UploadStatus.uploading ||
                         task.status == UploadStatus.paused)
                       Text(
                         '${(task.progress * 100).toStringAsFixed(0)}%',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: task.status == UploadStatus.paused 
-                              ? Colors.amber 
+                          color: task.status == UploadStatus.paused
+                              ? Colors.amber
                               : AppColors.gradient[0],
                         ),
                       ),
@@ -570,13 +573,15 @@ class _UploadTaskTile extends StatelessWidget {
                 Row(
                   children: <Widget>[
                     // Uploaded / Total size (when uploading or paused)
-                    if (task.status == UploadStatus.uploading || 
+                    if (task.status == UploadStatus.uploading ||
                         task.status == UploadStatus.paused)
                       Text(
                         '${task.formattedUploadedBytes} / ${task.formattedFileSize}',
                         style: TextStyle(
                           fontSize: 11,
-                          color: Get.isDarkMode ? Colors.white54 : Colors.black45,
+                          color: Get.isDarkMode
+                              ? Colors.white54
+                              : Colors.black45,
                         ),
                       )
                     else
@@ -584,11 +589,14 @@ class _UploadTaskTile extends StatelessWidget {
                         task.formattedFileSize,
                         style: TextStyle(
                           fontSize: 11,
-                          color: Get.isDarkMode ? Colors.white54 : Colors.black45,
+                          color: Get.isDarkMode
+                              ? Colors.white54
+                              : Colors.black45,
                         ),
                       ),
                     // Speed (when uploading)
-                    if (task.status == UploadStatus.uploading && task.uploadSpeed > 0) ...<Widget>[
+                    if (task.status == UploadStatus.uploading &&
+                        task.uploadSpeed > 0) ...<Widget>[
                       _dot(),
                       Text(
                         task.formattedSpeed,
@@ -645,7 +653,7 @@ class _UploadTaskTile extends StatelessWidget {
 
   Widget _buildFileIcon() {
     IconData icon;
-    Color color = _getFileColor();
+    final Color color = _getFileColor();
 
     if (task.contentType.startsWith('image/')) {
       icon = Icons.image;
@@ -733,16 +741,13 @@ class _UploadTaskTile extends StatelessWidget {
 
     return Text(
       text,
-      style: TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w600,
-        color: color,
-      ),
+      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color),
     );
   }
 
   Widget _buildProgressBar() {
-    final bool isIndeterminate = task.status == UploadStatus.processing ||
+    final bool isIndeterminate =
+        task.status == UploadStatus.processing ||
         task.status == UploadStatus.preparing;
     final bool isPaused = task.status == UploadStatus.paused;
 
@@ -755,8 +760,8 @@ class _UploadTaskTile extends StatelessWidget {
           isPaused
               ? Colors.amber
               : (task.status == UploadStatus.processing
-                  ? Colors.orange
-                  : AppColors.gradient[0]),
+                    ? Colors.orange
+                    : AppColors.gradient[0]),
         ),
         minHeight: 4,
       ),

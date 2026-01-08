@@ -23,10 +23,12 @@ class VaultUploadController extends GetxController {
     BuildContext context, {
     String? parentId,
   }) async {
+    // AppLoader.showLoadingDialog();
     final FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.any,
       allowMultiple: false,
     );
+    // AppLoader.hideLoadingDialog();
 
     if (result == null || result.files.isEmpty) return;
 
@@ -49,6 +51,7 @@ class VaultUploadController extends GetxController {
         files: <File>[file],
         onUpload: (List<File> files) async {
           if (files.isNotEmpty) {
+            Get.back(); // Close the confirmation dialog first
             await uploadSelectedFile(files.first, parentId: parentId);
           }
         },
@@ -61,6 +64,8 @@ class VaultUploadController extends GetxController {
     const int fileSizeThreshold = 100 * 1024 * 1024; // 100MB
 
     try {
+      AppLoader.showLoadingDialog();
+
       isUploading.value = true;
       final int fileSize = await file.length();
       final String filename = file.path.split('/').last;

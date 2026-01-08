@@ -28,21 +28,22 @@ class UploadManager extends GetxController {
 
   final dio.Dio _dio = dio.Dio();
   final Uuid _uuid = const Uuid();
-  final UploadNotificationService _notificationService = UploadNotificationService();
+  final UploadNotificationService _notificationService =
+      UploadNotificationService();
 
   // Observable list of all upload tasks
   final RxList<UploadTask> tasks = <UploadTask>[].obs;
 
   // Whether the upload panel is expanded (false = minimized to circular button)
   final RxBool isPanelExpanded = true.obs;
-  
+
   // Whether the panel is completely hidden (minimized to floating button)
   final RxBool isMinimized = false.obs;
 
   // Speed tracking
   final Map<String, int> _lastBytesUploaded = <String, int>{};
   final Map<String, DateTime> _lastSpeedUpdate = <String, DateTime>{};
-  
+
   // Track completed uploads for notification
   int _completedUploadsCount = 0;
 
@@ -69,16 +70,22 @@ class UploadManager extends GetxController {
             task.status == UploadStatus.processing,
       )
       .length;
-  
+
   // Total progress across all active uploads
   double get totalProgress {
-    final List<UploadTask> activeTasks = tasks.where(
-      (UploadTask t) => t.status == UploadStatus.uploading || 
-                        t.status == UploadStatus.preparing ||
-                        t.status == UploadStatus.processing,
-    ).toList();
+    final List<UploadTask> activeTasks = tasks
+        .where(
+          (UploadTask t) =>
+              t.status == UploadStatus.uploading ||
+              t.status == UploadStatus.preparing ||
+              t.status == UploadStatus.processing,
+        )
+        .toList();
     if (activeTasks.isEmpty) return 0.0;
-    final double sum = activeTasks.fold(0.0, (double prev, UploadTask t) => prev + t.progress);
+    final double sum = activeTasks.fold(
+      0.0,
+      (double prev, UploadTask t) => prev + t.progress,
+    );
     return sum / activeTasks.length;
   }
 
@@ -126,7 +133,7 @@ class UploadManager extends GetxController {
     if (index == -1) return;
 
     final UploadTask task = tasks[index];
-    
+
     // Cancel the HTTP request
     _cancelTokens[taskId]?.cancel('Upload cancelled by user');
     _cancelTokens.remove(taskId);
@@ -141,10 +148,7 @@ class UploadManager extends GetxController {
             options: dio.Options(
               headers: <String, dynamic>{'Authorization': 'Bearer $token'},
             ),
-            data: <String, dynamic>{
-              'uploadId': task.uploadId,
-              'key': task.key,
-            },
+            data: <String, dynamic>{'uploadId': task.uploadId, 'key': task.key},
           );
         }
       } catch (e) {
@@ -154,7 +158,7 @@ class UploadManager extends GetxController {
 
     tasks[index] = task.copyWith(status: UploadStatus.cancelled);
   }
-  
+
   /// Pause an upload task
   Future<void> pauseUpload(String taskId) async {
     final int index = tasks.indexWhere((UploadTask t) => t.id == taskId);
@@ -162,14 +166,14 @@ class UploadManager extends GetxController {
 
     final UploadTask task = tasks[index];
     if (task.status != UploadStatus.uploading) return;
-    
+
     // Cancel the current HTTP request but keep the upload state
     _cancelTokens[taskId]?.cancel('Upload paused');
     _cancelTokens.remove(taskId);
 
     tasks[index] = task.copyWith(status: UploadStatus.paused);
   }
-  
+
   /// Resume a paused upload task
   Future<void> resumeUpload(String taskId) async {
     final int index = tasks.indexWhere((UploadTask t) => t.id == taskId);
@@ -179,16 +183,16 @@ class UploadManager extends GetxController {
     if (task.status != UploadStatus.paused) return;
 
     tasks[index] = task.copyWith(status: UploadStatus.uploading);
-    
+
     // Resume the upload
     _startUpload(taskId);
   }
-  
+
   /// Toggle minimize state
   void toggleMinimize() {
     isMinimized.value = !isMinimized.value;
   }
-  
+
   /// Expand from minimized state
   void expandPanel() {
     isMinimized.value = false;
@@ -212,19 +216,21 @@ class UploadManager extends GetxController {
   /// Clear all completed/failed/cancelled tasks
   void clearCompletedTasks() {
     final List<String> toRemove = tasks
-        .where((UploadTask t) =>
-            t.status == UploadStatus.completed ||
-            t.status == UploadStatus.failed ||
-            t.status == UploadStatus.cancelled)
+        .where(
+          (UploadTask t) =>
+              t.status == UploadStatus.completed ||
+              t.status == UploadStatus.failed ||
+              t.status == UploadStatus.cancelled,
+        )
         .map((UploadTask t) => t.id)
         .toList();
-    
+
     for (final String id in toRemove) {
       _cancelTokens.remove(id);
       _lastBytesUploaded.remove(id);
       _lastSpeedUpdate.remove(id);
     }
-    
+
     tasks.removeWhere(
       (UploadTask t) =>
           t.status == UploadStatus.completed ||
@@ -253,7 +259,7 @@ class UploadManager extends GetxController {
       uploadedParts: 0,
       lastUploadedParts: const <int>{},
     );
-    
+
     _lastBytesUploaded.remove(taskId);
     _lastSpeedUpdate.remove(taskId);
 
@@ -271,14 +277,18 @@ class UploadManager extends GetxController {
     if (index == -1) return;
 
     final UploadTask task = tasks[index];
-    
+
     // Create cancel token for this upload
     _cancelTokens[taskId] = dio.CancelToken();
 
     try {
       final String? token = await LocalStorageService.getAccessToken();
       if (token == null) {
-        _updateTaskStatus(taskId, UploadStatus.failed, 'Authentication required');
+        _updateTaskStatus(
+          taskId,
+          UploadStatus.failed,
+          'Authentication required',
+        );
         return;
       }
 
@@ -294,7 +304,11 @@ class UploadManager extends GetxController {
         return;
       }
       debugPrint('Upload error: $e');
-      _updateTaskStatus(taskId, UploadStatus.failed, e.message ?? 'Upload failed');
+      _updateTaskStatus(
+        taskId,
+        UploadStatus.failed,
+        e.message ?? 'Upload failed',
+      );
       onUploadError?.call(taskId, e.message ?? 'Upload failed');
     } catch (e) {
       debugPrint('Upload error: $e');
@@ -334,15 +348,16 @@ class UploadManager extends GetxController {
       ),
       onSendProgress: (int sent, int total) {
         final double progress = total > 0 ? sent / total : 0;
-        
+
         // Calculate actual speed based on elapsed time since start
         final Duration elapsed = DateTime.now().difference(uploadStartTime);
         if (elapsed.inMilliseconds > 500 && sent > lastProgressUpdate) {
-          final int actualSpeed = (sent * 1000 / elapsed.inMilliseconds).round();
+          final int actualSpeed = (sent * 1000 / elapsed.inMilliseconds)
+              .round();
           _updateActualSpeed(taskId, actualSpeed);
           lastProgressUpdate = sent;
         }
-        
+
         _updateTaskProgress(taskId, progress, sent);
       },
     );
@@ -363,8 +378,8 @@ class UploadManager extends GetxController {
     int index = tasks.indexWhere((UploadTask t) => t.id == taskId);
     if (index == -1) return;
 
-    UploadTask task = tasks[index];
-    
+    final UploadTask task = tasks[index];
+
     // Check if this is a resume from paused state
     final bool isResume = task.uploadId != null && task.key != null;
     String uploadId;
@@ -399,7 +414,9 @@ class UploadManager extends GetxController {
         );
 
         if (initiateResp.data['success'] != true) {
-          throw Exception(initiateResp.data['message'] ?? 'Failed to initiate upload');
+          throw Exception(
+            initiateResp.data['message'] ?? 'Failed to initiate upload',
+          );
         }
 
         uploadId = initiateResp.data['data']['uploadId'];
@@ -418,17 +435,21 @@ class UploadManager extends GetxController {
       }
 
       // Step 2: Get part URLs and upload parts
-      final List<int> allPartNumbers = List<int>.generate(totalParts, (int i) => i + 1);
-      
+      final List<int> allPartNumbers = List<int>.generate(
+        totalParts,
+        (int i) => i + 1,
+      );
+
       // Filter out already uploaded parts (for resume)
       final List<int> remainingParts = allPartNumbers
           .where((int p) => !alreadyUploadedParts.contains(p))
           .toList();
-      
+
       int uploadedPartsCount = alreadyUploadedParts.length;
       int totalUploadedBytes = uploadedPartsCount * _partSize;
       if (totalUploadedBytes > task.fileSize) {
-        totalUploadedBytes = task.fileSize - ((totalParts - uploadedPartsCount) * _partSize);
+        totalUploadedBytes =
+            task.fileSize - ((totalParts - uploadedPartsCount) * _partSize);
       }
 
       // Process parts in batches
@@ -437,7 +458,8 @@ class UploadManager extends GetxController {
         index = tasks.indexWhere((UploadTask t) => t.id == taskId);
         if (index == -1) return;
         final UploadStatus currentStatus = tasks[index].status;
-        if (currentStatus == UploadStatus.cancelled || currentStatus == UploadStatus.paused) {
+        if (currentStatus == UploadStatus.cancelled ||
+            currentStatus == UploadStatus.paused) {
           return;
         }
 
@@ -472,11 +494,15 @@ class UploadManager extends GetxController {
           index = tasks.indexWhere((UploadTask t) => t.id == taskId);
           if (index == -1) return;
           final UploadStatus status = tasks[index].status;
-          if (status == UploadStatus.cancelled || status == UploadStatus.paused) {
+          if (status == UploadStatus.cancelled ||
+              status == UploadStatus.paused) {
             return;
           }
 
-          final List<dynamic> batch = parts.skip(j).take(_concurrentUploads).toList();
+          final List<dynamic> batch = parts
+              .skip(j)
+              .take(_concurrentUploads)
+              .toList();
 
           await Future.wait(
             batch.map((dynamic part) async {
@@ -495,12 +521,13 @@ class UploadManager extends GetxController {
                 try {
                   // Create a stream that reads from file in small chunks for real-time progress
                   final Stream<List<int>> fileStream = _createFileStream(
-                    task.file, 
-                    start, 
+                    task.file,
+                    start,
                     partLength,
                     (int bytesRead) {
                       // Real-time KB-level progress callback
-                      final int currentTotalBytes = totalUploadedBytes + bytesRead;
+                      final int currentTotalBytes =
+                          totalUploadedBytes + bytesRead;
                       final double progress = currentTotalBytes / task.fileSize;
                       _updateTaskProgress(taskId, progress, currentTotalBytes);
                     },
@@ -523,28 +550,40 @@ class UploadManager extends GetxController {
                 } on dio.DioException catch (e) {
                   if (e.type == dio.DioExceptionType.cancel) rethrow;
                   if (retry == _maxRetries - 1) rethrow;
-                  await Future.delayed(Duration(seconds: pow(2, retry).toInt()));
+                  await Future.delayed(
+                    Duration(seconds: pow(2, retry).toInt()),
+                  );
                 } catch (e) {
                   if (retry == _maxRetries - 1) rethrow;
-                  await Future.delayed(Duration(seconds: pow(2, retry).toInt()));
+                  await Future.delayed(
+                    Duration(seconds: pow(2, retry).toInt()),
+                  );
                 }
               }
 
               // Calculate actual upload speed based on completed part
-              final Duration partDuration = DateTime.now().difference(partStartTime);
+              final Duration partDuration = DateTime.now().difference(
+                partStartTime,
+              );
               if (partDuration.inMilliseconds > 0) {
-                final int actualSpeed = (partLength * 1000 / partDuration.inMilliseconds).round();
+                final int actualSpeed =
+                    (partLength * 1000 / partDuration.inMilliseconds).round();
                 _updateActualSpeed(taskId, actualSpeed);
               }
 
               uploadedPartsCount++;
               totalUploadedBytes += partLength;
-              alreadyUploadedParts = Set<int>.from(alreadyUploadedParts)..add(partNumber);
+              alreadyUploadedParts = Set<int>.from(alreadyUploadedParts)
+                ..add(partNumber);
 
               // Update progress and track uploaded parts
               final double progress = totalUploadedBytes / task.fileSize;
-              _updateTaskProgressWithSpeed(taskId, progress, totalUploadedBytes);
-              
+              _updateTaskProgressWithSpeed(
+                taskId,
+                progress,
+                totalUploadedBytes,
+              );
+
               index = tasks.indexWhere((UploadTask t) => t.id == taskId);
               if (index != -1) {
                 tasks[index] = tasks[index].copyWith(
@@ -572,7 +611,8 @@ class UploadManager extends GetxController {
         throw Exception('Failed to get upload progress');
       }
 
-      final List<dynamic> uploadedParts = progressResp.data['data']['uploadedParts'];
+      final List<dynamic> uploadedParts =
+          progressResp.data['data']['uploadedParts'];
 
       // Step 4: Complete upload
       final dio.Response<dynamic> completeResp = await _dio.post(
@@ -583,13 +623,21 @@ class UploadManager extends GetxController {
         data: <String, dynamic>{
           'uploadId': uploadId,
           'key': key,
-          'parts': uploadedParts
-              .map((p) => <String, dynamic>{
-                    'partNumber': p['partNumber'],
-                    'etag': p['etag'],
-                  })
-              .toList()
-            ..sort((a, b) => (a['partNumber'] as int).compareTo(b['partNumber'] as int)),
+          'parts':
+              uploadedParts
+                  .map(
+                    (p) => <String, dynamic>{
+                      'partNumber': p['partNumber'],
+                      'etag': p['etag'],
+                    },
+                  )
+                  .toList()
+                ..sort(
+                  (Map<String, dynamic> a, Map<String, dynamic> b) =>
+                      (a['partNumber'] as int).compareTo(
+                        b['partNumber'] as int,
+                      ),
+                ),
           'filename': task.filename,
           'contentType': task.contentType,
           'size': task.fileSize,
@@ -600,10 +648,14 @@ class UploadManager extends GetxController {
 
       if (completeResp.data['success'] == true) {
         _updateTaskStatus(taskId, UploadStatus.completed);
-        final ItemModel item = ItemModel.fromJson(completeResp.data['data']['item']);
+        final ItemModel item = ItemModel.fromJson(
+          completeResp.data['data']['item'],
+        );
         onUploadComplete?.call(item);
       } else {
-        throw Exception(completeResp.data['message'] ?? 'Failed to complete upload');
+        throw Exception(
+          completeResp.data['message'] ?? 'Failed to complete upload',
+        );
       }
     } on dio.DioException catch (e) {
       // Check if this was a pause/cancel - don't mark as failed
@@ -616,7 +668,11 @@ class UploadManager extends GetxController {
         // Otherwise it was cancelled
         return;
       }
-      _updateTaskStatus(taskId, UploadStatus.failed, e.message ?? 'Upload failed');
+      _updateTaskStatus(
+        taskId,
+        UploadStatus.failed,
+        e.message ?? 'Upload failed',
+      );
       onUploadError?.call(taskId, e.message ?? 'Upload failed');
     } catch (e) {
       // Check if task was paused during upload
@@ -634,24 +690,24 @@ class UploadManager extends GetxController {
     final int index = tasks.indexWhere((UploadTask t) => t.id == taskId);
     if (index == -1) return;
 
-    tasks[index] = tasks[index].copyWith(
-      status: status,
-      errorMessage: error,
-    );
+    tasks[index] = tasks[index].copyWith(status: status, errorMessage: error);
 
     // Handle notification updates based on status
     if (status == UploadStatus.completed) {
       _completedUploadsCount++;
       _updateNotification();
-      
+
       // If all uploads complete, show completion notification
       if (!hasActiveUploads) {
-        _notificationService.showUploadComplete(totalFiles: _completedUploadsCount);
+        _notificationService.showUploadComplete(
+          totalFiles: _completedUploadsCount,
+        );
         _completedUploadsCount = 0;
       }
-    } else if (status == UploadStatus.failed || status == UploadStatus.cancelled) {
+    } else if (status == UploadStatus.failed ||
+        status == UploadStatus.cancelled) {
       _updateNotification();
-      
+
       // If no more active uploads, cancel notification
       if (!hasActiveUploads) {
         _notificationService.cancelUploadNotification();
@@ -680,7 +736,7 @@ class UploadManager extends GetxController {
 
     // Use exponential moving average to smooth speed readings
     final int currentSpeed = tasks[index].uploadSpeed;
-    final int smoothedSpeed = currentSpeed > 0 
+    final int smoothedSpeed = currentSpeed > 0
         ? ((currentSpeed * 0.7) + (speed * 0.3)).round()
         : speed;
 
@@ -688,7 +744,11 @@ class UploadManager extends GetxController {
   }
 
   /// Update task progress with speed calculation (for large file parts)
-  void _updateTaskProgressWithSpeed(String taskId, double progress, int uploadedBytes) {
+  void _updateTaskProgressWithSpeed(
+    String taskId,
+    double progress,
+    int uploadedBytes,
+  ) {
     final int index = tasks.indexWhere((UploadTask t) => t.id == taskId);
     if (index == -1) return;
 
@@ -713,7 +773,8 @@ class UploadManager extends GetxController {
     if (activeTask == null) return;
 
     final int overallProgress = (totalProgress * 100).round();
-    final String progressText = '${activeTask.formattedUploadedBytes} / ${activeTask.formattedFileSize}';
+    final String progressText =
+        '${activeTask.formattedUploadedBytes} / ${activeTask.formattedFileSize}';
 
     _notificationService.showUploadProgress(
       filename: activeTask.filename,
@@ -733,19 +794,19 @@ class UploadManager extends GetxController {
     const int chunkSize = 64 * 1024; // 64KB chunks for smooth progress
     final RandomAccessFile raf = await file.open();
     await raf.setPosition(start);
-    
+
     int bytesRead = 0;
     while (bytesRead < length) {
       final int remaining = length - bytesRead;
       final int toRead = remaining < chunkSize ? remaining : chunkSize;
       final List<int> chunk = await raf.read(toRead);
       if (chunk.isEmpty) break;
-      
+
       bytesRead += chunk.length;
       onProgress(bytesRead);
       yield chunk;
     }
-    
+
     await raf.close();
   }
 }

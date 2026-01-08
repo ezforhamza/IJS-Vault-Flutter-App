@@ -58,13 +58,13 @@ class UploadConfirmationDialog extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: AppColors.gradient,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Row(
         children: <Widget>[
@@ -86,7 +86,9 @@ class UploadConfirmationDialog extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  files.length == 1 ? 'Upload File' : 'Upload ${files.length} Files',
+                  files.length == 1
+                      ? 'Upload File'
+                      : 'Upload ${files.length} Files',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -141,7 +143,7 @@ class UploadConfirmationDialog extends StatelessWidget {
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
+          gradient: const LinearGradient(
             colors: AppColors.gradient,
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -171,7 +173,9 @@ class UploadConfirmationDialog extends StatelessWidget {
               const Icon(Icons.cloud_upload, color: Colors.white, size: 22),
               const SizedBox(width: 10),
               Text(
-                files.length == 1 ? 'Upload File' : 'Upload ${files.length} Files',
+                files.length == 1
+                    ? 'Upload File'
+                    : 'Upload ${files.length} Files',
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -197,10 +201,7 @@ class UploadConfirmationDialog extends StatelessWidget {
 
 /// Individual file info tile
 class _FileInfoTile extends StatelessWidget {
-  const _FileInfoTile({
-    required this.file,
-    this.onRemove,
-  });
+  const _FileInfoTile({required this.file, this.onRemove});
 
   final File file;
   final VoidCallback? onRemove;
@@ -246,7 +247,10 @@ class _FileInfoTile extends StatelessWidget {
                   children: <Widget>[
                     // File type badge
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: _getFileColor(mimeType).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
@@ -273,7 +277,10 @@ class _FileInfoTile extends StatelessWidget {
                     if (fileSize > 100 * 1024 * 1024) ...<Widget>[
                       const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.orange.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(4),
@@ -281,7 +288,11 @@ class _FileInfoTile extends StatelessWidget {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
-                            Icon(Icons.info_outline, size: 10, color: Colors.orange),
+                            Icon(
+                              Icons.info_outline,
+                              size: 10,
+                              color: Colors.orange,
+                            ),
                             SizedBox(width: 4),
                             Text(
                               'Large file',
@@ -319,7 +330,7 @@ class _FileInfoTile extends StatelessWidget {
 
   Widget _buildFileIcon(String? mimeType, String extension) {
     IconData icon;
-    Color color = _getFileColor(mimeType);
+    final Color color = _getFileColor(mimeType);
 
     if (mimeType?.startsWith('image/') ?? false) {
       icon = Icons.image;
@@ -329,13 +340,21 @@ class _FileInfoTile extends StatelessWidget {
       icon = Icons.audiotrack;
     } else if (mimeType?.contains('pdf') ?? false) {
       icon = Icons.picture_as_pdf;
-    } else if (mimeType?.contains('document') ?? mimeType?.contains('word') ?? false) {
+    } else if (mimeType?.contains('document') ??
+        mimeType?.contains('word') ??
+        false) {
       icon = Icons.description;
-    } else if (mimeType?.contains('spreadsheet') ?? mimeType?.contains('excel') ?? false) {
+    } else if (mimeType?.contains('spreadsheet') ??
+        mimeType?.contains('excel') ??
+        false) {
       icon = Icons.table_chart;
-    } else if (mimeType?.contains('presentation') ?? mimeType?.contains('powerpoint') ?? false) {
+    } else if (mimeType?.contains('presentation') ??
+        mimeType?.contains('powerpoint') ??
+        false) {
       icon = Icons.slideshow;
-    } else if (mimeType?.contains('zip') ?? mimeType?.contains('archive') ?? false) {
+    } else if (mimeType?.contains('zip') ??
+        mimeType?.contains('archive') ??
+        false) {
       icon = Icons.folder_zip;
     } else {
       icon = Icons.insert_drive_file;
@@ -360,10 +379,14 @@ class _FileInfoTile extends StatelessWidget {
     if (mimeType?.contains('document') ?? mimeType?.contains('word') ?? false) {
       return Colors.blue;
     }
-    if (mimeType?.contains('spreadsheet') ?? mimeType?.contains('excel') ?? false) {
+    if (mimeType?.contains('spreadsheet') ??
+        mimeType?.contains('excel') ??
+        false) {
       return Colors.green;
     }
-    if (mimeType?.contains('presentation') ?? mimeType?.contains('powerpoint') ?? false) {
+    if (mimeType?.contains('presentation') ??
+        mimeType?.contains('powerpoint') ??
+        false) {
       return Colors.deepOrange;
     }
     if (mimeType?.contains('zip') ?? mimeType?.contains('archive') ?? false) {

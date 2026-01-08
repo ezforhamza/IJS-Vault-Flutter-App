@@ -28,11 +28,12 @@ class ItemPreviewScreen extends StatelessWidget {
         }
 
         // Check if item is locked and session is not active
-        if (controller.hasPinProtection.value && !controller.sessionActive.value) {
+        if (controller.hasPinProtection.value &&
+            !controller.sessionActive.value) {
           return _LockedView(
             item: item,
             onUnlock: () async {
-              final result = await Get.to<bool>(
+              final bool? result = await Get.to<bool>(
                 () => VerifyPinScreen(
                   itemId: item.id,
                   onSuccess: () {
@@ -75,7 +76,7 @@ class _LoadingView extends StatelessWidget {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+        children: <Widget>[
           SpinKitFadingCircle(
             color: isDarkMode ? Colors.white : AppColors.gradient[0],
             size: 50,
@@ -107,7 +108,7 @@ class _LockedView extends StatelessWidget {
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+          children: <Widget>[
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
@@ -170,12 +171,8 @@ class _ErrorView extends StatelessWidget {
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red[400],
-            ),
+          children: <Widget>[
+            Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
             const SizedBox(height: 16),
             Text(
               'Failed to load preview',
@@ -195,11 +192,7 @@ class _ErrorView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            _GradientButton(
-              text: 'Retry',
-              icon: Icons.refresh,
-              onTap: onRetry,
-            ),
+            _GradientButton(text: 'Retry', icon: Icons.refresh, onTap: onRetry),
           ],
         ),
       ),
@@ -220,11 +213,23 @@ class _PreviewContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (item.isImage && downloadUrl != null) {
-      return _ImagePreview(url: downloadUrl!, item: item, controller: controller);
+      return _ImagePreview(
+        url: downloadUrl!,
+        item: item,
+        controller: controller,
+      );
     } else if (item.isVideo && downloadUrl != null) {
-      return _VideoPreview(url: downloadUrl!, item: item, controller: controller);
+      return _VideoPreview(
+        url: downloadUrl!,
+        item: item,
+        controller: controller,
+      );
     } else if (item.isAudio && downloadUrl != null) {
-      return _AudioPreview(url: downloadUrl!, item: item, controller: controller);
+      return _AudioPreview(
+        url: downloadUrl!,
+        item: item,
+        controller: controller,
+      );
     } else if (item.isPdf && downloadUrl != null) {
       return _PdfPreview(url: downloadUrl!, item: item, controller: controller);
     } else {
@@ -246,7 +251,7 @@ class _ImagePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [
+      children: <Widget>[
         Expanded(
           child: InteractiveViewer(
             minScale: 0.5,
@@ -255,11 +260,10 @@ class _ImagePreview extends StatelessWidget {
               child: CachedNetworkImage(
                 imageUrl: url,
                 fit: BoxFit.contain,
-                placeholder: (context, url) => const _LoadingView(),
-                errorWidget: (context, url, error) => _ImageErrorWidget(
-                  item: item,
-                  controller: controller,
-                ),
+                placeholder: (BuildContext context, String url) =>
+                    const _LoadingView(),
+                errorWidget: (BuildContext context, String url, Object error) =>
+                    _ImageErrorWidget(item: item, controller: controller),
               ),
             ),
           ),
@@ -280,7 +284,7 @@ class _ImageErrorWidget extends StatelessWidget {
     final bool isDarkMode = Get.isDarkMode;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
-      children: [
+      children: <Widget>[
         Icon(
           Icons.broken_image_outlined,
           size: 64,
@@ -289,9 +293,7 @@ class _ImageErrorWidget extends StatelessWidget {
         const SizedBox(height: 16),
         Text(
           'Failed to load image',
-          style: TextStyle(
-            color: isDarkMode ? Colors.white70 : Colors.black54,
-          ),
+          style: TextStyle(color: isDarkMode ? Colors.white70 : Colors.black54),
         ),
       ],
     );
@@ -312,7 +314,7 @@ class _VideoPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isDarkMode = Get.isDarkMode;
     return Column(
-      children: [
+      children: <Widget>[
         Expanded(
           child: Center(
             child: Container(
@@ -329,7 +331,7 @@ class _VideoPreview extends StatelessWidget {
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: [
+                children: <Widget>[
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -362,7 +364,7 @@ class _VideoPreview extends StatelessWidget {
                       color: isDarkMode ? Colors.white70 : Colors.black54,
                     ),
                   ),
-                  if (item.formattedSize.isNotEmpty) ...[
+                  if (item.formattedSize.isNotEmpty) ...<Widget>[
                     const SizedBox(height: 4),
                     Text(
                       item.formattedSize,
@@ -406,7 +408,7 @@ class _AudioPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isDarkMode = Get.isDarkMode;
     return Column(
-      children: [
+      children: <Widget>[
         Expanded(
           child: Center(
             child: Container(
@@ -423,7 +425,7 @@ class _AudioPreview extends StatelessWidget {
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: [
+                children: <Widget>[
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -456,7 +458,7 @@ class _AudioPreview extends StatelessWidget {
                       color: isDarkMode ? Colors.white70 : Colors.black54,
                     ),
                   ),
-                  if (item.formattedSize.isNotEmpty) ...[
+                  if (item.formattedSize.isNotEmpty) ...<Widget>[
                     const SizedBox(height: 4),
                     Text(
                       item.formattedSize,
@@ -500,7 +502,7 @@ class _PdfPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isDarkMode = Get.isDarkMode;
     return Column(
-      children: [
+      children: <Widget>[
         Expanded(
           child: Center(
             child: Container(
@@ -517,7 +519,7 @@ class _PdfPreview extends StatelessWidget {
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: [
+                children: <Widget>[
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
@@ -550,7 +552,7 @@ class _PdfPreview extends StatelessWidget {
                       color: isDarkMode ? Colors.white70 : Colors.black54,
                     ),
                   ),
-                  if (item.formattedSize.isNotEmpty) ...[
+                  if (item.formattedSize.isNotEmpty) ...<Widget>[
                     const SizedBox(height: 4),
                     Text(
                       item.formattedSize,
@@ -588,11 +590,12 @@ class _NoPreviewView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isDarkMode = Get.isDarkMode;
-    final String ext = item.extension?.toLowerCase() ??
+    final String ext =
+        item.extension?.toLowerCase() ??
         item.name.split('.').last.toLowerCase();
 
     return Column(
-      children: [
+      children: <Widget>[
         Expanded(
           child: Center(
             child: Container(
@@ -609,7 +612,7 @@ class _NoPreviewView extends StatelessWidget {
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: [
+                children: <Widget>[
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
@@ -618,10 +621,7 @@ class _NoPreviewView extends StatelessWidget {
                           : Colors.black.withValues(alpha: 0.05),
                       shape: BoxShape.circle,
                     ),
-                    child: FileIcon(
-                      item.name,
-                      size: 80,
-                    ),
+                    child: FileIcon(item.name, size: 80),
                   ),
                   const SizedBox(height: 24),
                   Text(
@@ -654,7 +654,7 @@ class _NoPreviewView extends StatelessWidget {
                       ),
                     ),
                   ),
-                  if (item.formattedSize.isNotEmpty) ...[
+                  if (item.formattedSize.isNotEmpty) ...<Widget>[
                     const SizedBox(height: 8),
                     Text(
                       item.formattedSize,
@@ -675,7 +675,7 @@ class _NoPreviewView extends StatelessWidget {
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: [
+                      children: <Widget>[
                         Icon(
                           Icons.visibility_off_outlined,
                           size: 20,
@@ -724,7 +724,7 @@ class _FileInfoBar extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDarkMode ? const Color(0xFF1a1a1a) : Colors.white,
-        boxShadow: [
+        boxShadow: <BoxShadow>[
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
@@ -736,9 +736,9 @@ class _FileInfoBar extends StatelessWidget {
         top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
+          children: <Widget>[
             // File info row
-            if (item.description.isNotEmpty) ...[
+            if (item.description.isNotEmpty) ...<Widget>[
               Text(
                 item.description,
                 maxLines: 2,
@@ -752,21 +752,23 @@ class _FileInfoBar extends StatelessWidget {
             ],
             // Action buttons
             Row(
-              children: [
+              children: <Widget>[
                 Expanded(
-                  child: Obx(() => _ActionButton(
-                        icon: Icons.download,
-                        label: controller.isDownloading.value
-                            ? '${(controller.downloadProgress.value * 100).toInt()}%'
-                            : 'Download',
-                        onTap: controller.isDownloading.value
-                            ? null
-                            : controller.downloadFile,
-                        isLoading: controller.isDownloading.value,
-                      )),
+                  child: Obx(
+                    () => _ActionButton(
+                      icon: Icons.download,
+                      label: controller.isDownloading.value
+                          ? '${(controller.downloadProgress.value * 100).toInt()}%'
+                          : 'Download',
+                      onTap: controller.isDownloading.value
+                          ? null
+                          : controller.downloadFile,
+                      isLoading: controller.isDownloading.value,
+                    ),
+                  ),
                 ),
                 if (controller.hasPinProtection.value &&
-                    controller.sessionActive.value) ...[
+                    controller.sessionActive.value) ...<Widget>[
                   const SizedBox(width: 12),
                   Expanded(
                     child: _ActionButton(
