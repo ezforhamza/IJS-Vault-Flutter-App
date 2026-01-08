@@ -346,8 +346,11 @@ class _VaultItemState extends State<VaultItem> {
 
     return GestureDetector(
       onTap: () {
+        debugPrint('🔵 VaultItem tapped: ${widget.item.name}, isSharedItem: ${widget.isSharedItem}, hasOnTap: ${widget.onTap != null}');
+        
         // Use custom onTap if provided (for shared items)
         if (widget.onTap != null) {
+          debugPrint('🔵 VaultItem: Calling custom onTap for ${widget.item.name}');
           widget.onTap!();
           return;
         }

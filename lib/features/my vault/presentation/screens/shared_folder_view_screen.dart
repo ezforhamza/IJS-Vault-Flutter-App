@@ -124,8 +124,11 @@ class _SharedFolderViewScreenState extends State<SharedFolderViewScreen> {
   }
 
   void _handleItemTap(ItemModel item) {
+    debugPrint('📂 SharedFolderView: Tapped item: ${item.name}, type: ${item.type}, isLocked: ${item.isLocked}');
+    
     if (item.type == 'folder') {
       if (item.isLocked) {
+        debugPrint('📂 SharedFolderView: Opening locked folder with PIN verification');
         Get.to(
           () => VerifyPinScreen(
             itemId: item.id,
@@ -135,10 +138,12 @@ class _SharedFolderViewScreenState extends State<SharedFolderViewScreen> {
           ),
         );
       } else {
+        debugPrint('📂 SharedFolderView: Opening unlocked folder');
         Get.to(() => SharedFolderViewScreen(item: item));
       }
     } else {
       if (item.isLocked) {
+        debugPrint('📂 SharedFolderView: Opening locked file with PIN verification');
         Get.to(
           () => VerifyPinScreen(
             itemId: item.id,
@@ -148,6 +153,7 @@ class _SharedFolderViewScreenState extends State<SharedFolderViewScreen> {
           ),
         );
       } else {
+        debugPrint('📂 SharedFolderView: Opening unlocked file');
         Get.to(() => ItemPreviewScreen(item: item));
       }
     }
