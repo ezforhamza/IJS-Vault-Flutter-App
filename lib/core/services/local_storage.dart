@@ -18,6 +18,7 @@ class LocalStorageService {
       'id': user.id,
       'fullName': user.fullName,
       'email': user.email,
+      'image': user.image,
       'role': user.role,
       'isEmailVerified': user.isEmailVerified,
       'provider': user.provider,

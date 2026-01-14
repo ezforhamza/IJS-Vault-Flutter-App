@@ -1,11 +1,11 @@
 {
 	"info": {
-		"_postman_id": "62ce85c6-8cda-44c7-8bea-dbcb338ac4b5",
+		"_postman_id": "a95096ef-6508-478b-a3b7-d1eafef75447",
 		"name": "IJS Vault - App APIs",
 		"description": "Complete API collection for IJS Vault mobile/web application.\n\n## 🚀 Quick Start\n\n1. **Set Environment**: Choose `Production` or `Development` environment\n2. **Login**: Call the Login endpoint - tokens are automatically saved\n3. **Use APIs**: All endpoints inherit the `{{accessToken}}` automatically\n\n## 🔐 Authentication\n\nAll protected endpoints use `Bearer {{accessToken}}` which is automatically set after login.\n\n## 📍 Environments\n\n| Environment | Base URL |\n|-------------|----------|\n| Production | https://ijsvault.codecoytechnologies.live/v1 |\n| Development | http://localhost:3000/v1 |\n\n## 📁 API Sections\n\n- **Authentication**: Register, Login, Social Auth, Password Reset\n- **User Profile**: Profile management, Search users\n- **Linked Users**: View shared files/folders per user with search, filter, sort\n- **Vault**: Files, Folders, Sharing, PIN protection\n- **File Uploads**: Direct, Presigned, Resumable uploads\n- **Reminders**: Task reminders with email notifications\n- **Notifications**: In-app notifications\n- **Audit Logs**: Activity tracking\n\n## 💡 Tips\n\n- Tokens auto-refresh on login/register\n- Use `{{itemId}}` variable for testing item operations\n- Check folder descriptions for detailed API docs",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "34645948",
-		"_collection_link": "https://hamza-tanveer.postman.co/workspace/hamza-tanveer-Workspace~f865da96-aa62-4004-8436-a814999b4d42/collection/34645948-62ce85c6-8cda-44c7-8bea-dbcb338ac4b5?action=share&source=collection_link&creator=34645948"
+		"_collection_link": "https://hamza-tanveer.postman.co/workspace/hamza-tanveer-Workspace~f865da96-aa62-4004-8436-a814999b4d42/collection/34645948-a95096ef-6508-478b-a3b7-d1eafef75447?action=share&source=collection_link&creator=34645948"
 	},
 	"item": [
 		{
@@ -63,7 +63,7 @@
 								"login"
 							]
 						},
-						"description": "**Login with Email & Password**\n\nAuthenticate user and get access tokens.\n\n**Automatic Actions:**\n- Sends login notification email (async)\n- Includes IP address, device info, timestamp\n- Email sent in background (doesn't slow down login)\n\n**Request Body:**\n- `email` (required): User's email address\n- `password` (required): User's password\n\n**Response:**\n- User object with all details\n- Access token (30 min expiry)\n- Refresh token (30 days expiry)\n\n**Email Notification:**\nSent to user with:\n- Login timestamp\n- IP address\n- Device/browser info\n- Security warning if suspicious\n\n**Error Responses:**\n- 401: Incorrect email or password\n- 400: Validation error\n\n**Example Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"user-id\",\n      \"fullName\": \"John Doe\",\n      \"email\": \"john@example.com\",\n      \"phone\": \"+1234567890\",\n      \"role\": \"user\",\n      \"isEmailVerified\": true,\n      \"image\": \"http://localhost:3000/uploads/profiles/profile-123.jpg\"\n    },\n    \"tokens\": {\n      \"access\": { \"token\": \"...\", \"expires\": \"...\" },\n      \"refresh\": { \"token\": \"...\", \"expires\": \"...\" }\n    }\n  },\n  \"message\": \"Login successful\"\n}\n```\n\n**Security:**\n- Password verified with bcrypt\n- Login activity tracked\n- Email notification for security"
+						"description": "**Login with Email & Password**\n\nAuthenticate user and get access tokens.\n\n**⚠️ One Device at a Time Policy:**\n- When you login, ALL previous sessions are automatically terminated\n- Only one active session per user is allowed\n- Previous devices will receive 401 error on next API call\n\n**Automatic Actions:**\n- Terminates all existing sessions (one device policy)\n- Creates new session with device info\n- Sends login notification email (async)\n- Includes IP address, device info, timestamp\n\n**Request Body:**\n- `email` (required): User's email address\n- `password` (required): User's password\n- `deviceType` (optional): ANDROID, IOS, WEB, HUAWEI, DESKTOP\n- `deviceName` (optional): Device name for session tracking\n- `deviceModel` (optional): Device model\n\n**Response:**\n- User object with all details\n- Access token (30 min expiry)\n- Refresh token (30 days expiry)\n\n**Session Tracking:**\n- Session created with device info\n- lastActivityAt updated on each API call\n- Session can be terminated by admin\n\n**Error Responses:**\n- 401: Incorrect email or password\n- 400: Validation error\n\n**Example Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"user\": {\n      \"id\": \"user-id\",\n      \"fullName\": \"John Doe\",\n      \"email\": \"john@example.com\",\n      \"phone\": \"+1234567890\",\n      \"role\": \"user\",\n      \"isEmailVerified\": true,\n      \"image\": \"http://localhost:3000/uploads/profiles/profile-123.jpg\"\n    },\n    \"tokens\": {\n      \"access\": { \"token\": \"...\", \"expires\": \"...\" },\n      \"refresh\": { \"token\": \"...\", \"expires\": \"...\" }\n    }\n  },\n  \"message\": \"Login successful\"\n}\n```\n\n**Security:**\n- Password verified with bcrypt\n- Login activity tracked\n- Email notification for security\n- One device at a time enforced"
 					},
 					"response": []
 				},
@@ -1730,6 +1730,49 @@
 					"response": []
 				},
 				{
+					"name": "Upload Item Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"value": "",
+									"description": "Image file to upload (required)",
+									"type": "file"
+								},
+								{
+									"key": "itemId",
+									"value": "",
+									"description": "Item ID to update image for (optional - leave empty for new items)",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/vault/items/upload-image",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"vault",
+								"items",
+								"upload-image"
+							]
+						},
+						"description": "**Upload Item Image (Custom Folder/File Icons)**\n\nUpload custom images for folders and files to personalize your vault items.\n\n**Use Cases:**\n- Set custom folder icons (e.g., project logos, category images)\n- Add preview images for files\n- Personalize vault organization with visual identifiers\n\n**Two Usage Modes:**\n\n**Mode 1 - Update Existing Item:**\n```\nPOST /vault/items/upload-image\nContent-Type: multipart/form-data\n\nimage: <image file>\nitemId: \"existing-item-id\"\n```\n\n**Mode 2 - Get URL for New Item:**\n```\nPOST /vault/items/upload-image\nContent-Type: multipart/form-data\n\nimage: <image file>\n(no itemId - returns URL to use when creating item)\n```\n\n**File Specifications:**\n\n**Allowed Formats:**\n- JPEG (.jpg, .jpeg)\n- PNG (.png)\n- GIF (.gif)\n- WebP (.webp)\n\n**File Size:**\n- Maximum: 5MB\n- Recommended: < 1MB for optimal performance\n\n**Image Dimensions:**\n- Recommended: 512x512px (square)\n- Minimum: 100x100px\n- Any aspect ratio supported\n\n**Success Response (with itemId):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"item\": {\n      \"id\": \"item-id\",\n      \"name\": \"My Folder\",\n      \"type\": \"folder\",\n      \"itemImage\": \"https://yourdomain.com/uploads/items/item-userId-itemId-1234567890.jpg\",\n      \"breadcrumb\": [...],\n      ...\n    },\n    \"imageUrl\": \"https://yourdomain.com/uploads/items/item-userId-itemId-1234567890.jpg\"\n  },\n  \"message\": \"Item image uploaded successfully\"\n}\n```\n\n**Success Response (without itemId):**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"imageUrl\": \"https://yourdomain.com/uploads/items/item-userId-new-1234567890.jpg\"\n  },\n  \"message\": \"Item image uploaded successfully\"\n}\n```\n\n**What Happens:**\n1. Image is validated (type, size)\n2. Old image is deleted if updating existing item\n3. New image is saved to `/uploads/items/`\n4. Filename format: `item-{userId}-{itemId}-{timestamp}.{ext}`\n5. Public HTTPS URL is generated with domain name\n6. If itemId provided: Item's `itemImage` field is updated\n7. Image is accessible via HTTPS\n\n**Storage:**\n- Location: VPS file system\n- Path: `/uploads/items/`\n- Public URL: `https://yourdomain.com/uploads/items/{filename}`\n- **Note:** URLs use domain name (not IP address) with HTTPS\n\n**Error Responses:**\n\n**400 - No file provided:**\n```json\n{\n  \"code\": 400,\n  \"message\": \"No image file provided\"\n}\n```\n\n**400 - Invalid file type:**\n```json\n{\n  \"code\": 400,\n  \"message\": \"Only image files are allowed (jpeg, jpg, png, gif, webp)\"\n}\n```\n\n**413 - File too large:**\n```json\n{\n  \"code\": 413,\n  \"message\": \"File too large. Maximum size is 5MB\"\n}\n```\n\n**404 - Item not found:**\n```json\n{\n  \"code\": 404,\n  \"message\": \"Item not found\"\n}\n```\n\n**403 - No access:**\n```json\n{\n  \"code\": 403,\n  \"message\": \"You do not have access to this item\"\n}\n```\n\n**Complete Workflow Examples:**\n\n**Example 1 - Update Existing Folder:**\n```bash\n# Upload image for existing folder\ncurl -X POST https://yourdomain.com/v1/vault/items/upload-image \\\n  -H \"Authorization: Bearer {token}\" \\\n  -F \"image=@folder-icon.png\" \\\n  -F \"itemId=6956daf969aedf2bd90667d3\"\n\n# Response includes updated item with itemImage field\n```\n\n**Example 2 - Create New Folder with Custom Image:**\n```bash\n# Step 1: Upload image first\ncurl -X POST https://yourdomain.com/v1/vault/items/upload-image \\\n  -H \"Authorization: Bearer {token}\" \\\n  -F \"image=@project-logo.png\"\n\n# Response: { \"imageUrl\": \"https://yourdomain.com/uploads/items/...\" }\n\n# Step 2: Create folder with the image URL\ncurl -X POST https://yourdomain.com/v1/vault/folders \\\n  -H \"Authorization: Bearer {token}\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\n    \"name\": \"Project Alpha\",\n    \"itemImage\": \"https://yourdomain.com/uploads/items/...\",\n    \"parentId\": null\n  }'\n```\n\n**Mobile/Web App Integration:**\n\n**Display Logic:**\n- If `itemImage` exists: Show custom image\n- If `itemImage` is null/empty: Show default icon based on type\n  - Folders: Default folder icon\n  - Files: Icon based on file type (pdf, doc, image, etc.)\n\n**UI Features:**\n- Image picker for folders/files\n- Preview before upload\n- Crop/resize options (optional)\n- Remove image button (set itemImage to null via update endpoint)\n\n**Performance Tips:**\n- Cache images on client side\n- Use lazy loading for image grids\n- Compress images before upload\n- Consider thumbnail generation for large images\n\n**Security:**\n- Only authenticated users can upload\n- User must have access to item to update its image\n- File type validation prevents malicious uploads\n- Size limit prevents abuse\n- Old images automatically cleaned up"
+					},
+					"response": []
+				},
+				{
 					"name": "Get Presigned Upload URL",
 					"request": {
 						"method": "GET",
@@ -2372,7 +2415,39 @@
 								}
 							]
 						},
-						"description": "**Get All Notifications**\n\nRetrieve all notifications for the authenticated user with pagination.\n\n**Query Parameters:**\n- `isRead` (optional): Filter by read status (true/false)\n- `page` (optional): Page number (default: 1)\n- `limit` (optional): Items per page (default: 20, max: 100)\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"notifications\": [...],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 20,\n      \"totalCount\": 45,\n      \"totalPages\": 3,\n      \"hasNextPage\": true,\n      \"hasPrevPage\": false,\n      \"nextPage\": 2,\n      \"prevPage\": null\n    }\n  },\n  \"message\": \"Notifications retrieved successfully\"\n}\n```"
+						"description": "**Get All Notifications**\n\nRetrieve all notifications for the authenticated user with pagination. Response format is FCM-compatible.\n\n**Query Parameters:**\n- `isRead` (optional): Filter by read status (true/false)\n- `page` (optional): Page number (default: 1)\n- `limit` (optional): Items per page (default: 20, max: 100)\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"notifications\": [\n      {\n        \"id\": \"notification-id\",\n        \"type\": \"share\",\n        \"title\": \"New Shared Item\",\n        \"body\": \"John Doe shared 'Document.pdf' with you\",\n        \"message\": \"John Doe shared 'Document.pdf' with you\",\n        \"isRead\": false,\n        \"userId\": \"user-id\",\n        \"itemId\": \"item-id\",\n        \"itemName\": \"Document.pdf\",\n        \"fromUser\": {\n          \"id\": \"sender-id\",\n          \"fullName\": \"John Doe\",\n          \"email\": \"john@example.com\",\n          \"image\": \"https://...\"\n        },\n        \"data\": {\n          \"type\": \"share\",\n          \"itemId\": \"item-id\",\n          \"fromUserId\": \"sender-id\",\n          \"role\": \"edit\"\n        },\n        \"priority\": \"high\",\n        \"icon\": \"share\",\n        \"actionUrl\": \"/vault/item/item-id\",\n        \"timestamp\": \"2026-01-08T18:15:00.000Z\",\n        \"sentAt\": \"2026-01-08T18:15:00.000Z\",\n        \"createdAt\": \"2026-01-08T18:15:00.000Z\",\n        \"updatedAt\": \"2026-01-08T18:15:00.000Z\",\n        \"channels\": {\n          \"push\": true,\n          \"email\": true,\n          \"inApp\": true\n        },\n        \"fcmSent\": true,\n        \"emailSent\": true\n      }\n    ],\n    \"pagination\": {\n      \"page\": 1,\n      \"limit\": 20,\n      \"totalCount\": 45,\n      \"totalPages\": 3,\n      \"hasNextPage\": true,\n      \"hasPrevPage\": false,\n      \"nextPage\": 2,\n      \"prevPage\": null\n    }\n  },\n  \"message\": \"Notifications retrieved successfully\"\n}\n```"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Notification by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/notifications/:notificationId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"notifications",
+								":notificationId"
+							],
+							"variable": [
+								{
+									"key": "notificationId",
+									"value": "notification-id-here",
+									"description": "Notification ID"
+								}
+							]
+						},
+						"description": "**Get Notification by ID**\n\nRetrieve a single notification by its ID. Response format is FCM-compatible.\n\n**Path Parameters:**\n- `notificationId` (required): The notification ID\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"notification\": {\n      \"id\": \"notification-id\",\n      \"type\": \"share\",\n      \"title\": \"New Shared Item\",\n      \"body\": \"John Doe shared 'Document.pdf' with you\",\n      \"message\": \"John Doe shared 'Document.pdf' with you\",\n      \"isRead\": false,\n      \"userId\": \"user-id\",\n      \"itemId\": \"item-id\",\n      \"itemName\": \"Document.pdf\",\n      \"fromUser\": {\n        \"id\": \"sender-id\",\n        \"fullName\": \"John Doe\",\n        \"email\": \"john@example.com\",\n        \"image\": \"https://...\"\n      },\n      \"data\": {\n        \"type\": \"share\",\n        \"itemId\": \"item-id\",\n        \"fromUserId\": \"sender-id\"\n      },\n      \"priority\": \"high\",\n      \"icon\": \"share\",\n      \"actionUrl\": \"/vault/item/item-id\",\n      \"timestamp\": \"2026-01-08T18:15:00.000Z\",\n      \"sentAt\": \"2026-01-08T18:15:00.000Z\",\n      \"createdAt\": \"2026-01-08T18:15:00.000Z\",\n      \"updatedAt\": \"2026-01-08T18:15:00.000Z\",\n      \"channels\": { \"push\": true, \"email\": true, \"inApp\": true },\n      \"fcmSent\": true,\n      \"emailSent\": true\n    }\n  },\n  \"message\": \"Notification retrieved successfully\"\n}\n```\n\n**Error Responses:**\n- 404: Notification not found"
 					},
 					"response": []
 				},
@@ -2397,7 +2472,7 @@
 								"unread-count"
 							]
 						},
-						"description": "**Get Unread Notification Count**\n\nGet the count of unread notifications. Useful for badge display.\n\n**Response:**\n```json\n{\n  \"count\": 5\n}\n```"
+						"description": "**Get Unread Notification Count**\n\nGet the count of unread notifications. Useful for badge display.\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"count\": 5\n  },\n  \"message\": \"Unread count retrieved successfully\"\n}\n```"
 					},
 					"response": []
 				},
@@ -2425,11 +2500,12 @@
 							"variable": [
 								{
 									"key": "notificationId",
-									"value": "notification-id-here"
+									"value": "notification-id-here",
+									"description": "Notification ID"
 								}
 							]
 						},
-						"description": "**Mark Notification as Read**\n\nMark a single notification as read."
+						"description": "**Mark Notification as Read**\n\nMark a single notification as read. Returns the updated notification in FCM-compatible format.\n\n**Path Parameters:**\n- `notificationId` (required): The notification ID\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"notification\": {\n      \"id\": \"notification-id\",\n      \"type\": \"share\",\n      \"title\": \"New Shared Item\",\n      \"body\": \"John Doe shared 'Document.pdf' with you\",\n      \"isRead\": true,\n      \"timestamp\": \"2026-01-08T18:15:00.000Z\",\n      \"...\": \"other fields\"\n    }\n  },\n  \"message\": \"Notification marked as read\"\n}\n```"
 					},
 					"response": []
 				},
@@ -2454,7 +2530,7 @@
 								"read-all"
 							]
 						},
-						"description": "**Mark All Notifications as Read**\n\nMark all unread notifications as read in one action."
+						"description": "**Mark All Notifications as Read**\n\nMark all unread notifications as read in one action.\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {\n    \"count\": 12\n  },\n  \"message\": \"12 notifications marked as read\"\n}\n```"
 					},
 					"response": []
 				},
@@ -2481,16 +2557,17 @@
 							"variable": [
 								{
 									"key": "notificationId",
-									"value": "notification-id-here"
+									"value": "notification-id-here",
+									"description": "Notification ID"
 								}
 							]
 						},
-						"description": "**Delete Notification**\n\nPermanently delete a notification."
+						"description": "**Delete Notification**\n\nPermanently delete a notification.\n\n**Path Parameters:**\n- `notificationId` (required): The notification ID\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"data\": {},\n  \"message\": \"Notification deleted successfully\"\n}\n```\n\n**Error Responses:**\n- 404: Notification not found"
 					},
 					"response": []
 				}
 			],
-			"description": "In-app notification management.\n\n**Notification Types:**\n- `share`: Someone shared an item with you\n- `reminder`: Reminder is due/overdue\n- `system`: System announcements\n\n**Features:**\n- Automatic creation when events occur\n- Read/unread status tracking\n- Bulk mark as read\n- Linked to vault items when applicable\n\n**Notification Sources:**\n- Item shared with user → share notification\n- Reminder becomes overdue → reminder notification\n- System updates → system notification"
+			"description": "In-app notification management with FCM-compatible format.\n\n**Notification Types:**\n- `share`: Someone shared an item with you (high priority, email sent)\n- `edit`: Shared item was edited (normal priority)\n- `delete`: Shared item was deleted (high priority, email sent)\n- `move`: Shared item was moved (low priority)\n- `unshare`: Your access was removed (high priority, email sent)\n- `reminder`: Reminder is due/overdue (high priority, email sent)\n- `system`: System announcements\n- `admin_notification`: Admin broadcasts\n\n**Features:**\n- Automatic creation when events occur\n- FCM push notifications sent automatically\n- SMTP email notifications for important events\n- Read/unread status tracking\n- Bulk mark as read\n- Linked to vault items when applicable\n- Timestamps (sentAt, createdAt, updatedAt)\n\n**Notification Channels:**\n- `push`: FCM push notification\n- `email`: SMTP email notification\n- `inApp`: In-app notification (always enabled)\n\n**Response Format (FCM-compatible):**\nAll notification responses include:\n- `id`: Notification ID\n- `type`: Notification type\n- `title`: Notification title\n- `body`: Notification body (same as message)\n- `message`: Notification message\n- `timestamp`: When notification was sent (ISO 8601)\n- `priority`: low, normal, high, critical\n- `icon`: Icon identifier\n- `data`: Additional payload data\n- `fcmSent`: Whether FCM push was sent\n- `emailSent`: Whether email was sent"
 		},
 		{
 			"name": "Audit Logs",

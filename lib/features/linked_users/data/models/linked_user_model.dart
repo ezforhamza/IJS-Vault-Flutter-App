@@ -133,6 +133,7 @@ class SharedFileModel {
     this.sharedAt,
     this.parentId,
     this.parentName,
+    this.fileType,
   });
 
   factory SharedFileModel.fromJson(Map<String, dynamic> json) {
@@ -145,6 +146,7 @@ class SharedFileModel {
           : null,
       parentId: json['parentId'],
       parentName: json['parentName'],
+      fileType: json['fileType'] ?? 'document',
     );
   }
   final String id;
@@ -153,6 +155,7 @@ class SharedFileModel {
   final DateTime? sharedAt;
   final String? parentId;
   final String? parentName;
+  final String? fileType;
 }
 
 class LinkedUsersSummaryModel {

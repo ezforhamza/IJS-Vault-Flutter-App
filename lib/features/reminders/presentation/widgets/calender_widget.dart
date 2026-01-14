@@ -117,7 +117,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                       // const SizedBox(width: 12),
                       DropdownButton<int>(
                         value: selectedMonth.month,
-                        dropdownColor: const Color(0xFF201c15),
+                        dropdownColor: isDarkMode ? const Color(0xFF201c15) : Colors.white,
                         underline: const SizedBox(),
                         alignment: AlignmentDirectional.center,
                         icon: Icon(
@@ -126,7 +126,6 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                         ),
                         style: TextStyle(
                           color: isDarkMode ? Colors.white : Colors.black,
-                          // fontSize: 20,
                           fontWeight: FontWeight.w600,
                         ),
                         items: List.generate(12, (int index) {
@@ -178,16 +177,14 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                       // const SizedBox(width: 12),
                       DropdownButton<int>(
                         value: selectedMonth.year,
-                        dropdownColor: const Color(0xFF201c15),
+                        dropdownColor: isDarkMode ? const Color(0xFF201c15) : Colors.white,
                         underline: const SizedBox(),
                         icon: Icon(
                           Icons.arrow_drop_down,
                           color: isDarkMode ? Colors.white : Colors.black,
                         ),
                         style: TextStyle(
-                          color: isDarkMode
-                              ? Colors.white
-                              : Colors.black, // fontSize: 20,
+                          color: isDarkMode ? Colors.white : Colors.black,
                           fontWeight: FontWeight.w600,
                         ),
                         items: List.generate(10, (int index) {

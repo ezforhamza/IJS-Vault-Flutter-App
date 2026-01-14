@@ -17,11 +17,27 @@ class SharedWithMe extends StatefulWidget {
 
 class _SharedWithMeState extends State<SharedWithMe> {
   late SharedVaultController controller;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
     controller = Get.put(SharedVaultController());
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      controller.loadMoreItems();
+    }
   }
 
   @override
@@ -58,32 +74,60 @@ class _SharedWithMeState extends State<SharedWithMe> {
       return _buildEmptyState(textTheme);
     }
 
-    return RefreshIndicator(
-      onRefresh: controller.refresh,
-      child: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          final double width = constraints.maxWidth;
-          final double itemWidth = (width - 40) / 3;
-          final double itemHeight = itemWidth * 1.25;
-          final double ratio = itemWidth / itemHeight;
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final double width = constraints.maxWidth;
+        final double itemWidth = (width - 40) / 3;
+        final double itemHeight = itemWidth * 1.25;
+        final double ratio = itemWidth / itemHeight;
 
-          return GridView.builder(
+        final int itemCount = controller.sharedItems.length;
+        final bool hasMore = controller.hasMoreItems;
+
+        return RefreshIndicator(
+          onRefresh: controller.refresh,
+          child: CustomScrollView(
             key: key,
-            padding: const EdgeInsets.all(10),
-            itemCount: controller.sharedItems.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 10,
-              mainAxisSpacing: 10,
-              childAspectRatio: ratio < 0.7 ? 0.7 : ratio,
-            ),
-            itemBuilder: (_, int index) {
-              final ItemModel item = controller.sharedItems[index];
-              return _SharedVaultItem(item: item);
-            },
-          );
-        },
-      ),
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: <Widget>[
+              SliverPadding(
+                padding: const EdgeInsets.all(10),
+                sliver: SliverGrid(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: ratio < 0.7 ? 0.7 : ratio,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (_, int index) {
+                      final ItemModel item = controller.sharedItems[index];
+                      return _SharedVaultItem(item: item);
+                    },
+                    childCount: itemCount,
+                  ),
+                ),
+              ),
+              if (hasMore)
+                SliverToBoxAdapter(
+                  child: Obx(() => controller.isLoadingMore.value
+                      ? const Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Center(
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      : const SizedBox(height: 100)),
+                ),
+              if (!hasMore && itemCount > 0)
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 100),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 

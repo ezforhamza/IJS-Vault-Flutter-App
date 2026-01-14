@@ -7,6 +7,8 @@ import 'package:ijs_vault/core/controllers/network_controller.dart';
 import 'package:ijs_vault/core/network/app_urls.dart';
 import 'package:ijs_vault/core/services/local_storage.dart';
 import 'package:ijs_vault/features/auth/data/models/user_model.dart';
+import 'package:ijs_vault/features/auth/presentation/screens/login_screen.dart';
+import 'package:ijs_vault/shared/helpers/toasts.dart';
 import 'package:ijs_vault/shared/models/response_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -212,6 +214,7 @@ class ApiService {
   Future<ApiResponse> _handleResponse(
     Response response, {
     required Future<Response> Function() retry,
+    bool skipAuthRedirect = false,
   }) async {
     final data = response.data;
 
@@ -222,6 +225,18 @@ class ApiService {
       final String? errorMessage = data['error'] != null
           ? data['error']['message']
           : null;
+      final dynamic responseData = data['data'];
+      
+      // Check for PIN lockout (403 with PIN-related message)
+      if (errorCode == 403 && 
+          errorMessage != null &&
+          (errorMessage.toLowerCase().contains('pin attempts') ||
+           errorMessage.toLowerCase().contains('too many failed'))) {
+        await _handleSessionExpiry(
+          message: 'Too many failed PIN attempts. Please login again for security.',
+        );
+        return ApiResponse.fromJson(data);
+      }
 
       // Trigger refresh token if error code is 401 OR message indicates authentication required
       if (errorCode == 401 ||
@@ -233,8 +248,12 @@ class ApiService {
           return ApiResponse.fromJson(retryResponse.data);
         }
 
-        // Refresh failed → logout
-        await LocalStorageService().clearAll();
+        // Refresh failed → logout and redirect
+        if (!skipAuthRedirect) {
+          await _handleSessionExpiry(
+            message: 'Your session has expired. Please login again.',
+          );
+        }
         return ApiResponse(
           success: false,
           message: errorMessage ?? 'Session expired. Please login again.',
@@ -247,6 +266,13 @@ class ApiService {
 
     // Unexpected format
     return ApiResponse(success: false, message: 'Unexpected response format');
+  }
+
+  /// Handle session expiry - clear tokens and redirect to login
+  Future<void> _handleSessionExpiry({required String message}) async {
+    await LocalStorageService().clearAll();
+    AppToasts.showErrorToast(message: message);
+    Get.offAll(() => const LoginScreen());
   }
 
   /// =====================================================

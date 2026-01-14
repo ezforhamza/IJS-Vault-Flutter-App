@@ -49,14 +49,6 @@ class ChangeProfileController extends GetxController {
     final bool hasName = newFullName != null && newFullName.trim().isNotEmpty;
     final bool hasPhone = newPhone != null && newPhone.trim().isNotEmpty;
 
-    /// Validation
-    if ((hasName && !hasPhone) || (!hasName && hasPhone)) {
-      AppToasts.showErrorToast(
-        message: 'Full name and phone must be updated together',
-      );
-      return;
-    }
-
     if (!hasImage && !hasName && !hasPhone) {
       AppToasts.showErrorToast(message: 'No changes to update');
       return;
@@ -76,20 +68,18 @@ class ChangeProfileController extends GetxController {
         if (!imageResponse.success) {
           AppLoader.hideLoadingDialog();
           AppToasts.showErrorToast(message: imageResponse.message);
-
           return;
         }
         final UserModel user = UserModel.fromJson(imageResponse.data['user']);
-
         Get.find<ProfileController>().updateUser(user);
+        currentUser = user;
       }
 
-      /// 🔹 2. Update name + phone
-      if (hasName && hasPhone) {
+      /// 🔹 2. Update name and/or phone
+      if (hasName || hasPhone) {
         final ApiResponse infoResponse = await _repository.updateUserInfo(
-          // userId: currentUser!.id,
-          fullName: newFullName.trim(),
-          phone: newPhone.trim(),
+          fullName: hasName ? newFullName.trim() : currentUser!.fullName,
+          phone: hasPhone ? newPhone.trim() : (currentUser!.phone ?? ''),
         );
 
         if (!infoResponse.success) {
@@ -98,10 +88,9 @@ class ChangeProfileController extends GetxController {
           return;
         }
 
-        // await _updateLocalUserData(newFullName, newPhone);
         final UserModel user = UserModel.fromJson(infoResponse.data['user']);
-
         Get.find<ProfileController>().updateUser(user);
+        currentUser = user;
       }
 
       /// Success

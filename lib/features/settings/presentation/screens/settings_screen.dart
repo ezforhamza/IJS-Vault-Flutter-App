@@ -11,10 +11,9 @@ import 'package:ijs_vault/features/auth/presentation/screens/login_screen.dart';
 import 'package:ijs_vault/features/reminders/presentation/screens/reminders_screen.dart';
 import 'package:ijs_vault/features/settings/presentation/screens/activity_log_screen.dart';
 import 'package:ijs_vault/features/settings/presentation/screens/change_password_screen.dart';
+import 'package:ijs_vault/features/settings/presentation/screens/legal_page_screen.dart';
 import 'package:ijs_vault/features/settings/presentation/screens/notification_screen.dart';
-import 'package:ijs_vault/features/settings/presentation/screens/privacy_policy_screen.dart';
 import 'package:ijs_vault/features/settings/presentation/screens/profile_setup.dart';
-import 'package:ijs_vault/features/settings/presentation/screens/terms_and_conditions_screen.dart';
 import 'package:ijs_vault/features/settings/presentation/widgets/dialoge.dart';
 import 'package:ijs_vault/features/settings/presentation/widgets/profile_widget.dart';
 import 'package:ijs_vault/features/settings/presentation/widgets/setting_option_widget.dart';
@@ -109,7 +108,10 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    Get.to(() => const PrivacyPolicyScreen());
+                    Get.to(() => const LegalPageScreen(
+                      type: 'privacy_policy',
+                      title: 'Privacy Policy',
+                    ));
                   },
                   child: const SettingOptionWidget(
                     text: 'Privacy Policy',
@@ -118,7 +120,10 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    Get.to(() => const TermsAndConditionsScreen());
+                    Get.to(() => const LegalPageScreen(
+                      type: 'terms_of_service',
+                      title: 'Terms & Conditions',
+                    ));
                   },
                   child: const SettingOptionWidget(
                     text: 'Terms & Conditions',

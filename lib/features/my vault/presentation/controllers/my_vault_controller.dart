@@ -7,6 +7,7 @@ import 'package:ijs_vault/core/services/local_storage.dart';
 import 'package:ijs_vault/core/services/upload_manager/upload_manager.dart';
 import 'package:ijs_vault/features/auth/data/models/user_model.dart';
 import 'package:ijs_vault/features/my%20vault/data/models/linkable_user_model.dart';
+import 'package:ijs_vault/features/my%20vault/data/models/vault_filter_model.dart';
 import 'package:ijs_vault/features/my%20vault/data/models/vault_item_model.dart';
 import 'package:ijs_vault/features/my%20vault/domain/repositories/my_vault_repo.dart';
 import 'package:ijs_vault/features/my%20vault/presentation/widgets/file_confirmation_widget.dart';
@@ -22,6 +23,7 @@ class MyVaultController extends GetxController {
   RxBool showAddButton = true.obs;
   RxBool isLoading = false.obs;
   RxBool isGettingVault = false.obs;
+  RxBool isLoadingMore = false.obs;
 
   // User
   Rxn<UserModel> user = Rxn<UserModel>();
@@ -36,6 +38,44 @@ class MyVaultController extends GetxController {
 
   // Repository
   final MyVaultRepo repo = MyVaultRepo();
+
+  // Pagination helpers
+  bool get hasMoreItems => pagination.value?.hasNextPage ?? false;
+  int get currentPage => pagination.value?.page ?? 1;
+
+  // Filter state
+  final Rx<VaultFilter> filter = VaultFilter.defaultFilter().obs;
+  bool get hasActiveFilters => !filter.value.isDefault;
+  int get activeFilterCount => filter.value.activeFilterCount;
+
+  /// Apply filter and refresh items
+  Future<void> applyFilter(VaultFilter newFilter) async {
+    filter.value = newFilter;
+    pagination.value = null;
+    await getVaultItems();
+  }
+
+  /// Update a single filter property
+  void updateFilter({
+    VaultItemType? type,
+    VaultFileType? fileType,
+    VaultSortBy? sortBy,
+    VaultSortOrder? sortOrder,
+  }) {
+    filter.value = filter.value.copyWith(
+      type: type,
+      fileType: fileType,
+      sortBy: sortBy,
+      sortOrder: sortOrder,
+    );
+  }
+
+  /// Reset filters to default
+  Future<void> resetFilters() async {
+    filter.value = VaultFilter.defaultFilter();
+    pagination.value = null;
+    await getVaultItems();
+  }
 
   // Local storage
 
@@ -141,7 +181,6 @@ class MyVaultController extends GetxController {
       );
 
       if (response.success) {
-        // AppToasts.showSuccessToast(message: response.message);
         return true;
       } else {
         AppToasts.showErrorToast(message: response.message);
@@ -155,14 +194,35 @@ class MyVaultController extends GetxController {
     return false;
   }
 
-  /// Fetch vault items
+  /// Verify Item PIN with full response (for new PIN screen)
+  Future<ApiResponse> verifyItemPinWithResponse({
+    required String itemId,
+    required String pin,
+  }) async {
+    try {
+      final ApiResponse response = await repo.verifyItemPin(
+        itemId: itemId,
+        pin: pin,
+      );
+      return response;
+    } catch (e) {
+      debugPrint('Verify PIN error: $e');
+      return ApiResponse(
+        success: false,
+        message: 'Failed to verify PIN',
+      );
+    }
+  }
+
+  /// Fetch vault items (first page)
   Future<void> getVaultItems({bool refresh = false}) async {
     if (!refresh) {
       isGettingVault.value = true;
     }
     try {
       final ApiResponse response = await repo.getVaultItems(
-        // page: pagination.value?.page ?? 1,
+        page: 1,
+        filter: filter.value,
       );
 
       if (response.success) {
@@ -171,7 +231,7 @@ class MyVaultController extends GetxController {
         );
 
         items.value = data.items;
-        // pagination.value = data.pagination;
+        pagination.value = data.pagination;
       } else {
         AppToasts.showErrorToast(message: response.message);
       }
@@ -182,8 +242,36 @@ class MyVaultController extends GetxController {
     }
   }
 
+  /// Load more items (infinite scroll)
+  Future<void> loadMoreItems() async {
+    if (isLoadingMore.value || !hasMoreItems) return;
+
+    isLoadingMore.value = true;
+    try {
+      final int nextPage = currentPage + 1;
+      final ApiResponse response = await repo.getVaultItems(
+        page: nextPage,
+        filter: filter.value,
+      );
+
+      if (response.success) {
+        final ItemsResponseModel data = ItemsResponseModel.fromJson(
+          response.data,
+        );
+
+        items.addAll(data.items);
+        pagination.value = data.pagination;
+      }
+    } catch (e) {
+      debugPrint('Load more items error: $e');
+    } finally {
+      isLoadingMore.value = false;
+    }
+  }
+
   /// Refresh vault items (for pull-to-refresh)
   Future<void> refresh() async {
+    pagination.value = null;
     await getVaultItems(refresh: true);
   }
 

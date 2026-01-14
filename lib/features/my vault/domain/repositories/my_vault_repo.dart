@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:ijs_vault/core/network/api_services.dart';
 import 'package:ijs_vault/core/network/app_urls.dart';
+import 'package:ijs_vault/features/my%20vault/data/models/vault_filter_model.dart';
 import 'package:ijs_vault/shared/models/response_model.dart';
 
 class MyVaultRepo {
@@ -24,13 +25,26 @@ class MyVaultRepo {
   }
 
   // Get Vault Items
-  Future<ApiResponse> getVaultItems({String? parentId}) async {
-    return await apiService.get(
-      AppUrls.getVaultItems,
-      queryParams: parentId != null
-          ? <String, dynamic>{'parentId': parentId}
-          : null,
-    );
+  Future<ApiResponse> getVaultItems({
+    String? parentId,
+    int page = 1,
+    int limit = 20,
+    VaultFilter? filter,
+  }) async {
+    final Map<String, dynamic> params = <String, dynamic>{
+      if (parentId != null) 'parentId': parentId,
+      'page': page,
+      'limit': limit,
+    };
+
+    if (filter != null) {
+      params.addAll(filter.toQueryParams());
+    } else {
+      params['sortBy'] = 'name';
+      params['sortOrder'] = 'asc';
+    }
+
+    return await apiService.get(AppUrls.getVaultItems, queryParams: params);
   }
 
   // Upload File
@@ -128,8 +142,24 @@ class MyVaultRepo {
   }
 
   // Get Shared Items (items shared with current user)
-  Future<ApiResponse> getSharedItems() async {
-    return await apiService.get(AppUrls.getSharedVault);
+  Future<ApiResponse> getSharedItems({
+    int page = 1,
+    int limit = 20,
+    VaultFilter? filter,
+  }) async {
+    final Map<String, dynamic> params = <String, dynamic>{
+      'page': page,
+      'limit': limit,
+    };
+
+    if (filter != null) {
+      params.addAll(filter.toQueryParams());
+    } else {
+      params['sortBy'] = 'name';
+      params['sortOrder'] = 'asc';
+    }
+
+    return await apiService.get(AppUrls.getSharedVault, queryParams: params);
   }
 
   // Get Shared Folder Items (items inside a shared folder)

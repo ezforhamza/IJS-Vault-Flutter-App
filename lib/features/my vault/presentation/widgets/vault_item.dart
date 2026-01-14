@@ -392,12 +392,24 @@ class _VaultItemState extends State<VaultItem> {
                             height: double.infinity,
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => Center(
-                              child: FileTypeImageWidget(type: widget.item.name),
+                              child: FileTypeImageWidget(
+                                fileName: widget.item.name,
+                                itemType: widget.item.type,
+                                fileType: widget.item.fileType,
+                                extension: widget.item.extension,
+                                mimeType: widget.item.mimeType,
+                              ),
                             ),
                           ),
                         )
                       : Center(
-                          child: FileTypeImageWidget(type: widget.item.name),
+                          child: FileTypeImageWidget(
+                            fileName: widget.item.name,
+                            itemType: widget.item.type,
+                            fileType: widget.item.fileType,
+                            extension: widget.item.extension,
+                            mimeType: widget.item.mimeType,
+                          ),
                         ),
                 ),
               ),
@@ -458,42 +470,137 @@ class _VaultItemState extends State<VaultItem> {
 class FileTypeImageWidget extends StatelessWidget {
   const FileTypeImageWidget({
     super.key,
-    required this.type,
+    required this.fileName,
+    this.itemType,
+    this.fileType,
+    this.extension,
+    this.mimeType,
     this.height,
     this.width,
   });
-  final String type; // e.g., "media", "folder", "note"
+
+  final String fileName;
+  final String? itemType; // 'folder' or 'file'
+  final String? fileType; // 'media', 'document', 'note', etc.
+  final String? extension; // file extension from API
+  final String? mimeType; // mime type from API
   final double? height;
   final double? width;
 
   @override
   Widget build(BuildContext context) {
-    // Map file type to corresponding SVG
-    String asset;
-    switch (type.toLowerCase()) {
-      case 'media':
-        asset = AppImages.bell;
-        break;
-      case 'folder':
-        asset = AppImages.folder; // replace with your folder image
-        break;
-      case 'note':
-        asset = AppImages.activitylog; // replace with your note image
-        break;
-      case 'document':
-        asset = AppImages.pdficon;
-      default:
-        asset = AppImages.folder; // fallback image
+    // If it's a folder, show folder icon
+    if (itemType == 'folder') {
+      return SvgPicture.asset(
+        AppImages.folder,
+        height: height ?? 50,
+        width: width ?? 50,
+      );
     }
 
-    return type.contains('.')
-        ? FileIcon(
-            // File name
-            type,
+    // Get extension from API or extract from filename
+    final String ext = _getExtension();
 
-            // Icon size
-            size: 50,
-          )
-        : SvgPicture.asset(AppImages.selected1, height: double.infinity);
+    // If we have an extension, use FileIcon for proper file type icons
+    if (ext.isNotEmpty) {
+      return FileIcon(
+        'file.$ext', // FileIcon needs a filename with extension
+        size: height ?? 50,
+      );
+    }
+
+    // Fallback based on fileType from API
+    if (fileType != null) {
+      switch (fileType!.toLowerCase()) {
+        case 'media':
+          return Icon(
+            Icons.image_outlined,
+            size: height ?? 50,
+            color: Colors.purple,
+          );
+        case 'document':
+          return Icon(
+            Icons.description_outlined,
+            size: height ?? 50,
+            color: Colors.red,
+          );
+        case 'note':
+          return Icon(
+            Icons.note_outlined,
+            size: height ?? 50,
+            color: Colors.teal,
+          );
+      }
+    }
+
+    // Final fallback - generic file icon
+    return Icon(
+      Icons.insert_drive_file_outlined,
+      size: height ?? 50,
+      color: Colors.grey,
+    );
+  }
+
+  String _getExtension() {
+    // First try to use extension from API
+    if (extension != null && extension!.isNotEmpty) {
+      return extension!.toLowerCase().replaceAll('.', '');
+    }
+
+    // Try to extract from mimeType
+    if (mimeType != null && mimeType!.isNotEmpty) {
+      final String ext = _extensionFromMimeType(mimeType!);
+      if (ext.isNotEmpty) return ext;
+    }
+
+    // Extract from filename
+    if (fileName.contains('.')) {
+      final List<String> parts = fileName.split('.');
+      if (parts.length > 1) {
+        return parts.last.toLowerCase();
+      }
+    }
+
+    return '';
+  }
+
+  String _extensionFromMimeType(String mimeType) {
+    final Map<String, String> mimeToExt = <String, String>{
+      'image/jpeg': 'jpg',
+      'image/jpg': 'jpg',
+      'image/png': 'png',
+      'image/gif': 'gif',
+      'image/webp': 'webp',
+      'image/svg+xml': 'svg',
+      'image/bmp': 'bmp',
+      'video/mp4': 'mp4',
+      'video/quicktime': 'mov',
+      'video/x-msvideo': 'avi',
+      'video/x-matroska': 'mkv',
+      'video/webm': 'webm',
+      'audio/mpeg': 'mp3',
+      'audio/wav': 'wav',
+      'audio/aac': 'aac',
+      'audio/flac': 'flac',
+      'audio/ogg': 'ogg',
+      'application/pdf': 'pdf',
+      'application/msword': 'doc',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+      'application/vnd.ms-excel': 'xls',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+      'application/vnd.ms-powerpoint': 'ppt',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+      'application/zip': 'zip',
+      'application/x-rar-compressed': 'rar',
+      'application/x-7z-compressed': '7z',
+      'text/plain': 'txt',
+      'text/html': 'html',
+      'text/css': 'css',
+      'text/javascript': 'js',
+      'application/json': 'json',
+      'application/xml': 'xml',
+    };
+
+    return mimeToExt[mimeType.toLowerCase()] ?? '';
   }
 }

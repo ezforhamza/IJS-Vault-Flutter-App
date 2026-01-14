@@ -4,8 +4,9 @@ import 'package:get/get.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const CustomAppBar({super.key, required this.text});
+  const CustomAppBar({super.key, required this.text, this.actions});
   final String text;
+  final List<Widget>? actions;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +30,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
       ),
       title: Text(text, style: textTheme.labelLarge?.copyWith(fontSize: 16)),
+      actions: actions,
     );
   }
 

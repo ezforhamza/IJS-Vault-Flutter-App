@@ -16,7 +16,6 @@ class LinkedUsersController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    getLinkedUsers(showLoader: false);
   }
 
   Future<void> getLinkedUsers({bool showLoader = true, bool refresh = false}) async {

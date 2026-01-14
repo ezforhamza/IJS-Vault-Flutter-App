@@ -18,7 +18,6 @@ class ReminderController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    getAllReminders(showLoader: false);
   }
 
   // --------------------------------------------------

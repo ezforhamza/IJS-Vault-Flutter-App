@@ -5,7 +5,7 @@ import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/features/linked_users/data/models/linked_user_model.dart';
-import 'package:ijs_vault/features/linked_users/presentation/screens/shared_vault_scrren.dart';
+import 'package:ijs_vault/features/linked_users/presentation/screens/linked_user_shared_items_screen.dart';
 import 'package:ijs_vault/shared/widgets/gradient_text_widget.dart';
 import 'package:ijs_vault/shared/widgets/profile_picture_widget.dart';
 
@@ -21,7 +21,7 @@ class LinkedUserWidget extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
-        Get.to(() => const SharedVaultScrren());
+        Get.to(() => LinkedUserSharedItemsScreen(user: user));
       },
       child: Container(
         padding: const EdgeInsets.all(10),
@@ -71,7 +71,7 @@ class LinkedUserWidget extends StatelessWidget {
                               style: theme.labelMedium!.copyWith(fontSize: 14),
                             ),
                             TextSpan(
-                              text: user.totalSharedCount.toString(),
+                              text: user.sharedItems.folders.length.toString(),
                               style: theme.labelSmall!.copyWith(fontSize: 15),
                             ),
                           ],
@@ -88,7 +88,7 @@ class LinkedUserWidget extends StatelessWidget {
                               style: theme.labelMedium!.copyWith(fontSize: 14),
                             ),
                             TextSpan(
-                              text: '3',
+                              text: user.sharedItems.files.length.toString(),
                               style: theme.labelSmall!.copyWith(fontSize: 15),
                             ),
                           ],
@@ -99,7 +99,7 @@ class LinkedUserWidget extends StatelessWidget {
                       const Spacer(),
 
                       const TextGradient(
-                        text: 'Shared Vault',
+                        text: 'View Details',
                         fontWeight: FontWeight.w500,
                       ),
                     ],

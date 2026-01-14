@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chewie/chewie.dart';
 import 'package:file_icon/file_icon.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -9,6 +10,7 @@ import 'package:ijs_vault/features/my%20vault/data/models/vault_item_model.dart'
 import 'package:ijs_vault/features/my%20vault/presentation/controllers/file_preview_controller.dart';
 import 'package:ijs_vault/features/set%20pin/presentation/screens/verify_pin_screen.dart';
 import 'package:ijs_vault/shared/widgets/app_bar.dart';
+import 'package:video_player/video_player.dart';
 
 class ItemPreviewScreen extends StatelessWidget {
   const ItemPreviewScreen({super.key, required this.item});
@@ -298,7 +300,7 @@ class _ImageErrorWidget extends StatelessWidget {
   }
 }
 
-class _VideoPreview extends StatelessWidget {
+class _VideoPreview extends StatefulWidget {
   const _VideoPreview({
     required this.url,
     required this.item,
@@ -309,85 +311,169 @@ class _VideoPreview extends StatelessWidget {
   final FilePreviewController controller;
 
   @override
+  State<_VideoPreview> createState() => _VideoPreviewState();
+}
+
+class _VideoPreviewState extends State<_VideoPreview> {
+  VideoPlayerController? _videoController;
+  ChewieController? _chewieController;
+  bool _isInitializing = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeVideo();
+  }
+
+  Future<void> _initializeVideo() async {
+    try {
+      _videoController = VideoPlayerController.networkUrl(Uri.parse(widget.url));
+      await _videoController!.initialize();
+
+      _chewieController = ChewieController(
+        videoPlayerController: _videoController!,
+        autoPlay: false,
+        looping: false,
+        aspectRatio: _videoController!.value.aspectRatio,
+        errorBuilder: (context, errorMessage) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                const SizedBox(height: 16),
+                Text(
+                  'Error loading video',
+                  style: TextStyle(
+                    color: Get.isDarkMode ? Colors.white70 : Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Video initialization error: $e');
+      if (mounted) {
+        setState(() {
+          _isInitializing = false;
+          _errorMessage = 'Failed to load video';
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _chewieController?.dispose();
+    _videoController?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final bool isDarkMode = Get.isDarkMode;
+
     return Column(
       children: [
         Expanded(
-          child: Center(
-            child: Container(
-              margin: const EdgeInsets.all(24),
-              padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: isDarkMode
-                    ? const Color(0xFF292416)
-                    : const Color(0xFFf4edd7),
-                borderRadius: BorderRadius.circular(20),
-                border: const GradientBoxBorder(
-                  gradient: LinearGradient(colors: AppColors.gradient),
-                ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: AppColors.gradient[0].withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.play_circle_outline,
-                      size: 80,
-                      color: AppColors.gradient[0],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    item.name,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: isDarkMode ? Colors.white : Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Video file',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
-                    ),
-                  ),
-                  if (item.formattedSize.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      item.formattedSize,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isDarkMode ? Colors.white54 : Colors.black38,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 24),
-                  Text(
-                    'Video playback coming soon.\nDownload to view.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDarkMode ? Colors.white54 : Colors.black38,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          child: _isInitializing
+              ? const _LoadingView()
+              : _errorMessage != null
+                  ? _buildErrorView(isDarkMode)
+                  : _chewieController != null
+                      ? Container(
+                          color: Colors.black,
+                          child: Center(
+                            child: Chewie(controller: _chewieController!),
+                          ),
+                        )
+                      : _buildErrorView(isDarkMode),
+        ),
+        _FileInfoBar(item: widget.item, controller: widget.controller),
+      ],
+    );
+  }
+
+  Widget _buildErrorView(bool isDarkMode) {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: isDarkMode ? const Color(0xFF292416) : const Color(0xFFf4edd7),
+          borderRadius: BorderRadius.circular(20),
+          border: const GradientBoxBorder(
+            gradient: LinearGradient(colors: AppColors.gradient),
           ),
         ),
-        _FileInfoBar(item: item, controller: controller),
-      ],
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.gradient[0].withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.play_circle_outline,
+                size: 80,
+                color: AppColors.gradient[0],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              widget.item.name,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _errorMessage ?? 'Video file',
+              style: TextStyle(
+                fontSize: 14,
+                color: _errorMessage != null
+                    ? Colors.red[400]
+                    : (isDarkMode ? Colors.white70 : Colors.black54),
+              ),
+            ),
+            if (widget.item.formattedSize.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                widget.item.formattedSize,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDarkMode ? Colors.white54 : Colors.black38,
+                ),
+              ),
+            ],
+            const SizedBox(height: 24),
+            Text(
+              'Download to view in external player',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12,
+                color: isDarkMode ? Colors.white54 : Colors.black38,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

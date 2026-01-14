@@ -7,10 +7,17 @@ import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:image_picker/image_picker.dart';
 
 class PfpSelectionWidget extends StatefulWidget {
-  const PfpSelectionWidget({super.key, required this.onImageSelected});
+  const PfpSelectionWidget({
+    super.key,
+    required this.onImageSelected,
+    this.initialImageUrl,
+  });
 
   /// Returns selected image file
   final ValueChanged<File> onImageSelected;
+
+  /// Initial image URL to display (for editing existing profile)
+  final String? initialImageUrl;
 
   @override
   State<PfpSelectionWidget> createState() => _PfpSelectionWidgetState();
@@ -58,13 +65,21 @@ class _PfpSelectionWidgetState extends State<PfpSelectionWidget> {
                             image: FileImage(_imageFile!),
                             fit: BoxFit.cover,
                           )
-                        : null,
+                        : (widget.initialImageUrl != null &&
+                                widget.initialImageUrl!.isNotEmpty)
+                            ? DecorationImage(
+                                image: NetworkImage(widget.initialImageUrl!),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
                   ),
                 ),
               ),
             ),
 
-            if (_imageFile == null)
+            if (_imageFile == null &&
+                (widget.initialImageUrl == null ||
+                    widget.initialImageUrl!.isEmpty))
               Center(
                 child: SvgPicture.asset(
                   AppImages.pfpicon2,

@@ -4,10 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get_instance/get_instance.dart';
 import 'package:get/state_manager.dart';
-import 'package:gradient_borders/box_borders/gradient_box_border.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_colors.dart';
-import 'package:ijs_vault/core/constants/app_sizes.dart';
 import 'package:ijs_vault/core/services/upload_manager/upload_progress_overlay.dart';
 import 'package:ijs_vault/features/bottomNavigationbar/presentation/widgets/add_button_widget.dart';
 import 'package:ijs_vault/features/linked_users/presentation/screens/linked_users_screen.dart';
@@ -16,7 +14,6 @@ import 'package:ijs_vault/features/my%20vault/presentation/screens/my_vault_scre
 import 'package:ijs_vault/features/reminders/presentation/screens/reminders_screen.dart';
 import 'package:ijs_vault/features/settings/presentation/screens/settings_screen.dart';
 import 'package:ijs_vault/shared/helpers/screen_helper.dart';
-import 'package:ijs_vault/shared/widgets/gradient_text_widget.dart';
 
 class HomeWithBottomNavScreen extends StatefulWidget {
   const HomeWithBottomNavScreen({super.key});
@@ -32,12 +29,16 @@ class _HomeWithBottomNavScreenState extends State<HomeWithBottomNavScreen> {
   @override
   void initState() {
     super.initState();
-    controller.getVaultItems();
+    // Only fetch if items are empty (first load)
+    if (controller.items.isEmpty) {
+      controller.getVaultItems();
+    }
   }
 
   int currentIndex = 0;
 
-  final List<Widget> pages = const <Widget>[
+  // Use late initialization to keep pages alive
+  late final List<Widget> pages = const <Widget>[
     MyVaultScreen(),
     RemindersScreen(),
     LinkedUsersScreen(),
@@ -48,17 +49,17 @@ class _HomeWithBottomNavScreenState extends State<HomeWithBottomNavScreen> {
     BottomNavItem(
       selectedImage: AppImages.selected1,
       unselectedImage: AppImages.unselected1,
-      label: 'My Vault',
+      label: 'Vault',
     ),
     BottomNavItem(
       selectedImage: AppImages.selected2,
       unselectedImage: AppImages.unselected2,
-      label: 'Reminders',
+      label: 'Reminder',
     ),
     BottomNavItem(
       selectedImage: AppImages.selected3,
       unselectedImage: AppImages.unselected3,
-      label: 'Linked Users',
+      label: 'Users',
     ),
     BottomNavItem(
       selectedImage: AppImages.selected4,
@@ -66,28 +67,59 @@ class _HomeWithBottomNavScreenState extends State<HomeWithBottomNavScreen> {
       label: 'Settings',
     ),
   ];
-  bool isAddButtonTapped = false;
+
   @override
   Widget build(BuildContext context) {
     final MyVaultController vaultcontroller = Get.find<MyVaultController>();
+    final bool isDarkMode = ScreenHelper.isdarkMode(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-
-      // floatingActionButton: currentIndex == 0
-      //     ?
-      //     : null,
+      backgroundColor: isDarkMode ? const Color(0xFF121212) : Colors.white,
       body: Stack(
         children: <Widget>[
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: pages[currentIndex],
+          // Main content with padding for bottom nav
+          // Using IndexedStack to keep pages alive and prevent refetching
+          Padding(
+            padding: EdgeInsets.only(
+              bottom: 65 + MediaQuery.of(context).padding.bottom,
+            ),
+            child: IndexedStack(
+              index: currentIndex,
+              children: pages,
+            ),
           ),
+
+          // Blur overlay when add button is tapped
+          Obx(
+            () => vaultcontroller.isAddButtonTapped.value
+                ? Positioned.fill(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                      child: Container(
+                        color: isDarkMode
+                            ? Colors.black.withValues(alpha: 0.5)
+                            : const Color(0xFF494b52).withValues(alpha: 0.35),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+
+          // Add button (floating)
+          if (currentIndex == 0)
+            Positioned(
+              bottom: 80 + MediaQuery.of(context).padding.bottom,
+              right: 20,
+              child: const AddButtonWidget(),
+            ),
+
+          // Bottom Navigation Bar - attached to bottom
           Positioned(
-            bottom: 5,
+            bottom: 0,
             left: 0,
             right: 0,
-            child: CustomBottomNavBar(
+            child: ModernBottomNavBar(
               currentIndex: currentIndex,
               items: navItems,
               onTap: (int index) {
@@ -97,43 +129,24 @@ class _HomeWithBottomNavScreenState extends State<HomeWithBottomNavScreen> {
               },
             ),
           ),
-          // if (isAddButtonTapped)
-          Obx(
-            () => vaultcontroller.isAddButtonTapped.value
-                ? Positioned.fill(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
-                      child: Container(
-                        color: const Color(0xFF494b52).withOpacity(0.35),
-                      ),
-                    ),
-                  )
-                : const SizedBox.shrink(),
-          ),
-
-          if (currentIndex == 0)
-            Positioned(
-              bottom: 100 + MediaQuery.of(context).padding.bottom,
-              right: 20,
-              child: const AddButtonWidget(),
-            ),
 
           // Upload Progress Overlay
           const UploadProgressOverlay(),
         ],
       ),
-      // bottomNavigationBar:
     );
   }
 }
 
-class CustomBottomNavBar extends StatelessWidget {
-  const CustomBottomNavBar({
+/// Modern Bottom Navigation Bar - Attached to bottom with glassmorphism effect
+class ModernBottomNavBar extends StatelessWidget {
+  const ModernBottomNavBar({
     super.key,
     required this.currentIndex,
     required this.onTap,
     required this.items,
   });
+
   final int currentIndex;
   final ValueChanged<int> onTap;
   final List<BottomNavItem> items;
@@ -142,70 +155,111 @@ class CustomBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isDarkMode = ScreenHelper.isdarkMode(context);
 
-    return SafeArea(
-      child: Container(
-        height: 70,
-        margin: const EdgeInsets.all(16),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(AppSizes.borderRadius),
-          border: const GradientBoxBorder(
-            gradient: LinearGradient(colors: AppColors.gradient),
+    return Container(
+      decoration: BoxDecoration(
+        // Gradient border at the top
+        border: Border(
+          top: BorderSide(
+            color: AppColors.gradient[0].withValues(alpha: 0.3),
             width: 0.5,
           ),
-          color: isDarkMode ? const Color(0xFF2a2514) : const Color(0xFFede6cd),
         ),
-        child: Row(
-          children: List.generate(items.length, (int index) {
-            final bool isSelected = currentIndex == index;
-            final BottomNavItem item = items[index];
+        // Background with subtle gradient
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: isDarkMode
+              ? <Color>[
+                  const Color(0xFF1A1A1A),
+                  const Color(0xFF0D0D0D),
+                ]
+              : <Color>[
+                  Colors.white,
+                  const Color(0xFFFAF9F6),
+                ],
+        ),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: isDarkMode
+                ? Colors.black.withValues(alpha: 0.3)
+                : Colors.black.withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Container(
+          height: 65,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List<Widget>.generate(items.length, (int index) {
+              final bool isSelected = currentIndex == index;
+              final BottomNavItem item = items[index];
 
-            return Expanded(
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () => onTap(index),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    AnimatedScale(
-                      scale: isSelected ? 1.25 : 1.0,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOutBack,
-                      child: SvgPicture.asset(
-                        isSelected ? item.selectedImage : item.unselectedImage,
-                        height: 24,
-                      ),
-                    ),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 250),
-                      transitionBuilder:
-                          (Widget child, Animation<double> animation) {
-                            return FadeTransition(
-                              opacity: animation,
-                              child: SizeTransition(
-                                sizeFactor: animation,
-                                axisAlignment: -1,
-                                child: child,
-                              ),
-                            );
-                          },
-                      child: isSelected
-                          ? Padding(
-                              padding: const EdgeInsets.only(top: 6),
-                              child: TextGradient(
-                                key: ValueKey(item.label),
-                                text: item.label,
-                                fontsize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-                  ],
+              return Expanded(
+                child: _NavBarItem(
+                  item: item,
+                  isSelected: isSelected,
+                  onTap: () => onTap(index),
+                  isDarkMode: isDarkMode,
                 ),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Individual navigation bar item with modern animations
+class _NavBarItem extends StatelessWidget {
+  const _NavBarItem({
+    required this.item,
+    required this.isSelected,
+    required this.onTap,
+    required this.isDarkMode,
+  });
+
+  final BottomNavItem item;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final bool isDarkMode;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: SizedBox(
+        height: double.infinity,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            // Icon
+            SvgPicture.asset(
+              isSelected ? item.selectedImage : item.unselectedImage,
+              height: 24,
+              width: 24,
+            ),
+            const SizedBox(height: 6),
+            // Label - always visible
+            Text(
+              item.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                color: isSelected
+                    ? AppColors.gradient[0]
+                    : (isDarkMode ? Colors.white60 : Colors.black54),
               ),
-            );
-          }),
+            ),
+          ],
         ),
       ),
     );

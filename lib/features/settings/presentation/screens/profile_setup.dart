@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_instance/src/extension_instance.dart';
+import 'package:get/get.dart';
 import 'package:ijs_vault/core/constants/app_assets.dart';
 import 'package:ijs_vault/core/constants/app_sizes.dart';
+import 'package:ijs_vault/core/controllers/profile_controller.dart';
 import 'package:ijs_vault/features/auth/presentation/widgets/pfp_selection_widget.dart';
 import 'package:ijs_vault/features/settings/presentation/controllers/change_profile_controller.dart';
 import 'package:ijs_vault/shared/widgets/app_bar.dart';
@@ -24,18 +24,22 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
   final TextEditingController _emailController = TextEditingController();
 
   late final ChangeProfileController controller;
+  final ProfileController _profileController = Get.find<ProfileController>();
 
   @override
   void initState() {
     super.initState();
     controller = Get.put(ChangeProfileController());
+    _loadUserData();
+  }
 
-    controller.addListener(() {
-      if (controller.currentUser != null && _fullNameController.text.isEmpty) {
-        _fullNameController.text = controller.currentUser!.fullName;
-        _emailController.text = controller.currentUser!.email;
-      }
-    });
+  void _loadUserData() {
+    final user = _profileController.currentUser.value;
+    if (user != null) {
+      _fullNameController.text = user.fullName;
+      _emailController.text = user.email;
+      _phoneController.text = user.phone ?? '';
+    }
   }
 
   @override
@@ -61,9 +65,10 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
                 /// Profile Picture
                 Center(
-                  child: PfpSelectionWidget(
+                  child: Obx(() => PfpSelectionWidget(
                     onImageSelected: controller.setProfilePicture,
-                  ),
+                    initialImageUrl: _profileController.currentUser.value?.image,
+                  )),
                 ),
 
                 const SizedBox(height: 30),

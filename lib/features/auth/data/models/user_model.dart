@@ -10,6 +10,7 @@ class UserModel {
     required this.subscription,
     required this.billingHistory,
     required this.image,
+    this.phone,
   });
 
   factory UserModel.fromJson(Map<String, dynamic>? json) {
@@ -18,6 +19,7 @@ class UserModel {
       fullName: json?['fullName'] ?? '',
       image: json?['image'] ?? "",
       email: json?['email'] ?? '',
+      phone: json?['phone'],
       role: json?['role'] ?? 'user',
       isEmailVerified: json?['isEmailVerified'] ?? false,
       provider: json?['provider'] ?? '',
@@ -32,6 +34,7 @@ class UserModel {
   final String fullName;
   final String email;
   final String image;
+  final String? phone;
   final String role;
   final bool isEmailVerified;
   final String provider;
@@ -44,6 +47,7 @@ class UserModel {
     String? fullName,
     String? email,
     String? image,
+    String? phone,
     String? role,
     bool? isEmailVerified,
     String? provider,
@@ -56,6 +60,7 @@ class UserModel {
       fullName: fullName ?? this.fullName,
       email: email ?? this.email,
       image: image ?? this.image,
+      phone: phone ?? this.phone,
       role: role ?? this.role,
       isEmailVerified: isEmailVerified ?? this.isEmailVerified,
       provider: provider ?? this.provider,

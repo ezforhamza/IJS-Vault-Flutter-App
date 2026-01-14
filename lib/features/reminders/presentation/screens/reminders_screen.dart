@@ -12,6 +12,7 @@ import 'package:ijs_vault/features/reminders/presentation/screens/all_reminders_
 import 'package:ijs_vault/features/reminders/presentation/widgets/calender_widget.dart';
 import 'package:ijs_vault/features/reminders/presentation/widgets/reminder_widget.dart';
 import 'package:ijs_vault/features/settings/presentation/screens/all_notifications_screen.dart';
+import 'package:ijs_vault/features/settings/presentation/screens/profile_setup.dart';
 import 'package:ijs_vault/shared/widgets/profile_picture_widget.dart';
 
 class RemindersScreen extends StatelessWidget {
@@ -153,12 +154,15 @@ class CustomProfileAppBar extends StatelessWidget
         backgroundColor: Colors.transparent,
         centerTitle: isCentre,
 
-        // LEFT WIDGET
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 12, top: 12, bottom: 12),
-          child: ProfilePictureWidget(
-            radius: 15,
-            imageUrl: controller.currentUser.value!.image,
+        // LEFT WIDGET - Navigate to profile on tap
+        leading: GestureDetector(
+          onTap: () => Get.to(() => const ProfileSetupScreen()),
+          child: Padding(
+            padding: const EdgeInsets.only(left: 12, top: 12, bottom: 12),
+            child: ProfilePictureWidget(
+              radius: 15,
+              imageUrl: controller.currentUser.value!.image,
+            ),
           ),
         ),
 
